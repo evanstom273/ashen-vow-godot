@@ -55,7 +55,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _press_touch(index: int, at: Vector2) -> bool:
     var rects := _action_rects()
-    if rects["pause"].has_point(at):
+    if rects[&"pause"].has_point(at):
         pause_requested.emit()
         return true
     if get_tree().paused: return false
@@ -192,18 +192,18 @@ func _action_rects() -> Dictionary:
 func _draw() -> void:
     if not is_instance_valid(player): return
     var rects := _action_rects()
-    _draw_button(rects["pause"], "II", false)
+    _draw_button(rects[&"pause"], "II", false)
 
     if get_tree().paused: return
-    _draw_button(rects["cast"], "CAST", _action_pressed(&"cast"))
-    _draw_button(rects["left"], "LH", _action_pressed(&"left"))
-    _draw_button(rects["dodge"], "DODGE", _action_pressed(&"dodge"))
-    _draw_button(rects["interact"], "INTERACT", _action_pressed(&"interact"), player.nearby_interactable() != null)
-    _draw_button(rects["utility"], "USE", _action_pressed(&"utility"))
-    _draw_button(rects["right"], "RH", _action_pressed(&"right"))
-    _draw_button(rects["lock"], "LOCK", _action_pressed(&"lock"), is_instance_valid(player.locked_target))
+    _draw_button(rects[&"cast"], "CAST", _action_pressed(&"cast"))
+    _draw_button(rects[&"left"], "LH", _action_pressed(&"left"))
+    _draw_button(rects[&"dodge"], "DODGE", _action_pressed(&"dodge"))
+    _draw_button(rects[&"interact"], "INTERACT", _action_pressed(&"interact"), player.nearby_interactable() != null)
+    _draw_button(rects[&"utility"], "USE", _action_pressed(&"utility"))
+    _draw_button(rects[&"right"], "RH", _action_pressed(&"right"))
+    _draw_button(rects[&"lock"], "LOCK", _action_pressed(&"lock"), is_instance_valid(player.locked_target))
     var font: Font = ThemeDB.fallback_font
-    var lock_hint: Rect2 = rects["lock"]
+    var lock_hint: Rect2 = rects[&"lock"]
     draw_string(font, Vector2(lock_hint.position.x - 7.0, lock_hint.position.y - 5.0), "swipe target", HORIZONTAL_ALIGNMENT_CENTER, lock_hint.size.x + 14.0, 9, Color(0.75, 0.72, 0.62, 0.72))
 
     if _joystick_touch >= 0:
@@ -219,12 +219,11 @@ func _action_pressed(action_name: StringName) -> bool:
     return false
 
 func _draw_button(rect: Rect2, label: String, pressed: bool, accented: bool = false) -> void:
-    var style := StyleBoxFlat.new()
-    style.bg_color = PANEL_PRESSED if pressed else PANEL
-    style.border_color = GOLD_BRIGHT if pressed or accented else Color(GOLD, 0.72)
-    style.set_border_width_all(1 if not pressed else 2)
-    style.set_corner_radius_all(10)
-    draw_style_box(style, rect)
+    var fill: Color = PANEL_PRESSED if pressed else PANEL
+    var border: Color = GOLD_BRIGHT if pressed or accented else Color(GOLD, 0.72)
+    draw_rect(rect, fill, true)
+    draw_rect(rect, border, false, 2.0 if pressed else 1.0, true)
+    draw_rect(rect.grow(-3.0), Color(GOLD, 0.08), false, 1.0, true)
     var font: Font = ThemeDB.fallback_font
     var color: Color = GOLD_BRIGHT if pressed or accented else TEXT
     var text_size: Vector2 = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12)
