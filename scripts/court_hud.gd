@@ -227,12 +227,12 @@ func _open_shrine_loadout() -> void:
     get_tree().paused = true
     player._right_held = false
     player.set_mobile_movement(Vector2.ZERO)
-    if is_instance_valid(mobile_controls): mobile_controls.visible = false
+    if is_instance_valid(mobile_controls): mobile_controls.set_controls_enabled(false)
     shrine_loadout_menu.open_for(player)
 
 func _close_shrine_loadout(_applied: bool) -> void:
     get_tree().paused = false
-    if is_instance_valid(mobile_controls): mobile_controls.visible = true
+    if is_instance_valid(mobile_controls): mobile_controls.set_controls_enabled(true)
     prompt.text = ""
 
 func _pause(value: bool) -> void:
