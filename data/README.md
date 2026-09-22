@@ -67,7 +67,7 @@ These are intentionally simple, editable prototype formulas inspired by the stru
 
 Boss and spell examples are **not placed in the courtyard**. A `BossDefinition` extends `EnemyDefinition`, adding phase resources, health thresholds, music and encounter metadata. `SpellDefinition` adds requirements, a cast attack, delivery metadata, projectile/effect references, speed, lifetime and slots.
 
-Boss phase orchestration/fog gates, status buildup, heavy attacks, skills, guarding, critical attacks, equipment-load penalties and inventory/equipment switching are not implemented. Spell charges, catalyst requirements, projectile delivery, self-delivery and shrine replenishment are runtime-connected. Weight and load capacity are available for future equipment logic; they do not yet change roll speed. Custom equipped-scene replacement is also data-only; the existing polygon weapon uses the configured blade colour.
+Boss phase orchestration/fog gates, status buildup, heavy attacks, skills, guarding, critical attacks, equipment-load penalties and a full inventory/ownership system are not implemented. Shrine loadout preparation is runtime-connected: the player has two right-hand slots, two left-hand slots and three starting spell slots, selected from the temporary game-catalog pool. Spell charges, catalyst requirements, projectile delivery, self-delivery and shrine replenishment are runtime-connected. Weight and load capacity are available for future equipment logic; they do not yet change roll speed.
 
 ## Create another definition
 
@@ -87,3 +87,17 @@ Cycle Q/R to a catalyst, C to a spell, then press F or click the catalyst hand. 
 Changed for this spell repair: `scripts/player.gd`, `scripts/spell_projectile.gd`, `scripts/resources/spell_definition.gd`, `data/loadout_spells.tres`, `data/game_catalog.tres`, and this document. Added `scripts/spell_burst.gd` and the five named resources under `data/spells/`. The existing `scenes/spell_projectile.tscn` is reused. Optional custom `cast_effect` and `memory_slots` remain data-only.
 
 No tests or Godot runs were performed for this resource migration or spell repair, as requested. Spawning, collisions, damage, self-healing, catalyst input, and shrine replenishment still require runtime verification.
+
+
+## Shrine loadout preparation
+
+Resting at the Ashen Shrine now opens a staged loadout editor after the normal restore/reset sequence.
+
+- Right hand starts with 2 equipped slots.
+- Left hand starts with 2 equipped slots.
+- Spells start with 3 prepared slots.
+- Empty slots are valid and are skipped by gameplay cycling.
+- Changes are staged until **Apply & Return**; **Discard** restores the live loadout unchanged.
+- The temporary available pool comes from `game_catalog.tres`. This is intentionally separate from the equipped runtime arrays so a future ownership/inventory system can replace the catalog pool without redesigning the shrine UI.
+- `WeaponLoadoutDefinition.max_slots` owns hand capacity.
+- `SpellLoadoutDefinition.base_slots` owns the starting spell capacity. The player stores `spell_slot_bonus` separately, and `get_spell_slot_capacity()` combines it with the base capacity up to the resource maximum. Future memory-stone-equivalent progression should increase that player-owned bonus rather than mutating the shared class/loadout resource.

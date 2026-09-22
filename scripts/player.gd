@@ -10,6 +10,7 @@ signal damaged
 signal died
 signal target_changed(target: Node2D)
 signal interaction_changed(prompt: String)
+signal shrine_menu_requested
 enum PlayerState { NORMAL, ATTACK_HOLD, CHARGING, ATTACKING, DODGING, HURT, DEAD, CASTING }
 @export_group("Definitions")
 @export var character_class: ClassDefinition = preload("res://data/classes/ashen_wanderer.tres")
@@ -29,6 +30,8 @@ var left_hand_index: int = 0
 var right_hand_index: int = 0
 var spell_index: int = 0
 var utility_index: int = 0
+## Progression-owned bonus. Future memory-stone equivalents increase this value.
+var spell_slot_bonus: int = 0
 var currency_definition: CurrencyDefinition
 var current_currency: int = 0
 var max_health: int = 5
@@ -130,26 +133,47 @@ func apply_definitions() -> void:
     right_hand_weapons.clear()
     spells.clear()
     utilities.clear()
+
+    var left_capacity: int = get_weapon_slot_capacity(&"left")
+    var right_capacity: int = get_weapon_slot_capacity(&"right")
+    var spell_capacity: int = get_spell_slot_capacity()
+
     if character_class.left_hand_loadout != null:
-        for item: WeaponDefinition in character_class.left_hand_loadout.weapons: left_hand_weapons.append(item)
+        for i in mini(left_capacity, character_class.left_hand_loadout.weapons.size()):
+            left_hand_weapons.append(character_class.left_hand_loadout.weapons[i])
+    while left_hand_weapons.size() < left_capacity: left_hand_weapons.append(null)
+
     if character_class.right_hand_loadout != null:
-        for item: WeaponDefinition in character_class.right_hand_loadout.weapons: right_hand_weapons.append(item)
+        for i in mini(right_capacity, character_class.right_hand_loadout.weapons.size()):
+            right_hand_weapons.append(character_class.right_hand_loadout.weapons[i])
+    while right_hand_weapons.size() < right_capacity: right_hand_weapons.append(null)
+
     equipped_weapon = weapon_override if weapon_override != null else character_class.starting_weapon
-    if equipped_weapon != null and not right_hand_weapons.has(equipped_weapon): right_hand_weapons.push_front(equipped_weapon)
     if equipped_weapon == null or equipped_weapon.light_attack == null:
         equipped_weapon = load("res://data/weapons/wanderer_sword.tres")
-    if right_hand_weapons.is_empty(): right_hand_weapons.append(equipped_weapon)
+    if weapon_override != null and not right_hand_weapons.is_empty():
+        right_hand_weapons[0] = weapon_override
+    elif not right_hand_weapons.has(equipped_weapon) and not right_hand_weapons.is_empty():
+        right_hand_weapons[0] = equipped_weapon
+    if right_hand_weapons.is_empty():
+        right_hand_weapons.append(equipped_weapon)
+    right_hand_index = _first_filled_weapon_index(right_hand_weapons)
+    left_hand_index = _first_filled_weapon_index(left_hand_weapons)
+    equipped_weapon = get_selected_weapon(&"right")
+
     if character_class.spell_loadout != null:
-        for item: SpellDefinition in character_class.spell_loadout.spells:
-            if item != null: spells.append(item)
+        for i in mini(spell_capacity, character_class.spell_loadout.spells.size()):
+            spells.append(character_class.spell_loadout.spells[i])
     for item: SpellDefinition in character_class.starting_spells:
-        if item != null and not spells.has(item): spells.append(item)
+        if item != null and not spells.has(item) and spells.size() < spell_capacity: spells.append(item)
+    while spells.size() < spell_capacity: spells.append(null)
+    spell_index = _first_filled_spell_index(spells)
+
     if character_class.utility_loadout != null:
         for item: UtilityDefinition in character_class.utility_loadout.utilities: utilities.append(item)
     utility_charges.clear()
     for item: UtilityDefinition in utilities: utility_charges.append(item.starting_charges())
-    spell_charges.clear()
-    for item: SpellDefinition in spells: spell_charges.append(item.starting_charges())
+    _rebuild_spell_charges()
     max_health = vitals.max_health(attributes)
     max_stamina = vitals.max_stamina(attributes)
     max_equip_load = vitals.max_load(attributes)
@@ -157,6 +181,82 @@ func apply_definitions() -> void:
     stamina = max_stamina
     current_currency = character_class.starting_currency
     poise_remaining = vitals.poise
+
+func get_weapon_slot_capacity(hand: StringName) -> int:
+    var definition: WeaponLoadoutDefinition = character_class.right_hand_loadout if hand == &"right" else character_class.left_hand_loadout
+    return maxi(1, definition.max_slots) if definition != null else 2
+
+func get_spell_slot_capacity() -> int:
+    var definition: SpellLoadoutDefinition = character_class.spell_loadout
+    if definition == null: return 3 + maxi(0, spell_slot_bonus)
+    return clampi(definition.base_slots + maxi(0, spell_slot_bonus), 1, definition.maximum_slots)
+
+func unlock_spell_slots(amount: int = 1) -> void:
+    if amount <= 0: return
+    var before: int = get_spell_slot_capacity()
+    spell_slot_bonus += amount
+    var after: int = get_spell_slot_capacity()
+    if after <= before: return
+    while spells.size() < after:
+        spells.append(null)
+        spell_charges.append(0)
+    loadout_changed.emit(&"spell", spell_index)
+
+func set_weapon_loadout(hand: StringName, items: Array[WeaponDefinition]) -> void:
+    if hand != &"right" and hand != &"left": return
+    var capacity: int = get_weapon_slot_capacity(hand)
+    var previous: WeaponDefinition = get_selected_weapon(hand)
+    var next: Array[WeaponDefinition] = []
+    for i in capacity:
+        var item: WeaponDefinition = items[i] if i < items.size() else null
+        if item != null:
+            if hand == &"right" and not item.usable_in_right_hand: item = null
+            if hand == &"left" and not item.usable_in_left_hand: item = null
+        next.append(item)
+
+    if hand == &"right":
+        right_hand_weapons = next
+        right_hand_index = next.find(previous) if previous != null and next.has(previous) else _first_filled_weapon_index(next)
+        equipped_weapon = get_selected_weapon(&"right")
+        loadout_changed.emit(&"right", right_hand_index)
+    else:
+        left_hand_weapons = next
+        left_hand_index = next.find(previous) if previous != null and next.has(previous) else _first_filled_weapon_index(next)
+        loadout_changed.emit(&"left", left_hand_index)
+
+func set_spell_loadout(items: Array[SpellDefinition]) -> void:
+    var capacity: int = get_spell_slot_capacity()
+    var previous: SpellDefinition = get_selected_spell()
+    spells.clear()
+    for i in capacity:
+        spells.append(items[i] if i < items.size() else null)
+    spell_index = spells.find(previous) if previous != null and spells.has(previous) else _first_filled_spell_index(spells)
+    _rebuild_spell_charges()
+    loadout_changed.emit(&"spell", spell_index)
+
+func get_selected_spell() -> SpellDefinition:
+    return spells[spell_index] if not spells.is_empty() and spell_index >= 0 and spell_index < spells.size() else null
+
+func request_shrine_menu() -> void:
+    if state == PlayerState.DEAD: return
+    _right_held = false
+    _cancel_attack_candidate()
+    shrine_menu_requested.emit()
+
+func _first_filled_weapon_index(items: Array[WeaponDefinition]) -> int:
+    for i in items.size():
+        if items[i] != null: return i
+    return 0
+
+func _first_filled_spell_index(items: Array[SpellDefinition]) -> int:
+    for i in items.size():
+        if items[i] != null: return i
+    return 0
+
+func _rebuild_spell_charges() -> void:
+    spell_charges.clear()
+    for item: SpellDefinition in spells:
+        spell_charges.append(item.starting_charges() if item != null else 0)
 
 func get_selected_weapon(hand: StringName) -> WeaponDefinition:
     var loadout: Array[WeaponDefinition] = right_hand_weapons if hand == &"right" else left_hand_weapons
@@ -182,9 +282,14 @@ func cycle_weapon(hand: StringName, direction: int = 1) -> void:
         return
 
 func cycle_spell(direction: int = 1) -> void:
-    if not spells.is_empty():
-        spell_index = posmod(spell_index + direction, spells.size())
+    if spells.is_empty(): return
+    var selected: int = spell_index
+    for _step in spells.size():
+        selected = posmod(selected + direction, spells.size())
+        if spells[selected] == null: continue
+        spell_index = selected
         loadout_changed.emit(&"spell", spell_index)
+        return
 
 func cycle_utility(direction: int = 1) -> void:
     if not utilities.is_empty():
@@ -510,8 +615,10 @@ func use_selected_spell(hand: StringName = &"") -> void:
     if spells.is_empty():
         show_message("No spells equipped")
         return
-    var spell: SpellDefinition = spells[spell_index]
-    if spell == null or spell.cast == null: return
+    var spell: SpellDefinition = get_selected_spell()
+    if spell == null or spell.cast == null:
+        show_message("No spell equipped")
+        return
     if spell_charges.size() <= spell_index or spell_charges[spell_index] <= 0:
         show_message("No uses remaining")
         return
@@ -674,7 +781,8 @@ func restore(restore_health: bool = true, restore_stamina: bool = true, _unused:
     if restore_health: health = max_health
     if restore_stamina: stamina = max_stamina
     for i in utilities.size(): utility_charges[i] = utilities[i].maximum_charges
-    for i in spells.size(): spell_charges[i] = spells[i].maximum_charges
+    for i in spells.size():
+        spell_charges[i] = spells[i].maximum_charges if spells[i] != null else 0
     poise_remaining = vitals.poise
     _poise_delay = 0.0
     _protection = 0
