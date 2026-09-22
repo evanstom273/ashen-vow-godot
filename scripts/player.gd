@@ -97,6 +97,9 @@ var _step_distance: float = 0.0
 var _sprint_exhausted: bool = false
 var _roll_trail_time: float = 0.0
 var _utility_cooldown: float = 0.0
+var _mobile_controls_active: bool = false
+var _mobile_movement := Vector2.ZERO
+var _mobile_aim := Vector2.RIGHT
 
 func _ready() -> void:
     add_to_group("player")
@@ -274,15 +277,40 @@ func _start_attack(hand: StringName, definition: AttackDefinition) -> void:
 
 func get_display_name() -> String: return character_class.display_name
 
+func set_mobile_controls_active(value: bool) -> void:
+    _mobile_controls_active = value
+    if not value:
+        _mobile_movement = Vector2.ZERO
+
+func set_mobile_movement(value: Vector2) -> void:
+    _mobile_movement = value.limit_length(1.0)
+    if _mobile_movement.length() > 0.12:
+        _mobile_aim = _mobile_movement.normalized()
+
+func begin_dodge_sprint_hold() -> void:
+    if state == PlayerState.DEAD: return
+    _right_held = true
+    _hold_time = 0.0
+    _sprint_exhausted = false
+
+func release_dodge_sprint_hold() -> void:
+    if _right_held and _hold_time < movement.sprint_hold_threshold:
+        request_action("dodge")
+    _right_held = false
+
 func _notification(what: int) -> void:
     if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
         _right_held = false
         _left_held = false
+        _mobile_movement = Vector2.ZERO
         _hold_time = 0.0
         _buffer = ""
         _cancel_attack_candidate()
 
 func _unhandled_input(event: InputEvent) -> void:
+    # Touch can be emulated as mouse input by Android. The dedicated mobile
+    # controls call the player API directly, so ignore those synthetic clicks.
+    if _mobile_controls_active and event is InputEventMouseButton: return
     if event.is_action_pressed("cycle_right"): cycle_weapon(&"right")
     if event.is_action_pressed("cycle_left"): cycle_weapon(&"left")
     if event.is_action_pressed("cycle_spell"): cycle_spell()
@@ -292,13 +320,8 @@ func _unhandled_input(event: InputEvent) -> void:
     if event.is_action_pressed("left_attack"): begin_hand_action(&"left")
     if event.is_action_released("attack"): release_hand_action(&"right")
     if event.is_action_released("left_attack"): release_hand_action(&"left")
-    if event.is_action_pressed("dodge"):
-        _right_held = true
-        _hold_time = 0.0
-        _sprint_exhausted = false
-    if event.is_action_released("dodge"):
-        if _right_held and _hold_time < movement.sprint_hold_threshold: request_action("dodge")
-        _right_held = false
+    if event.is_action_pressed("dodge"): begin_dodge_sprint_hold()
+    if event.is_action_released("dodge"): release_dodge_sprint_hold()
     if event.is_action_pressed("cast_spell"): use_selected_spell()
     if event.is_action_pressed("use_utility"): use_selected_utility()
     if event.is_action_pressed("lock_on"): toggle_lock()
@@ -307,11 +330,19 @@ func _unhandled_input(event: InputEvent) -> void:
     if event.is_action_pressed("interact"): interact_nearby()
 
 func movement_input() -> Vector2:
-    return Input.get_vector("move_left", "move_right", "move_up", "move_down")
+    var physical := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+    if _mobile_controls_active and _mobile_movement.length_squared() > physical.length_squared():
+        return _mobile_movement
+    return physical
 
 func aim_direction() -> Vector2:
+    if valid_target(locked_target):
+        var locked_vector: Vector2 = target_point(locked_target) - global_position
+        if locked_vector.length() > 4.0: return locked_vector.normalized()
+    if _mobile_controls_active:
+        if _mobile_aim.length() > 0.12: return _mobile_aim.normalized()
+        return Vector2(facing, 0)
     var point: Vector2 = get_global_mouse_position()
-    if valid_target(locked_target): point = target_point(locked_target)
     var vector: Vector2 = point - global_position
     return vector.normalized() if vector.length() > 4.0 else Vector2(facing, 0)
 
