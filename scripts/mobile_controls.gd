@@ -135,7 +135,9 @@ func _drag_touch(index: int, at: Vector2) -> bool:
 func _update_joystick(at: Vector2) -> void:
     var offset: Vector2 = at - _joystick_origin
     var clamped: Vector2 = offset.limit_length(JOYSTICK_RADIUS)
-    player.set_mobile_movement(clamped / JOYSTICK_RADIUS)
+    var movement_vector: Vector2 = clamped / JOYSTICK_RADIUS
+    if movement_vector.length() < 0.12: movement_vector = Vector2.ZERO
+    player.set_mobile_movement(movement_vector)
 
 func _try_equipment_cross(at: Vector2) -> bool:
     var equipment: Control = get_parent().get_node_or_null("EquipmentCross") as Control
