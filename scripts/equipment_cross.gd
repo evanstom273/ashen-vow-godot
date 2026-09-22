@@ -13,6 +13,22 @@ func _ready() -> void:
     if is_instance_valid(player):
         player.loadout_changed.connect(_on_loadout_changed)
 
+func handle_mobile_tap(local_position: Vector2) -> bool:
+    if not is_instance_valid(player): return false
+    if Rect2(Vector2(57, 0), SLOT_SIZE).has_point(local_position):
+        player.cycle_spell()
+        return true
+    if Rect2(Vector2(114, 34), SLOT_SIZE).has_point(local_position):
+        player.cycle_weapon(&"right")
+        return true
+    if Rect2(Vector2(57, 68), SLOT_SIZE).has_point(local_position):
+        player.cycle_utility()
+        return true
+    if Rect2(Vector2(0, 34), SLOT_SIZE).has_point(local_position):
+        player.cycle_weapon(&"left")
+        return true
+    return false
+
 func _on_loadout_changed(kind: StringName, _index: int) -> void:
     if kind != &"left" and kind != &"right": return
     var weapon: WeaponDefinition = player.get_selected_weapon(kind)
