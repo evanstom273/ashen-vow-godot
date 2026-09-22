@@ -22,6 +22,11 @@
 [ext_resource type="Script" uid="uid://b5yurs51e4wqx" path="res://scripts/resources/shrine_definition.gd" id="shrine_type"]
 [ext_resource type="Resource" path="res://data/weapons/pilgrim_spear.tres" id="spear"]
 [ext_resource type="Resource" uid="uid://bx4o5r66t2jnp" path="res://data/loadout_spells.tres" id="spell_loadout"]
+[ext_resource type="Resource" path="res://data/spells/ember_wave.tres" id="spell_ember"]
+[ext_resource type="Resource" path="res://data/spells/cinder_lance.tres" id="spell_cinder"]
+[ext_resource type="Resource" path="res://data/spells/mending_light.tres" id="spell_mending"]
+[ext_resource type="Resource" path="res://data/spells/star_shard.tres" id="spell_star"]
+[ext_resource type="Resource" path="res://data/spells/vow_spear.tres" id="spell_vow"]
 [ext_resource type="Script" uid="uid://ccm2508a4twa6" path="res://scripts/resources/spell_loadout_definition.gd" id="spell_loadout_type"]
 [ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell_type"]
 [ext_resource type="Resource" uid="uid://de7j8ihosb3wg" path="res://data/weapons/court_staff.tres" id="staff"]
@@ -40,6 +45,7 @@ script = ExtResource("script")
 classes = Array[ExtResource("class_type")]([ExtResource("class")])
 weapons = Array[ExtResource("weapon_type")]([ExtResource("sword"), ExtResource("blade"), ExtResource("dagger"), ExtResource("shield"), ExtResource("mace"), ExtResource("spear"), ExtResource("greatblade"), ExtResource("staff"), ExtResource("seal"), ExtResource("wand")])
 enemies = Array[ExtResource("enemy_type")]([ExtResource("sentinel"), ExtResource("dummy")])
+spells = Array[ExtResource("spell_type")]([ExtResource("spell_ember"), ExtResource("spell_cinder"), ExtResource("spell_mending"), ExtResource("spell_star"), ExtResource("spell_vow")])
 utilities = Array[ExtResource("utility_type")]([ExtResource("flask"), ExtResource("tonic")])
 weapon_loadouts = Array[ExtResource("weapon_loadout_type")]([ExtResource("left_loadout"), ExtResource("right_loadout")])
 spell_loadouts = Array[ExtResource("spell_loadout_type")]([ExtResource("spell_loadout")])
