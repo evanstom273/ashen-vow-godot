@@ -44,6 +44,7 @@ func interact(player: Node) -> void:
     pulse = definition.pulse_duration
     Feedback.burst(global_position, "shrine")
     Feedback.play("shrine", global_position, 3)
+    if player.has_method("request_shrine_menu"): player.request_shrine_menu()
 func _process(delta: float) -> void:
     clock += delta
     pulse = maxf(0, pulse - delta)
