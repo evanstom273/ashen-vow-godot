@@ -1,13 +1,19 @@
-[gd_resource type="Resource" script_class="WeaponDefinition" format=3]
+[gd_resource type="Resource" script_class="WeaponDefinition" format=3 uid="uid://iq5d8ys44c6c"]
 
-[ext_resource type="Script" path="res://scripts/resources/weapon_definition.gd" id="script"]
-[ext_resource type="Resource" path="res://data/attacks/sentinel_sweep.tres" id="attack"]
+[ext_resource type="Resource" uid="uid://c4q4chv5djg3t" path="res://data/attacks/sentinel_sweep.tres" id="attack"]
+[ext_resource type="Script" uid="uid://df06q837twfw2" path="res://scripts/resources/weapon_definition.gd" id="script"]
+
+[ext_resource type="PackedScene" path="res://scenes/weapons/sentinel_blade.tscn" id="equipped_model"]
 
 [resource]
 script = ExtResource("script")
+equipped_scene = ExtResource("equipped_model")
 id = &"sentinel_blade"
 display_name = "Sentinel Blade"
 category = "Greatsword"
 weight = 8.0
-blade_color = Color(0.64, 0.67, 0.63, 1)
+is_spell_catalyst = false
+catalyst_schools = Array[String]([])
 light_attack = ExtResource("attack")
+charged_attack = ExtResource("attack")
+blade_color = Color(0.64, 0.67, 0.63, 1)

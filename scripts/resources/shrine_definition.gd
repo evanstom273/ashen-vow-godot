@@ -7,7 +7,6 @@ extends Resource
 @export_range(1, 500, 1) var interaction_radius: float = 54.0
 @export var restore_health: bool = true
 @export var restore_stamina: bool = true
-@export var restore_focus: bool = true
 @export var reset_enemies: bool = true
 @export var reset_dummies: bool = true
 @export var block_during_combat: bool = true

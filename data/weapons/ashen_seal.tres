@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" format=3 uid="uid://bq5ddjauoyhh1"]
+
+[ext_resource type="Resource" path="res://data/attacks/bashing_charged.tres" id="charged"]
+[ext_resource type="Resource" path="res://data/attacks/bashing_light.tres" id="light"]
+[ext_resource type="Resource" path="res://data/stats/sword_requirements.tres" id="requirements"]
+[ext_resource type="Script" uid="uid://df06q837twfw2" path="res://scripts/resources/weapon_definition.gd" id="script"]
+
+[ext_resource type="PackedScene" path="res://scenes/weapons/ashen_seal.tscn" id="equipped_model"]
+
+[resource]
+script = ExtResource("script")
+equipped_scene = ExtResource("equipped_model")
+id = &"ashen_seal"
+display_name = "Ashen Seal"
+description = "An off-hand seal for incantations and quiet arcana."
+category = "Seal"
+weight = 0.8
+requirements = ExtResource("requirements")
+is_spell_catalyst = true
+catalyst_schools = Array[String](["Incantation", "Arcane"])
+light_attack = ExtResource("light")
+charged_attack = ExtResource("charged")
+blade_color = Color(0.78, 0.55, 0.34, 1)

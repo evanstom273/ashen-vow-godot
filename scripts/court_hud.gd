@@ -17,6 +17,7 @@ var atmosphere: ShaderMaterial
 var elapsed: float = 0
 var death_time: float = 0
 var damage_delay: float = 0
+var currency_label: Label
 
 func _ready() -> void:
     layer = 50
@@ -33,11 +34,21 @@ func _ready() -> void:
     atmosphere.shader = load("res://shaders/atmosphere.gdshader")
     veil.material = atmosphere
     root.add_child(veil)
+    var portrait := PanelContainer.new()
+    portrait.position = Vector2(28,24)
+    portrait.custom_minimum_size = Vector2(48,48)
+    var portrait_style := StyleBoxFlat.new()
+    portrait_style.bg_color = Color(0.025,0.04,0.045,0.96)
+    portrait_style.border_color = Color("a99661")
+    portrait_style.set_border_width_all(2)
+    portrait_style.set_corner_radius_all(22)
+    portrait.add_theme_stylebox_override("panel",portrait_style)
+    root.add_child(portrait)
     var status := VBoxContainer.new()
-    status.position = Vector2(32,28)
+    status.position = Vector2(88,27)
     status.add_theme_constant_override("separation",7)
     root.add_child(status)
-    status.add_child(_label("A S H E N   V O W",18,Color("d9c79f")))
+    status.add_child(_label("ASHEN WANDERER",12,Color("d9c79f")))
     var health_stack := Control.new()
     health_stack.custom_minimum_size = Vector2(242,13)
     status.add_child(health_stack)
@@ -49,6 +60,18 @@ func _ready() -> void:
     stamina_bar = _bar(Color("8d9d72"),Vector2(200,7))
     status.add_child(stamina_bar)
     status.add_child(_label("TAB  controls     ESC  pause",11,Color("929b98")))
+    currency_label = _label("Embers  0",13,Color("e6b968"))
+    currency_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+    currency_label.offset_left = -150
+    currency_label.offset_top = -44
+    currency_label.offset_right = -28
+    currency_label.offset_bottom = -20
+    root.add_child(currency_label)
+    var prompt_back := _panel()
+    root.add_child(prompt_back)
+    prompt_back.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+    prompt_back.position = Vector2(-270,-74)
+    prompt_back.custom_minimum_size = Vector2(540,56)
     var bottom := VBoxContainer.new()
     root.add_child(bottom)
     bottom.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
@@ -60,6 +83,15 @@ func _ready() -> void:
     prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     bottom.add_child(feedback)
     bottom.add_child(prompt)
+    var equipment := Control.new()
+    equipment.set_script(preload("res://scripts/equipment_cross.gd"))
+    equipment.set("player", player)
+    root.add_child(equipment)
+    equipment.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+    equipment.offset_left = 28
+    equipment.offset_top = -186
+    equipment.offset_right = 194
+    equipment.offset_bottom = -20
     var target_box := VBoxContainer.new()
     root.add_child(target_box)
     target_box.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
@@ -83,7 +115,7 @@ func _ready() -> void:
     help_panel = _panel()
     root.add_child(help_panel)
     help_panel.position = Vector2(32,130)
-    var help := _label("WASD / arrows   Move\nLMB   Sword attack\nRMB tap   Roll   /   hold   Sprint\nMMB   Lock target\nWheel   Switch target\nE   Rest at shrine\nF11   Fullscreen",14,Color("ccd1bf"))
+    var help := _label("WASD / arrows   Move\nLMB   Right hand   /   RMB   Left hand\nSpace tap   Dodge   /   hold   Sprint\nQ/R   Weapons   C   Spells   V   Utilities\nF   Cast   /   G   Use   /   MMB   Lock target\nWheel   Switch target   /   E   Interact\nF11   Fullscreen",14,Color("ccd1bf"))
     help_panel.add_child(help)
     help_panel.visible = false
     _build_menu()
@@ -195,6 +227,7 @@ func _process(delta: float) -> void:
     damage_delay = maxf(0,damage_delay-delta)
     if damage_delay == 0: damage_bar.value = move_toward(damage_bar.value,health_bar.value,delta*40)
     stamina_bar.value = lerpf(stamina_bar.value,player.stamina/player.max_stamina*100.0,1-exp(-delta*20))
+    currency_label.text = (player.currency_definition.display_name if player.currency_definition != null else "Embers") + "  " + str(player.current_currency)
     stamina_bar.modulate = Color("ffb9a0") if player._denied_timer > 0 else Color.WHITE
     feedback.text = player.message if player.message_time > 0 else ""
     var target: Node2D = player.locked_target

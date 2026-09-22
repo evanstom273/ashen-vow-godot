@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/weapon_definition.gd" id="script"]
+[ext_resource type="Resource" path="res://data/stats/sword_requirements.tres" id="requirements"]
+[ext_resource type="Resource" path="res://data/attacks/greatblade_light.tres" id="light"]
+[ext_resource type="Resource" path="res://data/attacks/sentinel_sweep.tres" id="charged"]
+
+[ext_resource type="PackedScene" path="res://scenes/weapons/sentinel_greatblade.tscn" id="equipped_model"]
+
+[resource]
+script = ExtResource("script")
+equipped_scene = ExtResource("equipped_model")
+id = &"sentinel_greatblade"
+display_name = "Sentinel Greatblade"
+description = "A broad blade made for a gate that no longer stands."
+category = "Greatsword"
+weight = 11.0
+requirements = ExtResource("requirements")
+light_attack = ExtResource("light")
+charged_attack = ExtResource("charged")
+blade_color = Color(0.64, 0.67, 0.63, 1)

@@ -20,6 +20,8 @@ var materials: Array[ShaderMaterial] = []
 var walk_blend: float = 0.0
 var walk_phase: float = 0.0
 var last_travel: float = 0.0
+var hand_models: Dictionary = {}
+const EQUIPPED_MODEL_SCALE: float = 0.65
 
 func _ready() -> void:
     actor = get_parent() as PlayerController
@@ -55,6 +57,7 @@ func _ready() -> void:
     blade.color = actor.equipped_weapon.blade_color
     root.get_node("RightArm/Weapon").color = actor.equipped_weapon.blade_color
     weapon.add_child(blade)
+    blade.visible = false
     trail = Polygon2D.new()
     trail.color = actor.attack.slash_color
     var effect_material := ShaderMaterial.new()
@@ -62,6 +65,37 @@ func _ready() -> void:
     trail.material = effect_material
     weapon.add_child(trail)
     weapon.visible = false
+    actor.loadout_changed.connect(_refresh_equipment)
+    _refresh_equipment(&"right", 0)
+    _refresh_equipment(&"left", 0)
+
+func _make_model(definition: WeaponDefinition) -> Node2D:
+    if definition == null: return null
+    if definition.equipped_scene != null:
+        var instance: Node = definition.equipped_scene.instantiate()
+        if instance is Node2D: return instance as Node2D
+        instance.free()
+    var fallback := Polygon2D.new()
+    fallback.polygon = blade.polygon
+    fallback.color = definition.blade_color
+    return fallback
+
+func _refresh_equipment(hand: StringName, _index: int) -> void:
+    if hand != &"right" and hand != &"left": return
+    var old: Node2D = hand_models.get(hand) as Node2D
+    if is_instance_valid(old):
+        old.get_parent().remove_child(old)
+        old.queue_free()
+    var model: Node2D = _make_model(actor.get_selected_weapon(hand))
+    hand_models[hand] = model
+    if model == null: return
+    var arm: Node2D = roll_pivot.get_node("Root/RightArm" if hand == &"right" else "Root/LeftArm")
+    arm.add_child(model)
+    # Weapon stays above the hand in both idle and attack poses.
+    model.z_index = 3
+    model.position = Vector2(0, 10)
+    model.rotation = -0.8 if hand == &"right" else 0.8
+    model.scale = Vector2.ONE * EQUIPPED_MODEL_SCALE
 
 func _animation(length_seconds: float, tracks: Dictionary) -> Animation:
     var anim := Animation.new()
@@ -73,6 +107,8 @@ func _animation(length_seconds: float, tracks: Dictionary) -> Animation:
     return anim
 
 func begin(action: String) -> void:
+    if action == "attack":
+        trail.color = actor.attack.slash_color
     animator.play(action)
     animator.advance(0)
 
@@ -117,11 +153,32 @@ func _process(delta: float) -> void:
     root.get_node("Body/Scarf").rotation = scarf_motion * actor.facing
     root.get_node("Body/CloakHighlight").position.x = scarf_motion * 2
     var attacking: bool = actor.state == PlayerController.PlayerState.ATTACKING
-    root.get_node("RightArm/Weapon").visible = not attacking
+    root.get_node("RightArm/Weapon").visible = false
+    for hand: StringName in hand_models:
+        var model: Node2D = hand_models[hand] as Node2D
+        var arm: Node2D = root.get_node("RightArm" if hand == &"right" else "LeftArm")
+        var hand_shape: Polygon2D = arm.get_node("Shape")
+        # Stable ordering in every pose: body, hand, weapon.
+        hand_shape.z_index = 2
+        if is_instance_valid(model):
+            model.visible = true
+            model.z_index = 3
+            if attacking and actor._active_hand == hand:
+                # Convert the swing direction into the mirrored arm's space.
+                var swing_direction: Vector2 = actor.aim.rotated(swing)
+                model.rotation = (arm.to_local(model.global_position + swing_direction) - model.position).angle()
+            else:
+                model.rotation = -0.8 if hand == &"right" else 0.8
     weapon.visible = attacking
     if attacking:
-        weapon.scale = Vector2.ONE * actor.attack.reach / (42.0 * actor.scale.x / 1.25)
-        weapon.z_index = -1 if actor.aim.y < -0.3 else 2
+        # Model size is presentation, not melee reach. Only the slash grows.
+        weapon.scale = Vector2.ONE * EQUIPPED_MODEL_SCALE
+        trail.scale = Vector2.ONE * actor.attack.reach / (42.0 * actor.scale.x / 1.25 * EQUIPPED_MODEL_SCALE)
+        # Never send an upward swing behind the body or courtyard floor.
+        # Only the active hand is above this layer, covering the grip.
+        weapon.z_index = 2
+        var active_arm: Node2D = root.get_node("RightArm" if actor._active_hand == &"right" else "LeftArm")
+        weapon.global_position = active_arm.to_global(Vector2(0, 10))
         weapon.rotation = actor.aim.angle() + swing
         var points := PackedVector2Array()
         for i in 13:

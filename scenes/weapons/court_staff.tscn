@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[node name="court_staff" type="Node2D"]
+
+[node name="Grip" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-16,-1.5,33,-1.5,33,1.5,-16,1.5)
+color = Color(0.32,0.23,0.17,1)
+
+[node name="Silhouette" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(28,-3,29,-10,37,-14,44,-9,43,7,37,12,29,8,28,3,33,5,38,8,41,4,41,-7,36,-10,32,-7,32,-3)
+color = Color(0.53,0.62,0.65,1)
+
+[node name="Fitting" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(32,0,37,-7,41,0,37,6)
+color = Color(0.35,0.8,1,1)

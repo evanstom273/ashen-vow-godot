@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/weapon_definition.gd" id="script"]
+[ext_resource type="Resource" path="res://data/stats/sword_requirements.tres" id="requirements"]
+[ext_resource type="Resource" path="res://data/attacks/spear_light.tres" id="light"]
+[ext_resource type="Resource" path="res://data/attacks/sword_light.tres" id="charged"]
+
+[ext_resource type="PackedScene" path="res://scenes/weapons/pilgrim_spear.tscn" id="equipped_model"]
+
+[resource]
+script = ExtResource("script")
+equipped_scene = ExtResource("equipped_model")
+id = &"pilgrim_spear"
+display_name = "Pilgrim Spear"
+description = "A long road-warden's spear."
+category = "Spear"
+weight = 4.0
+requirements = ExtResource("requirements")
+light_attack = ExtResource("light")
+charged_attack = ExtResource("charged")
+blade_color = Color(0.7, 0.76, 0.7, 1)

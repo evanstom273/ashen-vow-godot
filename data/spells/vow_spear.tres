@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://wpw8u4k2fv4a"]
+
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="PackedScene" path="res://scenes/spell_projectile.tscn" id="projectile"]
+[ext_resource type="Resource" uid="uid://xr3w3ggdbdmu" path="res://data/stats/spell_requirements.tres" id="requirements"]
+[ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="scaling"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+holy = 210.0
+
+[sub_resource type="Resource" id="Scaling"]
+script = ExtResource("scaling")
+arcane = 0.035
+
+[sub_resource type="Resource" id="Cast"]
+script = ExtResource("attack")
+display_name = "Vow Spear"
+damage = SubResource("Damage")
+scaling = SubResource("Scaling")
+poise_damage = 25.0
+stamina_cost = 14.0
+windup = 0.22
+recovery = 0.28
+movement_multiplier = 0.35
+reach = 480.0
+slash_color = Color(1, 0.84, 0.4, 1)
+swing_sound = &"fire"
+
+[resource]
+script = ExtResource("spell")
+id = &"vow_spear"
+display_name = "Vow Spear"
+description = "Launches a visible ranged bolt that strikes enemies and stops at walls. Replenished at shrines."
+school = "Arcane"
+requirements = ExtResource("requirements")
+cast = SubResource("Cast")
+charges = 6
+maximum_charges = 6
+projectile_scene = ExtResource("projectile")
+projectile_speed = 330.0
+projectile_radius = 10.0
+lifetime = 2.0

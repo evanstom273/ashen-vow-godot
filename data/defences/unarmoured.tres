@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="DefenceProfile" format=3]
+[gd_resource type="Resource" script_class="DefenceProfile" format=3 uid="uid://cdwj6taevr0tf"]
 
-[ext_resource type="Script" path="res://scripts/resources/defence_profile.gd" id="script"]
+[ext_resource type="Script" uid="uid://boyaamuvgcha3" path="res://scripts/resources/defence_profile.gd" id="script"]
 
 [resource]
-script = ExtResource("script")
 resource_name = "Unarmoured defence"
+script = ExtResource("script")

@@ -17,5 +17,6 @@ extends Resource
 @export var hit_sound: StringName = &"metal"
 @export var windup_sound: StringName = &"tell"
 @export_range(0, 120, 0.1) var auto_restore_delay: float = 0.0
-@export_group("Future rewards (data only)")
-@export_range(0, 1000000, 1) var reward_value: int = 0
+@export_group("Currency")
+@export var currency_drop: CurrencyDropDefinition
+@export var drop_currency_on_death: bool = true

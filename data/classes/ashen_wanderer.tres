@@ -1,11 +1,22 @@
 [gd_resource type="Resource" script_class="ClassDefinition" format=3 uid="uid://b0hf2ye0aumgi"]
 
 [ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="4_1wbsj"]
+[ext_resource type="Resource" path="res://data/embers_currency.tres" id="currency"]
+[ext_resource type="Script" uid="uid://cm0phbr4ab818" path="res://scripts/resources/currency_drop_definition.gd" id="drop_type"]
+[ext_resource type="Resource" uid="uid://b23vw75o25ht4" path="res://data/loadout_left_hand.tres" id="left_loadout"]
 [ext_resource type="Resource" uid="uid://c6kkm7ciqbcqu" path="res://data/movement/player_movement.tres" id="movement"]
+[ext_resource type="Resource" uid="uid://dx7qyje81utoh" path="res://data/loadout_right_hand.tres" id="right_loadout"]
 [ext_resource type="Script" uid="uid://drkinirsld8x3" path="res://scripts/resources/class_definition.gd" id="script"]
+[ext_resource type="Resource" uid="uid://bx4o5r66t2jnp" path="res://data/loadout_spells.tres" id="spell_loadout"]
 [ext_resource type="Resource" path="res://data/stats/wanderer_attributes.tres" id="stats"]
+[ext_resource type="Resource" path="res://data/loadout_utilities.tres" id="utility_loadout"]
 [ext_resource type="Resource" uid="uid://ca6i22cga5tp1" path="res://data/vitals/wanderer_vitals.tres" id="vitals"]
-[ext_resource type="Resource" path="res://data/weapons/wanderer_sword.tres" id="weapon"]
+[ext_resource type="Resource" uid="uid://cyejnpa2yk0xy" path="res://data/weapons/wanderer_sword.tres" id="weapon"]
+
+[sub_resource type="Resource" id="CurrencyDropDefinition_player"]
+script = ExtResource("drop_type")
+delivery_mode = 1
+recovery_message = "Lost embers recovered"
 
 [resource]
 script = ExtResource("script")
@@ -15,3 +26,10 @@ attributes = ExtResource("stats")
 vitals = ExtResource("vitals")
 movement = ExtResource("movement")
 starting_weapon = ExtResource("weapon")
+left_hand_loadout = ExtResource("left_loadout")
+right_hand_loadout = ExtResource("right_loadout")
+spell_loadout = ExtResource("spell_loadout")
+utility_loadout = ExtResource("utility_loadout")
+currency_definition = ExtResource("currency")
+starting_currency = 120
+death_drop = SubResource("CurrencyDropDefinition_player")

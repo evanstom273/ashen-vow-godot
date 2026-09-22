@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AttackDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/attack_definition.gd" id="script"]
+[ext_resource type="Resource" path="res://data/damage/sword_damage.tres" id="damage"]
+[ext_resource type="Resource" path="res://data/scaling/sword_scaling.tres" id="scaling"]
+
+[resource]
+script = ExtResource("script")
+display_name = "Court bash"
+damage = ExtResource("damage")
+scaling = ExtResource("scaling")
+poise_damage = 48.0
+stamina_cost = 18.0
+knockback = 240.0
+reach = 38.0
+hit_radius = 26.0
+slash_color = Color(0.78, 0.7, 0.47, 0.65)

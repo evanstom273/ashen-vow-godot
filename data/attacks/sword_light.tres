@@ -9,3 +9,5 @@ script = ExtResource("script")
 display_name = "Wanderer slash"
 damage = ExtResource("damage")
 scaling = ExtResource("scaling")
+charge_threshold = null
+charged_action_name = null

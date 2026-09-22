@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" format=3 uid="uid://b4v7qmlpuoqlv"]
+
+[ext_resource type="Resource" uid="uid://nag3usd5m1bb" path="res://data/attacks/sword_light.tres" id="charged"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/ashen_dagger.tscn" id="equipped_model"]
+[ext_resource type="Resource" path="res://data/attacks/dagger_light.tres" id="light"]
+[ext_resource type="Resource" path="res://data/stats/sword_requirements.tres" id="requirements"]
+[ext_resource type="Script" uid="uid://df06q837twfw2" path="res://scripts/resources/weapon_definition.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"ashen_dagger"
+display_name = "Ashen Dagger"
+description = "A quick blade blackened by old embers."
+category = "Dagger"
+weight = 1.5
+requirements = ExtResource("requirements")
+is_spell_catalyst = false
+catalyst_schools = Array[String]([])
+light_attack = ExtResource("light")
+charged_attack = ExtResource("charged")
+blade_color = Color(0.52, 0.58, 0.64, 1)
+equipped_scene = ExtResource("equipped_model")

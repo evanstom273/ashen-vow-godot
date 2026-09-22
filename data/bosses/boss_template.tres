@@ -6,6 +6,15 @@
 [ext_resource type="Resource" path="res://data/weapons/sentinel_blade.tres" id="weapon"]
 [ext_resource type="Resource" path="res://data/bosses/phase_template.tres" id="phase"]
 [ext_resource type="Script" path="res://scripts/resources/boss_phase.gd" id="phase_type"]
+[ext_resource type="Script" path="res://scripts/resources/currency_drop_definition.gd" id="currency_type"]
+
+[sub_resource type="Resource" id="CurrencyDropDefinition_boss"]
+script = ExtResource("currency_type")
+delivery_mode = 1
+minimum_amount = 250
+maximum_amount = 400
+display_name = "Embers"
+recovery_message = "Boss embers recovered"
 
 [resource]
 script = ExtResource("script")
@@ -16,3 +25,5 @@ attributes = ExtResource("stats")
 vitals = ExtResource("vitals")
 weapon = ExtResource("weapon")
 phases = Array[ExtResource("phase_type")]([ExtResource("phase")])
+currency_drop = SubResource("CurrencyDropDefinition_boss")
+drop_currency_on_death = true

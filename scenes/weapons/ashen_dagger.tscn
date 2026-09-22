@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[node name="ashen_dagger" type="Node2D"]
+
+[node name="Grip" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-8,-2,12,-2,12,2,-8,2)
+color = Color(0.32,0.23,0.17,1)
+
+[node name="Silhouette" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(6,-2,17,-6,27,-12,24,-1,17,4,6,3)
+color = Color(0.53,0.62,0.65,1)
+
+[node name="Fitting" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(3,-6,7,-6,9,3,5,8,3,6,6,2)
+color = Color(0.75,0.59,0.32,1)

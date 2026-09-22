@@ -9,5 +9,13 @@ extends Resource
 @export var vitals: VitalStats
 @export var movement: MovementDefinition
 @export var starting_weapon: WeaponDefinition
-@export_group("Future spell loadout (data only)")
+@export var left_hand_loadout: WeaponLoadoutDefinition
+@export var right_hand_loadout: WeaponLoadoutDefinition
+@export var spell_loadout: SpellLoadoutDefinition
+@export var utility_loadout: UtilityLoadoutDefinition
+@export var currency_definition: CurrencyDefinition
+@export_range(0, 1000000, 1) var starting_currency: int = 0
+@export var lose_currency_on_death: bool = true
+@export var death_drop: CurrencyDropDefinition
+@export_group("Compatibility")
 @export var starting_spells: Array[SpellDefinition] = []

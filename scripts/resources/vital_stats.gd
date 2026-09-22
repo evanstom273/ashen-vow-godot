@@ -4,13 +4,11 @@ extends Resource
 @export_group("Base pools at reference attributes")
 @export_range(1, 100000, 1) var health: int = 650
 @export_range(1, 10000, 1) var stamina: float = 120.0
-@export_range(0, 10000, 1) var focus: float = 100.0
 @export_range(0, 1000, 0.5) var equip_load: float = 50.0
 @export_group("Attribute growth")
 @export_range(0, 99, 1) var reference_level: int = 10
 @export_range(0, 1000, 0.1) var health_per_vigour: float = 30.0
 @export_range(0, 1000, 0.1) var stamina_per_endurance: float = 3.0
-@export_range(0, 1000, 0.1) var focus_per_intelligence: float = 3.0
 @export_range(0, 100, 0.1) var load_per_endurance: float = 1.5
 @export_group("Recovery")
 @export_range(0, 1000, 0.1) var stamina_regeneration: float = 45.0
@@ -28,7 +26,5 @@ func max_health(stats: AttributeStats) -> int:
     return maxi(1, roundi(health + (stats.vigour-reference_level)*health_per_vigour))
 func max_stamina(stats: AttributeStats) -> float:
     return maxf(1, stamina + (stats.endurance-reference_level)*stamina_per_endurance)
-func max_focus(stats: AttributeStats) -> float:
-    return maxf(0, focus + (stats.intelligence-reference_level)*focus_per_intelligence)
 func max_load(stats: AttributeStats) -> float:
     return maxf(0, equip_load + (stats.endurance-reference_level)*load_per_endurance)

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WeaponLoadoutDefinition" format=3 uid="uid://dx7qyje81utoh"]
+
+[ext_resource type="Resource" path="res://data/weapons/ashen_dagger.tres" id="dagger"]
+[ext_resource type="Resource" path="res://data/weapons/sentinel_greatblade.tres" id="greatblade"]
+[ext_resource type="Resource" path="res://data/weapons/heavy_iron_mace.tres" id="mace"]
+[ext_resource type="Script" uid="uid://dqmsswnow4cjr" path="res://scripts/resources/weapon_loadout_definition.gd" id="script"]
+[ext_resource type="Resource" path="res://data/weapons/pilgrim_spear.tres" id="spear"]
+[ext_resource type="Resource" path="res://data/weapons/court_staff.tres" id="staff"]
+[ext_resource type="Resource" uid="uid://cyejnpa2yk0xy" path="res://data/weapons/wanderer_sword.tres" id="sword"]
+[ext_resource type="Resource" path="res://data/weapons/pilgrim_wand.tres" id="wand"]
+[ext_resource type="Script" uid="uid://df06q837twfw2" path="res://scripts/resources/weapon_definition.gd" id="weapon_type"]
+
+[resource]
+script = ExtResource("script")
+display_name = "Right hand"
+weapons = Array[ExtResource("weapon_type")]([ExtResource("sword"), ExtResource("dagger"), ExtResource("mace"), ExtResource("spear"), ExtResource("greatblade"), ExtResource("staff"), ExtResource("wand")])

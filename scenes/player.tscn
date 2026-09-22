@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://cq6gog7pup1bc"]
 
-[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
-[ext_resource type="Resource" path="res://data/classes/ashen_wanderer.tres" id="2_class"]
+[ext_resource type="Script" uid="uid://c7q4l2pcpl0oq" path="res://scripts/player.gd" id="1_player"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
+size = Vector2(42, 22)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_player"]
 radius = 13.0
@@ -10,14 +12,10 @@ height = 34.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_feet"]
 radius = 11.0
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
-size = Vector2(42, 22)
-
 [node name="Player" type="CharacterBody2D" unique_id=124354660]
 z_index = 10
 scale = Vector2(1.25, 1.25)
 script = ExtResource("1_player")
-character_class = ExtResource("2_class")
 
 [node name="Shadow" type="Polygon2D" parent="." unique_id=387193919]
 color = Color(0.015, 0.025, 0.06, 0.42)
@@ -26,17 +24,16 @@ polygon = PackedVector2Array(-18, 7, -13, 2, -5, 0, 6, 0, 15, 3, 19, 7, 13, 10, 
 [node name="AttackPivot" type="Node2D" parent="." unique_id=1772431670]
 z_index = 20
 
-[node name="Slash" type="Polygon2D" parent="AttackPivot"]
+[node name="Slash" type="Polygon2D" parent="AttackPivot" unique_id=708255139]
 visible = false
-polygon = PackedVector2Array(8, -7, 22, -12, 45, 0, 22, 12, 8, 7)
 color = Color(0.86, 0.72, 0.38, 0.78)
+polygon = PackedVector2Array(8, -7, 22, -12, 45, 0, 22, 12, 8, 7)
 
-[node name="AttackHitbox" type="Area2D" parent="AttackPivot"]
+[node name="AttackHitbox" type="Area2D" parent="AttackPivot" unique_id=675438726]
 collision_layer = 0
 collision_mask = 2
-monitoring = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackPivot/AttackHitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackPivot/AttackHitbox" unique_id=389177446]
 position = Vector2(21, 0)
 shape = SubResource("RectangleShape2D_attack")
 
@@ -122,10 +119,11 @@ limit_bottom = 340
 position_smoothing_enabled = true
 position_smoothing_speed = 6.0
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1338091388]
 layer = 20
+visible = false
 
-[node name="InteractionPrompt" type="Label" parent="HUD"]
+[node name="InteractionPrompt" type="Label" parent="HUD" unique_id=1997095341]
 visible = false
 offset_left = 420.0
 offset_top = 548.0
@@ -139,7 +137,7 @@ theme_override_font_sizes/font_size = 16
 text = "E  Interact"
 horizontal_alignment = 1
 
-[node name="LockPrompt" type="Label" parent="HUD"]
+[node name="LockPrompt" type="Label" parent="HUD" unique_id=1888648908]
 visible = false
 offset_left = 420.0
 offset_top = 578.0
@@ -153,7 +151,7 @@ theme_override_font_sizes/font_size = 13
 text = "LOCKED"
 horizontal_alignment = 1
 
-[node name="Feedback" type="Label" parent="HUD"]
+[node name="Feedback" type="Label" parent="HUD" unique_id=264839983]
 visible = false
 offset_left = 420.0
 offset_top = 510.0
@@ -164,5 +162,4 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.65)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 14
-text = ""
 horizontal_alignment = 1

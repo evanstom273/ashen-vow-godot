@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AttackDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/attack_definition.gd" id="script"]
+[ext_resource type="Resource" path="res://data/damage/sword_damage.tres" id="damage"]
+[ext_resource type="Resource" path="res://data/scaling/sword_scaling.tres" id="scaling"]
+
+[resource]
+script = ExtResource("script")
+display_name = "Ashen dagger thrust"
+damage = ExtResource("damage")
+scaling = ExtResource("scaling")
+stamina_cost = 12.0
+windup = 0.06
+active = 0.07
+recovery = 0.12
+reach = 34.0
+hit_radius = 15.0
+arc_degrees = 70.0
+charge_threshold = 0.3

@@ -43,6 +43,7 @@ func _ready() -> void:
     health = max_health
     poise_remaining = vitals.poise
     add_to_group("targetable")
+    add_to_group("enemy")
     add_to_group("sentinel")
     collision_layer = 2
     collision_mask = 1
@@ -179,16 +180,32 @@ func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: fl
         _state(State.DEAD)
         locked = false
         set_deferred("collision_layer", 0)
+        _deliver_currency()
         Feedback.burst(global_position, "dust")
         Feedback.play("death", global_position)
         died.emit()
-    elif poise_remaining <= 0:
-        poise_remaining = vitals.poise
-        if state == State.STRIKE and attack.uninterruptible_while_active: return
-        _recoil_speed = definition.stagger_recoil_speed * knockback / 180.0
-        if is_instance_valid(source) and source is Node2D:
-            direction = (source.global_position - global_position).normalized()
-        _state(State.HURT)
+
+    else:
+        if poise_remaining <= 0:
+            poise_remaining = vitals.poise
+            if state == State.STRIKE and attack.uninterruptible_while_active: return
+            _recoil_speed = definition.stagger_recoil_speed * knockback / 180.0
+            if is_instance_valid(source) and source is Node2D:
+                direction = (source.global_position - global_position).normalized()
+            _state(State.HURT)
+
+func _deliver_currency() -> void:
+    if not definition.drop_currency_on_death or definition.currency_drop == null: return
+    var amount: int = definition.currency_drop.roll_amount()
+    if amount <= 0: return
+    if definition.currency_drop.delivery_mode == CurrencyDropDefinition.DeliveryMode.IMMEDIATE:
+        if is_instance_valid(player): player.add_currency(amount, "+" + str(amount) + " " + definition.currency_drop.display_name)
+        return
+    var drop: Node2D = load("res://scenes/currency_drop.tscn").instantiate()
+    drop.position = global_position
+    drop.amount = amount
+    drop.definition = definition.currency_drop
+    get_parent().add_child(drop)
 
 func reset_encounter() -> void:
     position = home

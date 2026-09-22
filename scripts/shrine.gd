@@ -35,7 +35,7 @@ func get_display_name() -> String: return definition.display_name
 func get_interaction_prompt() -> String: return definition.interaction_prompt
 func interact(player: Node) -> void:
     if not can_interact(player): return
-    player.restore(definition.restore_health, definition.restore_stamina, definition.restore_focus)
+    player.restore(definition.restore_health, definition.restore_stamina)
     player.show_message(definition.rest_message)
     for group: String in ["sentinel", "resettable"]:
         if group == "sentinel" and not definition.reset_enemies: continue

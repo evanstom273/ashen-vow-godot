@@ -7,11 +7,9 @@
 script = ExtResource("script")
 health = 1000
 stamina = 100.0
-focus = 50.0
 equip_load = 40.0
 health_per_vigour = 0.0
 stamina_per_endurance = 2.0
-focus_per_intelligence = 2.0
 load_per_endurance = 1.0
 stamina_regeneration = 30.0
 poise = 1.0

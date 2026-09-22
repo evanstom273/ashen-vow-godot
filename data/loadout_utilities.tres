@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UtilityLoadoutDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/utility_loadout_definition.gd" id="script"]
+[ext_resource type="Script" path="res://scripts/resources/utility_definition.gd" id="utility_type"]
+[ext_resource type="Resource" path="res://data/utility_healing_flask.tres" id="flask"]
+[ext_resource type="Resource" path="res://data/utility_stamina_tonic.tres" id="tonic"]
+
+[resource]
+script = ExtResource("script")
+display_name = "Prepared utilities"
+utilities = Array[ExtResource("utility_type")]([ExtResource("flask"), ExtResource("tonic")])

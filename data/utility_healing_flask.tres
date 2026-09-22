@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UtilityDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/utility_definition.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"healing_flask"
+display_name = "Healing Flask"
+description = "Restores a portion of health."
+charges = 3
+maximum_charges = 3
+health_restore = 180
+use_time = 0.25
+recovery_time = 0.55
+sound_key = &"shrine"

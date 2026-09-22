@@ -1,25 +1,48 @@
-[gd_resource type="Resource" script_class="GameDataCatalog" format=3]
-[ext_resource type="Script" path="res://scripts/resources/game_data_catalog.gd" id="script"]
-[ext_resource type="Script" path="res://scripts/resources/class_definition.gd" id="class_type"]
-[ext_resource type="Script" path="res://scripts/resources/weapon_definition.gd" id="weapon_type"]
-[ext_resource type="Script" path="res://scripts/resources/enemy_definition.gd" id="enemy_type"]
-[ext_resource type="Script" path="res://scripts/resources/boss_definition.gd" id="boss_type"]
-[ext_resource type="Script" path="res://scripts/resources/spell_definition.gd" id="spell_type"]
-[ext_resource type="Script" path="res://scripts/resources/shrine_definition.gd" id="shrine_type"]
-[ext_resource type="Resource" path="res://data/classes/ashen_wanderer.tres" id="class"]
-[ext_resource type="Resource" path="res://data/weapons/wanderer_sword.tres" id="sword"]
-[ext_resource type="Resource" path="res://data/weapons/sentinel_blade.tres" id="blade"]
-[ext_resource type="Resource" path="res://data/enemies/court_sentinel.tres" id="sentinel"]
+[gd_resource type="Resource" script_class="GameDataCatalog" format=3 uid="uid://bv6ivkr4sn44s"]
+
+[ext_resource type="Resource" uid="uid://iq5d8ys44c6c" path="res://data/weapons/sentinel_blade.tres" id="blade"]
+[ext_resource type="Script" uid="uid://dwsshohb2hk7d" path="res://scripts/resources/boss_definition.gd" id="boss_type"]
+[ext_resource type="Resource" uid="uid://b0hf2ye0aumgi" path="res://data/classes/ashen_wanderer.tres" id="class"]
+[ext_resource type="Script" uid="uid://drkinirsld8x3" path="res://scripts/resources/class_definition.gd" id="class_type"]
+[ext_resource type="Resource" path="res://data/embers_currency.tres" id="currency"]
+[ext_resource type="Script" uid="uid://djvoj1c4a3we" path="res://scripts/resources/currency_definition.gd" id="currency_type"]
+[ext_resource type="Resource" path="res://data/weapons/ashen_dagger.tres" id="dagger"]
 [ext_resource type="Resource" path="res://data/enemies/training_effigy.tres" id="dummy"]
-[ext_resource type="Resource" path="res://data/bosses/boss_template.tres" id="boss"]
-[ext_resource type="Resource" path="res://data/spells/arcane_bolt_template.tres" id="spell"]
+[ext_resource type="Script" uid="uid://hm6kwyhj7cjd" path="res://scripts/resources/enemy_definition.gd" id="enemy_type"]
+[ext_resource type="Resource" path="res://data/utility_healing_flask.tres" id="flask"]
+[ext_resource type="Resource" path="res://data/weapons/sentinel_greatblade.tres" id="greatblade"]
+[ext_resource type="Resource" uid="uid://b23vw75o25ht4" path="res://data/loadout_left_hand.tres" id="left_loadout"]
+[ext_resource type="Resource" path="res://data/weapons/heavy_iron_mace.tres" id="mace"]
+[ext_resource type="Resource" uid="uid://dx7qyje81utoh" path="res://data/loadout_right_hand.tres" id="right_loadout"]
+[ext_resource type="Script" uid="uid://blerbj5a351uq" path="res://scripts/resources/game_data_catalog.gd" id="script"]
+[ext_resource type="Resource" uid="uid://bq5ddjauoyhh1" path="res://data/weapons/ashen_seal.tres" id="seal"]
+[ext_resource type="Resource" uid="uid://c0ugsy63os73" path="res://data/enemies/court_sentinel.tres" id="sentinel"]
+[ext_resource type="Resource" path="res://data/weapons/court_shield_bash.tres" id="shield"]
 [ext_resource type="Resource" path="res://data/interactables/ashen_shrine.tres" id="shrine"]
+[ext_resource type="Script" uid="uid://b5yurs51e4wqx" path="res://scripts/resources/shrine_definition.gd" id="shrine_type"]
+[ext_resource type="Resource" path="res://data/weapons/pilgrim_spear.tres" id="spear"]
+[ext_resource type="Resource" uid="uid://bx4o5r66t2jnp" path="res://data/loadout_spells.tres" id="spell_loadout"]
+[ext_resource type="Script" uid="uid://ccm2508a4twa6" path="res://scripts/resources/spell_loadout_definition.gd" id="spell_loadout_type"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell_type"]
+[ext_resource type="Resource" uid="uid://de7j8ihosb3wg" path="res://data/weapons/court_staff.tres" id="staff"]
+[ext_resource type="Resource" uid="uid://cyejnpa2yk0xy" path="res://data/weapons/wanderer_sword.tres" id="sword"]
+[ext_resource type="Resource" path="res://data/utility_stamina_tonic.tres" id="tonic"]
+[ext_resource type="Resource" path="res://data/loadout_utilities.tres" id="utility_loadout"]
+[ext_resource type="Script" uid="uid://cbef6prpncq1" path="res://scripts/resources/utility_loadout_definition.gd" id="utility_loadout_type"]
+[ext_resource type="Script" uid="uid://btce5rqe7ocde" path="res://scripts/resources/utility_definition.gd" id="utility_type"]
+[ext_resource type="Resource" uid="uid://dga3mw4efimcf" path="res://data/weapons/pilgrim_wand.tres" id="wand"]
+[ext_resource type="Script" uid="uid://dqmsswnow4cjr" path="res://scripts/resources/weapon_loadout_definition.gd" id="weapon_loadout_type"]
+[ext_resource type="Script" uid="uid://df06q837twfw2" path="res://scripts/resources/weapon_definition.gd" id="weapon_type"]
+
 [resource]
-script = ExtResource("script")
 resource_name = "Ashen Vow - Game Data"
+script = ExtResource("script")
 classes = Array[ExtResource("class_type")]([ExtResource("class")])
-weapons = Array[ExtResource("weapon_type")]([ExtResource("sword"), ExtResource("blade")])
+weapons = Array[ExtResource("weapon_type")]([ExtResource("sword"), ExtResource("blade"), ExtResource("dagger"), ExtResource("shield"), ExtResource("mace"), ExtResource("spear"), ExtResource("greatblade"), ExtResource("staff"), ExtResource("seal"), ExtResource("wand")])
 enemies = Array[ExtResource("enemy_type")]([ExtResource("sentinel"), ExtResource("dummy")])
-bosses = Array[ExtResource("boss_type")]([ExtResource("boss")])
-spells = Array[ExtResource("spell_type")]([ExtResource("spell")])
+utilities = Array[ExtResource("utility_type")]([ExtResource("flask"), ExtResource("tonic")])
+weapon_loadouts = Array[ExtResource("weapon_loadout_type")]([ExtResource("left_loadout"), ExtResource("right_loadout")])
+spell_loadouts = Array[ExtResource("spell_loadout_type")]([ExtResource("spell_loadout")])
+utility_loadouts = Array[ExtResource("utility_loadout_type")]([ExtResource("utility_loadout")])
+currencies = Array[ExtResource("currency_type")]([ExtResource("currency")])
 shrines = Array[ExtResource("shrine_type")]([ExtResource("shrine")])

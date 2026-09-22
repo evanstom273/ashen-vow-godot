@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[node name="heavy_iron_mace" type="Node2D"]
+
+[node name="Grip" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-7,-2,29,-2,29,2,-7,2)
+color = Color(0.32,0.23,0.17,1)
+
+[node name="Silhouette" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(22,-7,27,-11,36,-8,38,0,36,8,27,11,22,7)
+color = Color(0.53,0.62,0.65,1)
+
+[node name="Fitting" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(27,-12,31,-12,34,0,31,12,27,12,29,0)
+color = Color(0.75,0.59,0.32,1)

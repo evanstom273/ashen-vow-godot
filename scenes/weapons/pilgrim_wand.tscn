@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://dy0mb705a7e08"]
+
+[node name="pilgrim_wand" type="Node2D" unique_id=1165575034]
+
+[node name="Grip" type="Polygon2D" parent="." unique_id=1917839057]
+color = Color(0.32, 0.23, 0.17, 1)
+polygon = PackedVector2Array(-8, -2, 12, -2, 12, 2, -8, 2)
+
+[node name="Silhouette" type="Polygon2D" parent="." unique_id=754956269]
+color = Color(0.53, 0.62, 0.65, 1)
+polygon = PackedVector2Array(22, 0, 26, -6, 32, -4, 27, -3, 25, 0, 27, 3, 32, 4, 26, 6)
+
+[node name="Fitting" type="Polygon2D" parent="." unique_id=286196226]
+color = Color(0.35, 0.8, 1, 1)
+polygon = PackedVector2Array(27, 0, 31, -3, 35, 0, 31, 3)

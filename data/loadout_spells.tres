@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SpellLoadoutDefinition" format=3 uid="uid://bx4o5r66t2jnp"]
+
+[ext_resource type="Resource" uid="uid://cd42vb4cpi5ma" path="res://data/spells/ember_wave.tres" id="3_4nfjn"]
+[ext_resource type="Resource" uid="uid://biqb2nktohsq2" path="res://data/spells/cinder_lance.tres" id="4_6w7sa"]
+[ext_resource type="Resource" path="res://data/spells/mending_light.tres" id="5_0pinv"]
+[ext_resource type="Resource" path="res://data/spells/star_shard.tres" id="6_b43kf"]
+[ext_resource type="Script" uid="uid://ccm2508a4twa6" path="res://scripts/resources/spell_loadout_definition.gd" id="script"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell_type"]
+[ext_resource type="Resource" path="res://data/spells/vow_spear.tres" id="vow"]
+
+[resource]
+script = ExtResource("script")
+display_name = "Prepared spells"
+spells = Array[ExtResource("spell_type")]([ExtResource("3_4nfjn"), ExtResource("4_6w7sa"), ExtResource("5_0pinv"), ExtResource("6_b43kf"), ExtResource("vow")])
