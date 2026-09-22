@@ -59,7 +59,9 @@ func _ready() -> void:
     health_stack.add_child(health_bar)
     stamina_bar = _bar(Color("8d9d72"),Vector2(200,7))
     status.add_child(stamina_bar)
-    status.add_child(_label("TAB  controls     ESC  pause",11,Color("929b98")))
+    var controls_hint := _label("TAB  controls     ESC  pause",11,Color("929b98"))
+    if MobileControls.should_enable(): controls_hint.text = "TOUCH CONTROLS"
+    status.add_child(controls_hint)
     currency_label = _label("Embers  0",13,Color("e6b968"))
     currency_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
     currency_label.offset_left = -150
@@ -84,6 +86,7 @@ func _ready() -> void:
     bottom.add_child(feedback)
     bottom.add_child(prompt)
     var equipment := Control.new()
+    equipment.name = "EquipmentCross"
     equipment.set_script(preload("res://scripts/equipment_cross.gd"))
     equipment.set("player", player)
     root.add_child(equipment)
@@ -92,6 +95,12 @@ func _ready() -> void:
     equipment.offset_top = -186
     equipment.offset_right = 194
     equipment.offset_bottom = -20
+    if MobileControls.should_enable():
+        var mobile: MobileControls = preload("res://scenes/mobile_controls.tscn").instantiate() as MobileControls
+        mobile.player = player
+        mobile.pause_requested.connect(func() -> void:
+            if player.health > 0: _pause(not menu.visible))
+        root.add_child(mobile)
     var target_box := VBoxContainer.new()
     root.add_child(target_box)
     target_box.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
