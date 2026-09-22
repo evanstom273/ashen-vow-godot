@@ -18,6 +18,7 @@ var _joystick_current := Vector2.ZERO
 var _touch_actions: Dictionary = {}
 var _lock_start := Vector2.ZERO
 var _lock_last := Vector2.ZERO
+var _controls_enabled: bool = true
 
 static func should_enable() -> bool:
     return OS.has_feature("mobile") or DisplayServer.is_touchscreen_available() or "--mobile-controls" in OS.get_cmdline_user_args()
@@ -38,8 +39,25 @@ func _exit_tree() -> void:
 func _process(_delta: float) -> void:
     queue_redraw()
 
+func set_controls_enabled(value: bool) -> void:
+    if _controls_enabled == value:
+        visible = value
+        return
+    if not value and is_instance_valid(player):
+        if _action_pressed(&"right"): player.release_hand_action(&"right")
+        if _action_pressed(&"left"): player.release_hand_action(&"left")
+        if _action_pressed(&"dodge"): player.release_dodge_sprint_hold()
+        player.set_mobile_movement(Vector2.ZERO)
+    _controls_enabled = value
+    _touch_actions.clear()
+    _joystick_touch = -1
+    _joystick_origin = Vector2.ZERO
+    _joystick_current = Vector2.ZERO
+    visible = value
+    queue_redraw()
+
 func _unhandled_input(event: InputEvent) -> void:
-    if not is_instance_valid(player): return
+    if not _controls_enabled or not is_instance_valid(player): return
     if event is InputEventScreenTouch:
         var touch := event as InputEventScreenTouch
         if touch.pressed:
