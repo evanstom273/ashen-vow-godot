@@ -18,6 +18,8 @@ var elapsed: float = 0
 var death_time: float = 0
 var damage_delay: float = 0
 var currency_label: Label
+var mobile_controls: MobileControls
+var shrine_loadout_menu: ShrineLoadoutMenu
 
 func _ready() -> void:
     layer = 50
@@ -96,11 +98,12 @@ func _ready() -> void:
     equipment.offset_right = 194
     equipment.offset_bottom = -20
     if MobileControls.should_enable():
-        var mobile: MobileControls = preload("res://scenes/mobile_controls.tscn").instantiate() as MobileControls
-        mobile.player = player
-        mobile.pause_requested.connect(func() -> void:
-            if player.health > 0: _pause(not menu.visible))
-        root.add_child(mobile)
+        mobile_controls = preload("res://scenes/mobile_controls.tscn").instantiate() as MobileControls
+        mobile_controls.player = player
+        mobile_controls.pause_requested.connect(func() -> void:
+            if player.health > 0 and (shrine_loadout_menu == null or not shrine_loadout_menu.visible):
+                _pause(not menu.visible))
+        root.add_child(mobile_controls)
     var target_box := VBoxContainer.new()
     root.add_child(target_box)
     target_box.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
@@ -128,6 +131,10 @@ func _ready() -> void:
     help_panel.add_child(help)
     help_panel.visible = false
     _build_menu()
+    shrine_loadout_menu = preload("res://scenes/shrine_loadout_menu.tscn").instantiate() as ShrineLoadoutMenu
+    root.add_child(shrine_loadout_menu)
+    shrine_loadout_menu.closed.connect(_close_shrine_loadout)
+    player.shrine_menu_requested.connect(_open_shrine_loadout)
     player.damaged.connect(func() -> void: damage_delay = 0.45)
     player.interaction_changed.connect(func(text: String) -> void: prompt.text = text)
 
@@ -213,6 +220,21 @@ func _button(text: String, callback: Callable) -> Button:
     button.pressed.connect(callback)
     return button
 
+func _open_shrine_loadout() -> void:
+    if not is_instance_valid(player) or player.health <= 0: return
+    menu.visible = false
+    help_panel.visible = false
+    get_tree().paused = true
+    player._right_held = false
+    player.set_mobile_movement(Vector2.ZERO)
+    if is_instance_valid(mobile_controls): mobile_controls.visible = false
+    shrine_loadout_menu.open_for(player)
+
+func _close_shrine_loadout(_applied: bool) -> void:
+    get_tree().paused = false
+    if is_instance_valid(mobile_controls): mobile_controls.visible = true
+    prompt.text = ""
+
 func _pause(value: bool) -> void:
     get_tree().paused = value
     menu.visible = value
@@ -220,6 +242,10 @@ func _pause(value: bool) -> void:
     if value: resume_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
+    if event.is_action_pressed("pause") and is_instance_valid(shrine_loadout_menu) and shrine_loadout_menu.visible:
+        shrine_loadout_menu.cancel()
+        get_viewport().set_input_as_handled()
+        return
     if event.is_action_pressed("pause") and player.health > 0:
         _pause(not menu.visible)
         get_viewport().set_input_as_handled()
