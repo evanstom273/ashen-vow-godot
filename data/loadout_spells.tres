@@ -11,4 +11,6 @@
 [resource]
 script = ExtResource("script")
 display_name = "Prepared spells"
-spells = Array[ExtResource("spell_type")]([ExtResource("3_4nfjn"), ExtResource("4_6w7sa"), ExtResource("5_0pinv"), ExtResource("6_b43kf"), ExtResource("vow")])
+base_slots = 3
+maximum_slots = 10
+spells = Array[ExtResource("spell_type")]([ExtResource("3_4nfjn"), ExtResource("4_6w7sa"), ExtResource("5_0pinv")])
