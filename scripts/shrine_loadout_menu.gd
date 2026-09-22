@@ -227,7 +227,7 @@ func _refresh_slots() -> void:
     var count: int = player.get_spell_slot_capacity() if _section == &"spell" else player.get_weapon_slot_capacity(_section)
     for i in count:
         var item: Resource = _draft_item(i)
-        var name: String = item.display_name if item != null else "Empty"
+        var name: String = String(item.get("display_name")) if item != null else "Empty"
         var prefix: String = "SPELL" if _section == &"spell" else ("RH" if _section == &"right" else "LH")
         var button := _button(prefix + " " + str(i + 1) + "    " + name, _select_slot.bind(i), Vector2(0, 45))
         button.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -267,13 +267,13 @@ func _refresh_details(item: Resource) -> void:
         _details_title.text = "Empty slot"
         _details_body.text = "Leave this slot empty. Gameplay cycling skips empty slots."
         return
-    _details_title.text = item.display_name
+    _details_title.text = String(item.get("display_name"))
     if item is WeaponDefinition:
         var weapon := item as WeaponDefinition
         var requirement_text := _requirements_text(weapon.requirements)
         _details_body.text = weapon.category + "\nWeight  " + str(snappedf(weapon.weight, 0.1)) + "\n" + requirement_text + "\n\n" + weapon.description
         if weapon.is_spell_catalyst:
-            _details_body.text += "\n\nCatalyst: " + (", ".join(weapon.catalyst_schools) if not weapon.catalyst_schools.is_empty() else "all schools")
+            _details_body.text += "\n\nCatalyst: " + (", ".join(PackedStringArray(weapon.catalyst_schools)) if not weapon.catalyst_schools.is_empty() else "all schools")
     elif item is SpellDefinition:
         var spell := item as SpellDefinition
         _details_body.text = spell.school + "\nUses  " + str(spell.maximum_charges) + "\nMemory cost  " + str(spell.memory_slots) + "\n" + _requirements_text(spell.requirements) + "\n\n" + spell.description
@@ -281,12 +281,14 @@ func _refresh_details(item: Resource) -> void:
 func _requirements_text(requirements: AttributeStats) -> String:
     if requirements == null: return "No requirements"
     var parts: Array[String] = []
+    if requirements.vigour > 0: parts.append("VIG " + str(requirements.vigour))
+    if requirements.endurance > 0: parts.append("END " + str(requirements.endurance))
     if requirements.strength > 0: parts.append("STR " + str(requirements.strength))
     if requirements.dexterity > 0: parts.append("DEX " + str(requirements.dexterity))
     if requirements.intelligence > 0: parts.append("INT " + str(requirements.intelligence))
     if requirements.faith > 0: parts.append("FAI " + str(requirements.faith))
     if requirements.arcane > 0: parts.append("ARC " + str(requirements.arcane))
-    return "Requirements  " + (" · ".join(parts) if not parts.is_empty() else "None")
+    return "Requirements  " + (" · ".join(PackedStringArray(parts)) if not parts.is_empty() else "None")
 
 func _clear_children(node: Node) -> void:
     for child: Node in node.get_children():
