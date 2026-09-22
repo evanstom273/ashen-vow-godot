@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_definition.gd" id="script"]
+[ext_resource type="Resource" path="res://data/stats/sentinel_attributes.tres" id="stats"]
+[ext_resource type="Resource" path="res://data/vitals/dummy_vitals.tres" id="vitals"]
+
+[resource]
+script = ExtResource("script")
+id = &"training_effigy"
+display_name = "Training Effigy"
+attributes = ExtResource("stats")
+vitals = ExtResource("vitals")
+approach_speed = 0.0
+hit_sound = &"wood"
+auto_restore_delay = 3.0

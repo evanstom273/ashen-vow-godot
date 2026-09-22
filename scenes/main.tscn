@@ -1,0 +1,73 @@
+[gd_scene format=3 uid="uid://rdjixiufbxif"]
+
+[ext_resource type="Script" uid="uid://b82ay0kfdklp8" path="res://scripts/courtyard.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://cq6gog7pup1bc" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/training_dummy.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="4"]
+[ext_resource type="PackedScene" uid="uid://cgbn7lf5paq8o" path="res://scenes/sentinel.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/court_prop.tscn" id="6"]
+
+[node name="Main" type="Node2D" unique_id=1543279268]
+script = ExtResource("1")
+
+[node name="Actors" type="Node2D" parent="." unique_id=2102076948]
+y_sort_enabled = true
+
+[node name="Player" parent="Actors" unique_id=516222773 instance=ExtResource("2")]
+position = Vector2(-180, 170)
+
+[node name="TrainingEffigy" parent="Actors" unique_id=222267192 instance=ExtResource("3")]
+position = Vector2(-420, 20)
+
+[node name="TrainingEffigyII" parent="Actors" unique_id=4483291 instance=ExtResource("3")]
+position = Vector2(-420, 130)
+
+[node name="AshenShrine" parent="Actors" unique_id=856659894 instance=ExtResource("4")]
+position = Vector2(-200, 260)
+
+[node name="CourtSentinel" parent="Actors" unique_id=1527484995 instance=ExtResource("5")]
+position = Vector2(240, -95)
+collision_layer = 2
+motion_mode = 1
+
+[node name="pillar1" parent="Actors" unique_id=1671952261 instance=ExtResource("6")]
+position = Vector2(-640, -250)
+
+[node name="pillar2" parent="Actors" unique_id=1149161753 instance=ExtResource("6")]
+position = Vector2(640, -250)
+
+[node name="pillar3" parent="Actors" unique_id=1519284797 instance=ExtResource("6")]
+position = Vector2(-640, 250)
+
+[node name="pillar4" parent="Actors" unique_id=1148150700 instance=ExtResource("6")]
+position = Vector2(640, 250)
+
+[node name="pillar5" parent="Actors" unique_id=1847211984 instance=ExtResource("6")]
+position = Vector2(-140, -360)
+
+[node name="pillar6" parent="Actors" unique_id=1293033613 instance=ExtResource("6")]
+position = Vector2(140, -360)
+
+[node name="brazier7" parent="Actors" unique_id=1169959696 instance=ExtResource("6")]
+position = Vector2(-490, -240)
+kind = "brazier"
+
+[node name="brazier8" parent="Actors" unique_id=1162947502 instance=ExtResource("6")]
+position = Vector2(490, -240)
+kind = "brazier"
+
+[node name="brazier9" parent="Actors" unique_id=992042739 instance=ExtResource("6")]
+position = Vector2(-470, 310)
+kind = "brazier"
+
+[node name="brazier10" parent="Actors" unique_id=1297650233 instance=ExtResource("6")]
+position = Vector2(470, 310)
+kind = "brazier"
+
+[node name="banner11" parent="Actors" unique_id=1863556953 instance=ExtResource("6")]
+position = Vector2(-280, 265)
+kind = "banner"
+
+[node name="banner12" parent="Actors" unique_id=1891053811 instance=ExtResource("6")]
+position = Vector2(-130, -370)
+kind = "banner"

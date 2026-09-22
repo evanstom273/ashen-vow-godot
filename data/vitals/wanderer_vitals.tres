@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="VitalStats" format=3 uid="uid://ca6i22cga5tp1"]
+
+[ext_resource type="Resource" path="res://data/defences/unarmoured.tres" id="defence"]
+[ext_resource type="Script" uid="uid://crq5p6uomtn5k" path="res://scripts/resources/vital_stats.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+defence = ExtResource("defence")

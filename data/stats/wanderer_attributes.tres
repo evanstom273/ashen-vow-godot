@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AttributeStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/attribute_stats.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+resource_name = "Wanderer attributes"
+vigour = 10
+endurance = 10
+strength = 10
+dexterity = 10
+intelligence = 10
+faith = 10
+arcane = 10

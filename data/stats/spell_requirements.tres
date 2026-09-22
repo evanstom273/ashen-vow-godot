@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AttributeStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/attribute_stats.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+vigour = 0
+endurance = 0
+strength = 0
+dexterity = 0
+intelligence = 12
+faith = 0
+arcane = 0

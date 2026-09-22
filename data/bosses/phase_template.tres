@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="BossPhase" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/boss_phase.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+display_name = "Second phase template"
+health_threshold = 0.5

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="GameDataCatalog" format=3]
+[ext_resource type="Script" path="res://scripts/resources/game_data_catalog.gd" id="script"]
+[ext_resource type="Script" path="res://scripts/resources/class_definition.gd" id="class_type"]
+[ext_resource type="Script" path="res://scripts/resources/weapon_definition.gd" id="weapon_type"]
+[ext_resource type="Script" path="res://scripts/resources/enemy_definition.gd" id="enemy_type"]
+[ext_resource type="Script" path="res://scripts/resources/boss_definition.gd" id="boss_type"]
+[ext_resource type="Script" path="res://scripts/resources/spell_definition.gd" id="spell_type"]
+[ext_resource type="Script" path="res://scripts/resources/shrine_definition.gd" id="shrine_type"]
+[ext_resource type="Resource" path="res://data/classes/ashen_wanderer.tres" id="class"]
+[ext_resource type="Resource" path="res://data/weapons/wanderer_sword.tres" id="sword"]
+[ext_resource type="Resource" path="res://data/weapons/sentinel_blade.tres" id="blade"]
+[ext_resource type="Resource" path="res://data/enemies/court_sentinel.tres" id="sentinel"]
+[ext_resource type="Resource" path="res://data/enemies/training_effigy.tres" id="dummy"]
+[ext_resource type="Resource" path="res://data/bosses/boss_template.tres" id="boss"]
+[ext_resource type="Resource" path="res://data/spells/arcane_bolt_template.tres" id="spell"]
+[ext_resource type="Resource" path="res://data/interactables/ashen_shrine.tres" id="shrine"]
+[resource]
+script = ExtResource("script")
+resource_name = "Ashen Vow - Game Data"
+classes = Array[ExtResource("class_type")]([ExtResource("class")])
+weapons = Array[ExtResource("weapon_type")]([ExtResource("sword"), ExtResource("blade")])
+enemies = Array[ExtResource("enemy_type")]([ExtResource("sentinel"), ExtResource("dummy")])
+bosses = Array[ExtResource("boss_type")]([ExtResource("boss")])
+spells = Array[ExtResource("spell_type")]([ExtResource("spell")])
+shrines = Array[ExtResource("shrine_type")]([ExtResource("shrine")])

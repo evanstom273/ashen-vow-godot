@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BossDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/boss_definition.gd" id="script"]
+[ext_resource type="Resource" path="res://data/stats/sentinel_attributes.tres" id="stats"]
+[ext_resource type="Resource" path="res://data/vitals/boss_template_vitals.tres" id="vitals"]
+[ext_resource type="Resource" path="res://data/weapons/sentinel_blade.tres" id="weapon"]
+[ext_resource type="Resource" path="res://data/bosses/phase_template.tres" id="phase"]
+[ext_resource type="Script" path="res://scripts/resources/boss_phase.gd" id="phase_type"]
+
+[resource]
+script = ExtResource("script")
+id = &"boss_template"
+display_name = "Boss Template"
+description = "Authoring example only; not placed in the courtyard."
+attributes = ExtResource("stats")
+vitals = ExtResource("vitals")
+weapon = ExtResource("weapon")
+phases = Array[ExtResource("phase_type")]([ExtResource("phase")])

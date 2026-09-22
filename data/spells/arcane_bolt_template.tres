@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spell_definition.gd" id="script"]
+[ext_resource type="Resource" path="res://data/stats/spell_requirements.tres" id="requirements"]
+[ext_resource type="Resource" path="res://data/attacks/arcane_bolt_cast.tres" id="cast"]
+
+[resource]
+script = ExtResource("script")
+id = &"arcane_bolt_template"
+display_name = "Arcane Bolt Template"
+description = "Example sorcery resource. Casting and projectile spawning are not yet implemented."
+requirements = ExtResource("requirements")
+cast = ExtResource("cast")

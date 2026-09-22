@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="AttributeScaling" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/attribute_scaling.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+intelligence = 0.04

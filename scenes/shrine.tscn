@@ -1,0 +1,41 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/shrine.gd" id="1_shrine"]
+[ext_resource type="Resource" path="res://data/interactables/ashen_shrine.tres" id="2_definition"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_shrine"]
+size = Vector2(28, 28)
+
+[node name="AshenShrine" type="StaticBody2D"]
+z_index = 4
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_shrine")
+definition = ExtResource("2_definition")
+
+[node name="Shadow" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-20, 10, -12, 3, 8, 3, 20, 10, 10, 15, -10, 15)
+color = Color(0.015, 0.025, 0.06, 0.42)
+
+[node name="Stone" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-13, -8, 0, -22, 13, -8, 10, 12, 0, 19, -10, 12)
+color = Color(0.25, 0.2, 0.34, 1)
+
+[node name="Core" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-6, -7, 0, -14, 6, -7, 5, 7, 0, 12, -5, 7)
+color = Color(0.38, 0.24, 0.47, 1)
+
+[node name="Glow" type="Polygon2D" parent="."]
+visible = false
+polygon = PackedVector2Array(-4, -5, 0, -10, 4, -5, 3, 5, 0, 8, -3, 5)
+color = Color(0.83, 0.58, 0.28, 0.8)
+
+[node name="LockRing" type="Line2D" parent="."]
+visible = false
+points = PackedVector2Array(-24, 0, -17, -15, 0, -23, 17, -15, 24, 0, 17, 15, 0, 23, -17, 15, -24, 0)
+width = 2.0
+default_color = Color(0.94, 0.72, 0.3, 0.95)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_shrine")
+position = Vector2(0, 1)

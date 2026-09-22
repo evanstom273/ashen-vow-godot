@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="DamageProfile" format=3 uid="uid://d06ja8wc7qdf3"]
+
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="script"]
+
+[resource]
+script = ExtResource("script")

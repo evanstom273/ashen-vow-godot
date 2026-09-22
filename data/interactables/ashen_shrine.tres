@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ShrineDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/shrine_definition.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+display_name = "Ashen Shrine"

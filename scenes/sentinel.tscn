@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cgbn7lf5paq8o"]
+
+[ext_resource type="Script" uid="uid://bh4u20n1iox1" path="res://scripts/sentinel.gd" id="1"]
+[ext_resource type="Resource" path="res://data/enemies/court_sentinel.tres" id="2_definition"]
+
+[node name="CourtSentinel" type="CharacterBody2D" unique_id=927999752]
+script = ExtResource("1")
+definition = ExtResource("2_definition")
