@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="VFXDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/vfx_definition.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+style = 6
+color = Color(0.8627, 0.8392, 0.7255, 1)
+core_color = Color(0.95, 0.91, 0.8, 1)
+emission_amount = 0
+particle_count = 1
+emission_speed = 0
+particle_scale = 2
+particle_lifetime = 0.3
+lifetime = 0.3
+fragment_size = 2
+gravity = 180
+smoke = false
+additive = true
+light_energy = 0.0

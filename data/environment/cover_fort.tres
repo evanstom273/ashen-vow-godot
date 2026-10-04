@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GroundCoverProfile" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/resources/ground_cover_profile.gd" id="1"]
+[resource]
+script = ExtResource("1")
+families = PackedStringArray("stone", "moss", "grass", "litter")
+weights = PackedFloat32Array(7, 3, 2, 2)
+density = 0.7
+height_metres = Vector2(0.1, 0.32)
+foliage = Color(0.35, 0.39, 0.27, 1)
+dry_foliage = Color(0.5, 0.46, 0.33, 1)
+litter = Color(0.35, 0.33, 0.26, 1)
+stone = Color(0.47, 0.47, 0.4, 1)
+bare_fraction = 0.4
+soil_tint = Color(0.38, 0.37, 0.3, 0.15)

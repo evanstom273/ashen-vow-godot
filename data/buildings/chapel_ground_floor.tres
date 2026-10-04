@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BuildingFloorDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/building_floor_definition.gd" id="floor"]
+[ext_resource type="Script" path="res://scripts/resources/elevation_definition.gd" id="elevation"]
+
+[sub_resource type="Resource" id="ground"]
+script = ExtResource("elevation")
+level = 0
+
+[resource]
+script = ExtResource("floor")
+elevation = SubResource("ground")
+regions_metres = Array[PackedVector2Array]([PackedVector2Array(-7.4, 8, -7.4, -11.4, 7.4, -11.4, 7.4, 8), PackedVector2Array(-4.5, -11, -4.5, -14, -2.7, -16.4, 2.7, -16.4, 4.5, -14, 4.5, -11)])
+enclosed = true
+supplies_support = true

@@ -1,0 +1,52 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/region_landmark.gd" id="landmark"]
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[ext_resource type="Resource" path="res://data/environment/cover_wetland.tres" id="ground_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_widows_pool.tscn" id="approach"]
+
+[node name="widows_pool" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("landmark")
+ground_cover = ExtResource("ground_cover")
+cover_bounds_metres = Rect2(-12, -10, 24, 22)
+landmark_id = &"widows_pool"
+display_name = "Widow's Pool"
+map_kind = "pool"
+discovery_metres = 15.0
+known_initially = false
+reservations_metres = Array[Rect2]([Rect2(-9, -7, 18, 14)])
+floors_metres = Array[Rect2]([])
+
+[node name="Water" type="StaticBody2D" parent="."]
+position = Vector2(0, 0)
+script = ExtResource("prop")
+kind = "pool"
+footprint = Vector2(14, 10)
+height_metres = 0
+flight_blocker = false
+solid = true
+variation = 13
+
+[node name="ShoreBoulder" type="StaticBody2D" parent="."]
+position = Vector2(896, -384)
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(2, 2)
+height_metres = 1.6
+flight_blocker = false
+solid = true
+variation = 50
+
+[node name="OldTrunk" type="StaticBody2D" parent="."]
+position = Vector2(-640, 640)
+script = ExtResource("prop")
+kind = "fallen_tree"
+footprint = Vector2(5, 1)
+height_metres = 0.6
+flight_blocker = false
+solid = true
+variation = 87
+
+[node name="ApproachDressing" parent="." instance=ExtResource("approach")]

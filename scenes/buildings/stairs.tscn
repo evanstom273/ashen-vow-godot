@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/elevation_transition.gd" id="stairs_script"]
+[ext_resource type="Script" path="res://scripts/resources/elevation_transition_definition.gd" id="stairs_definition"]
+
+[sub_resource type="Resource" id="Stairs"]
+script = ExtResource("stairs_definition")
+from_level = 0
+to_level = 1
+from_metres = Vector2(0, 2)
+to_metres = Vector2(0, -2)
+width_metres = 2.0
+
+[node name="Stairs" type="Node2D"]
+script = ExtResource("stairs_script")
+definition = SubResource("Stairs")

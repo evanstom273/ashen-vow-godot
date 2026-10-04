@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/landmark_approach.gd" id="1"]
+[ext_resource type="Resource" path="res://data/environment/approach_widows_pool.tres" id="2"]
+[node name="widows_pool_approach" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1")
+definition = ExtResource("2")

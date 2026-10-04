@@ -2,6 +2,14 @@
 
 Open **game_catalog.tres** for an index of classes, weapons, enemies, bosses, spells and shrines. The same catalog is exposed as **Main > Game Data**. Expand any entry to edit its nested resources in Godot's Inspector.
 
+## Current spatial units (4 October 2026)
+
+**128 world units = 1 metre.** Spell delivery and summon lengths/speeds are already in world units; do not multiply them by actor scale. Edit range in **Spell → Delivery Definition**, not the cast AttackDefinition's melee `reach`. Default cast placement range is 1,600 units (12.5 m). Nested mine/orbiter/summon deliveries follow the same contract.
+
+Weapon reach/radius, enemy AI distances and recoil remain actor-local authored values, converted once using actual actor world scale (normally 4x). Polygon models likewise inherit that scale. Movement Resources are already world-space; current human/Raven speeds and camera zoom are unchanged. Shrine/pickup reach defaults to 192 world units (1.5 m).
+
+VFX profiles expose `art_scale` (default 4) for authored particle/polygon/light dimensions; delivery snapshots remain world-space. Never pre-scale delivery geometry again for VFX. HUD, icons and screen effects remain screen-space. See `../WORLD_SCALE_AND_REGION_DESIGN.md` for the resolved spell geometry table and `../world_scale_audit.json` for the migration inventory. Historical balance/implementation notes below are not a current tuning table.
+
 ## Existing scene assignments
 
 | Scene / actor | Definition |

@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="VFXDefinition" format=3 uid="uid://cesfhq3tf3btu"]
+
+[ext_resource type="Script" uid="uid://dkuu5rgeqpv4g" path="res://scripts/resources/combat_feedback_definition.gd" id="feedback_script"]
+[ext_resource type="Material" uid="uid://d31fqccm0nc33" path="res://data/particles/spell_sparks.tres" id="particles"]
+[ext_resource type="Script" uid="uid://brmj1euuu2m0j" path="res://scripts/resources/vfx_definition.gd" id="profile"]
+[ext_resource type="Resource" path="res://data/vfx/feedback_light.tres" id="release_profile"]
+[ext_resource type="PackedScene" path="res://scenes/fx_spell_visual.tscn" id="visual"]
+
+[sub_resource type="Resource" id="ImpactFeedback"]
+resource_name = "vfx_cinder_lance impact"
+script = ExtResource("feedback_script")
+shake_strength = 1.2
+duration = 0.12
+directional_kick = 0.3
+flash_color = Color(1, 0.3961, 0.1412, 0)
+vibration_low = 0.08
+vibration_high = 0.08
+minimum_interval = 0.2
+recurring_scale = 0.06
+hud_response = 0.15
+
+[resource]
+script = ExtResource("profile")
+release_feedback = ExtResource("release_profile")
+impact_feedback = SubResource("ImpactFeedback")
+completion_feedback = SubResource("ImpactFeedback")
+delivery_scene = ExtResource("visual")
+style = 1
+color = Color(1, 0.3961, 0.1412, 1)
+core_color = Color(1, 0.9569, 0.7333, 1)
+particle_count = 48
+visual_size = 14.0
+trail_points = 40
+trail_lifetime = 0.45
+light_energy = 0.8
+light_radius = 140.0
+smoke = true
+spell_visuals = true
+particle_material = ExtResource("particles")
+emission_amount = 72
+emission_speed = 100.0
+particle_scale = 3.0
+ribbon_width = 14.0
+glow_strength = 1.5
+accent_color = Color(0.8118, 0.149, 0.2353, 1)

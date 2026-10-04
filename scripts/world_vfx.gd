@@ -23,7 +23,7 @@ func _ready() -> void:
 	material = mat
 	var random := RandomNumberGenerator.new()
 	random.randomize()
-	for i in profile.particle_count:
+	for _i in profile.particle_count:
 		seeds.append(Vector2(random.randf_range(-PI, PI), random.randf_range(0.25, 1.0)))
 	if mode != &"stain" and profile.light_energy > 0:
 		light = Feedback.effect_light(self, profile)
@@ -31,7 +31,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	elapsed += delta
-	if mode == &"stain" and not Feedback.blood_enabled:
+	if (mode == &"stain" or profile.style == VFXDefinition.Style.FLESH) and not Feedback.blood_enabled:
 		queue_free()
 		return
 	if mode == &"cast":
@@ -44,7 +44,7 @@ func _process(delta: float) -> void:
 		if is_instance_valid(follow):
 			samples.push_front(follow.global_position)
 			ages.push_front(0.0)
-		var limit: int = maxi(2, profile.trail_points / (2 if Feedback.reduced_effects else 1))
+		var limit: int = maxi(2, profile.trail_points >> (1 if Feedback.reduced_effects else 0))
 		while not ages.is_empty() and (ages.back() > profile.trail_lifetime or samples.size() > limit):
 			ages.pop_back()
 			samples.pop_back()
@@ -64,17 +64,8 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	if profile == null: return
-	var count: int = maxi(1, seeds.size() / (2 if Feedback.reduced_effects else 1))
-	if mode == &"trail":
-		for i in range(1, samples.size()):
-			var fade: float = maxf(0, 1.0 - ages[i] / profile.trail_lifetime)
-			draw_line(to_local(samples[i - 1]), to_local(samples[i]), Color(profile.color, fade * 0.65), maxf(0.5, profile.visual_size * fade * 0.55), true)
-			if i % 3 == 0:
-				var mote: Vector2 = to_local(samples[i]) + Vector2(0, sin(float(i) * 2.1 + elapsed * 9) * 5)
-				draw_circle(mote, 1.5 * fade, Color(profile.core_color, fade))
-				if profile.smoke and not Feedback.reduced_effects:
-					draw_circle(mote + Vector2(0, -8 - ages[i] * 15), 4 + ages[i] * 12, Color(0.15, 0.12, 0.1, fade * 0.16))
-		return
+	var count: int = maxi(1, seeds.size() >> (1 if Feedback.reduced_effects else 0))
+	if mode == &"trail": return # No historical-position smear.
 	if mode == &"stain":
 		var alpha: float = 0.65 * (1.0 - smoothstep(8.0, 12.0, elapsed))
 		for i in mini(count, 9):
@@ -93,13 +84,19 @@ func _draw() -> void:
 	if profile.style < VFXDefinition.Style.FLESH:
 		draw_circle(Vector2.ZERO, size, Color(profile.color, fade * 0.09))
 		draw_arc(Vector2.ZERO, size, elapsed * 2, TAU + elapsed * 2, 48, colored, 1.5, true)
+		if profile.style == VFXDefinition.Style.HEAL:
+			for i in 8:
+				var rune: Vector2 = Vector2.RIGHT.rotated(i * TAU / 8 + elapsed * 0.4) * size
+				draw_line(rune * 0.85, rune * 1.12, colored, 2, true)
+		if profile.style == VFXDefinition.Style.WAVE:
+			draw_arc(Vector2.ZERO, size * 0.9, 0, TAU, 64, Color(profile.core_color, fade * 0.65), 3, true)
 	for i in count:
-		var seed: Vector2 = seeds[i]
-		var axis: Vector2 = Vector2.RIGHT.rotated(seed.x)
-		var point: Vector2 = axis * size * seed.y
+		var particle_seed: Vector2 = seeds[i]
+		var axis: Vector2 = Vector2.RIGHT.rotated(particle_seed.x)
+		var point: Vector2 = axis * size * particle_seed.y
 		if profile.style >= VFXDefinition.Style.FLESH:
-			axis = direction.rotated(seed.x * 0.25)
-			point = axis * size * seed.y + Vector2(0, progress * progress * 15)
+			axis = direction.rotated(particle_seed.x * 0.25)
+			point = axis * size * particle_seed.y + Vector2(0, progress * progress * 15)
 		if profile.style == VFXDefinition.Style.HEAL:
 			point.y -= progress * extent
 		match profile.style:
@@ -108,11 +105,11 @@ func _draw() -> void:
 			VFXDefinition.Style.RADIANT:
 				draw_line(point, point + axis * 15 * fade, Color(profile.core_color, fade), 1.5, true)
 			VFXDefinition.Style.FIRE, VFXDefinition.Style.WAVE:
-				draw_circle(point, (2 + seed.y * 5) * fade, colored)
+				draw_circle(point, (2 + particle_seed.y * 5) * fade, colored)
 				if profile.smoke and not Feedback.reduced_effects:
 					draw_circle(point + Vector2(0, -progress * 20), 4 + progress * 6, Color(0.12, 0.1, 0.08, fade * 0.18))
 			VFXDefinition.Style.HEAL:
 				draw_line(point - Vector2(0, 3), point + Vector2(0, 3), colored, 1.5, true)
 				draw_line(point - Vector2(2, 0), point + Vector2(2, 0), colored, 1.5, true)
 			_:
-				draw_line(point, point - axis * (3 + seed.y * 5) * fade, colored, 2 if profile.style == VFXDefinition.Style.FLESH else 1.2, true)
+				draw_line(point, point - axis * (3 + particle_seed.y * 5) * fade, colored, 2 if profile.style == VFXDefinition.Style.FLESH else 1.2, true)

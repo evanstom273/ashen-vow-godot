@@ -4,3 +4,9 @@
 
 [resource]
 script = ExtResource("script")
+walk_speed = 512.0
+sprint_multiplier = 1.5
+acceleration = 2100.0
+deceleration = 3800.0
+dodge_distance = 350.0
+lock_on_radius = 1536.0

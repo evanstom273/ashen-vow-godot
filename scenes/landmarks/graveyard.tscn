@@ -1,0 +1,277 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/region_landmark.gd" id="landmark"]
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/grave_warden.tscn" id="placed_enemy"]
+
+[ext_resource type="Resource" path="res://data/environment/cover_gravewood.tres" id="ground_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_graveyard.tscn" id="approach"]
+
+[node name="graveyard" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("landmark")
+ground_cover = ExtResource("ground_cover")
+cover_bounds_metres = Rect2(-23, -24, 46, 48)
+landmark_id = &"rootbound_graves"
+display_name = "The Rootbound Graves"
+map_kind = "graveyard"
+discovery_metres = 20.0
+known_initially = false
+reservations_metres = Array[Rect2]([Rect2(-3, -20, 6, 40), Rect2(-20, -3, 40, 6)])
+floors_metres = Array[Rect2]([])
+
+[node name="Memorial0" type="StaticBody2D" parent="."]
+position = Vector2(-1408, -2176)
+script = ExtResource("prop")
+kind = "slab"
+footprint = Vector2(1.2, 2)
+height_metres = 0.8
+flight_blocker = false
+solid = true
+variation = 13
+
+[node name="Memorial1" type="StaticBody2D" parent="."]
+position = Vector2(-646.9569980452337, -1616.4920952698271)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.03
+flight_blocker = false
+solid = true
+variation = 50
+
+[node name="Memorial2" type="StaticBody2D" parent="."]
+position = Vector2(-434.5126979033827, -1723.750168650171)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.26
+flight_blocker = false
+solid = true
+variation = 87
+
+[node name="Memorial3" type="StaticBody2D" parent="."]
+position = Vector2(398.22528120176815, -1551.6188489327385)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.4900000000000002
+flight_blocker = false
+solid = true
+variation = 124
+
+[node name="Memorial4" type="StaticBody2D" parent="."]
+position = Vector2(736.7606408048421, -1488.7171212352223)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 0.8
+flight_blocker = false
+solid = true
+variation = 161
+
+[node name="Memorial5" type="StaticBody2D" parent="."]
+position = Vector2(1183.846133094322, -1677.0575235436575)
+script = ExtResource("prop")
+kind = "slab"
+footprint = Vector2(1.2, 2)
+height_metres = 1.03
+flight_blocker = false
+solid = true
+variation = 198
+
+[node name="Memorial6" type="StaticBody2D" parent="."]
+position = Vector2(-1792, -896)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.26
+flight_blocker = false
+solid = true
+variation = 235
+
+[node name="Memorial7" type="StaticBody2D" parent="."]
+position = Vector2(-1408, -384)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.4900000000000002
+flight_blocker = false
+solid = true
+variation = 272
+
+[node name="Memorial10" type="StaticBody2D" parent="."]
+position = Vector2(605.720357528413, -995.2209072706044)
+script = ExtResource("prop")
+kind = "slab"
+footprint = Vector2(1.2, 2)
+height_metres = 1.26
+flight_blocker = false
+solid = true
+variation = 309
+
+[node name="Memorial11" type="StaticBody2D" parent="."]
+position = Vector2(1664, -1280)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.4900000000000002
+flight_blocker = false
+solid = true
+variation = 346
+
+[node name="Memorial13" type="StaticBody2D" parent="."]
+position = Vector2(-1024, 0)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.03
+flight_blocker = false
+solid = true
+variation = 383
+
+[node name="Memorial17" type="StaticBody2D" parent="."]
+position = Vector2(1536, 0)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.03
+flight_blocker = false
+solid = true
+variation = 420
+
+[node name="Memorial18" type="StaticBody2D" parent="."]
+position = Vector2(-1406.3199862246342, 407.70481091378997)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.26
+flight_blocker = false
+solid = true
+variation = 457
+
+[node name="Memorial19" type="StaticBody2D" parent="."]
+position = Vector2(-588.9971037384922, 401.15280506543814)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.4900000000000002
+flight_blocker = false
+solid = true
+variation = 494
+
+[node name="Memorial22" type="StaticBody2D" parent="."]
+position = Vector2(870.2277999478182, 442.31661831844343)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.26
+flight_blocker = false
+solid = true
+variation = 531
+
+[node name="Memorial24" type="StaticBody2D" parent="."]
+position = Vector2(-1124.4391075414292, 832.1060241470235)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 0.8
+flight_blocker = false
+solid = true
+variation = 568
+
+[node name="Memorial25" type="StaticBody2D" parent="."]
+position = Vector2(-822.6220633015172, 971.3131135111431)
+script = ExtResource("prop")
+kind = "slab"
+footprint = Vector2(1.2, 2)
+height_metres = 1.03
+flight_blocker = false
+solid = true
+variation = 605
+
+[node name="Memorial27" type="StaticBody2D" parent="."]
+position = Vector2(256, 1408)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.4900000000000002
+flight_blocker = false
+solid = true
+variation = 642
+
+[node name="Memorial28" type="StaticBody2D" parent="."]
+position = Vector2(1024, 1024)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 0.8
+flight_blocker = false
+solid = true
+variation = 679
+
+[node name="Memorial29" type="StaticBody2D" parent="."]
+position = Vector2(1363.5384535887413, 1032.8345864249163)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.03
+flight_blocker = false
+solid = true
+variation = 716
+
+[node name="Memorial30" type="StaticBody2D" parent="."]
+position = Vector2(-1234.514853393043, 1694.9957371921641)
+script = ExtResource("prop")
+kind = "slab"
+footprint = Vector2(1.2, 2)
+height_metres = 1.26
+flight_blocker = false
+solid = true
+variation = 753
+
+[node name="Memorial31" type="StaticBody2D" parent="."]
+position = Vector2(-918.6193761056275, 1502.6860581375738)
+script = ExtResource("prop")
+kind = "grave"
+footprint = Vector2(0.75, 0.55)
+height_metres = 1.4900000000000002
+flight_blocker = false
+solid = true
+variation = 790
+
+[node name="BrokenEnclosureWest" type="StaticBody2D" parent="."]
+position = Vector2(-2176, 768)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(0.8, 11)
+height_metres = 1
+flight_blocker = false
+solid = true
+variation = 827
+
+[node name="BrokenEnclosureNorth" type="StaticBody2D" parent="."]
+position = Vector2(896, -2176)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(9, 0.8)
+height_metres = 0.9
+flight_blocker = false
+solid = true
+variation = 864
+
+[node name="CollapsedTomb" type="StaticBody2D" parent="."]
+position = Vector2(-2432, -640)
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(3, 2)
+height_metres = 0.7
+flight_blocker = false
+solid = true
+variation = 901
+
+[node name="grave_warden1" parent="." instance=ExtResource("placed_enemy")]
+position = Vector2(640, 512)
+
+[node name="ApproachDressing" parent="." instance=ExtResource("approach")]

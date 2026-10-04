@@ -1,0 +1,417 @@
+{
+  "title": "Named Spell Configuration and Spectacle Pass",
+  "date": "2026-10-03",
+  "verification": {
+    "performed": [
+      "Source inspection of delivery/visual lifecycle and typed references",
+      "43 resource/scene/catalog files: paths exist, ExtResource/SubResource IDs resolve, no duplicate properties",
+      "All 18 spell UIDs and internal IDs preserved",
+      "No obsolete delivery_*.tres references in data, scenes or scripts",
+      "git diff --check (only line-ending notices)"
+    ],
+    "not_run": [
+      "Godot import/parser",
+      "Automated tests",
+      "Runtime playtests",
+      "Visual capture review",
+      "GPU performance or reduced-effects performance measurement"
+    ],
+    "status": "Implemented; runtime acceptance remains unverified."
+  },
+  "rename_map": {
+    "res://data/spells/delivery_beam.tres": "res://data/spells/prismatic_ray.tres",
+    "res://data/spells/delivery_imbue.tres": "res://data/spells/astral_edge.tres",
+    "res://data/spells/delivery_cone.tres": "res://data/spells/furnace_breath.tres",
+    "res://data/spells/delivery_wave.tres": "res://data/spells/moon_arc.tres",
+    "res://data/spells/delivery_zone.tres": "res://data/spells/cinder_field.tres",
+    "res://data/spells/delivery_chain.tres": "res://data/spells/storm_link.tres",
+    "res://data/spells/delivery_orbiting.tres": "res://data/spells/watchful_shards.tres",
+    "res://data/spells/delivery_trap.tres": "res://data/spells/rune_mine.tres",
+    "res://data/spells/delivery_barrage.tres": "res://data/spells/falling_stars.tres",
+    "res://data/spells/delivery_summon.tres": "res://data/spells/vowed_wisp.tres",
+    "res://data/spells/delivery_aura.tres": "res://data/spells/mending_halo.tres",
+    "res://data/spells/delivery_dash.tres": "res://data/spells/comet_step.tres",
+    "res://data/spells/delivery_tether.tres": "res://data/spells/soul_thread.tres"
+  },
+  "changed_assets": [
+    "scripts/resources/vfx_definition.gd",
+    "scripts/resources/attack_definition.gd",
+    "scripts/spell_visual.gd",
+    "scripts/spell_delivery_runtime.gd",
+    "scripts/spell_delivery_service.gd",
+    "scripts/spell_summon.gd",
+    "scripts/spell_effects.gd",
+    "scripts/feedback.gd",
+    "scripts/player.gd",
+    "scripts/player_visuals.gd",
+    "data/game_catalog.tres",
+    "data/spells/star_shard.tres",
+    "data/spells/cinder_lance.tres",
+    "data/spells/vow_spear.tres",
+    "data/spells/ember_wave.tres",
+    "data/spells/mending_light.tres",
+    "data/spells/prismatic_ray.tres",
+    "data/spells/astral_edge.tres",
+    "data/spells/furnace_breath.tres",
+    "data/spells/moon_arc.tres",
+    "data/spells/cinder_field.tres",
+    "data/spells/storm_link.tres",
+    "data/spells/watchful_shards.tres",
+    "data/spells/rune_mine.tres",
+    "data/spells/falling_stars.tres",
+    "data/spells/vowed_wisp.tres",
+    "data/spells/mending_halo.tres",
+    "data/spells/comet_step.tres",
+    "data/spells/soul_thread.tres",
+    "data/vfx_star_shard.tres",
+    "data/vfx_cinder_lance.tres",
+    "data/vfx_vow_spear.tres",
+    "data/vfx_ember_wave.tres",
+    "data/vfx_mending_light.tres",
+    "data/vfx_prismatic_ray.tres",
+    "data/vfx_astral_edge.tres",
+    "data/vfx_furnace_breath.tres",
+    "data/vfx_moon_arc.tres",
+    "data/vfx_cinder_field.tres",
+    "data/vfx_storm_link.tres",
+    "data/vfx_watchful_shards.tres",
+    "data/vfx_rune_mine.tres",
+    "data/vfx_falling_stars.tres",
+    "data/vfx_vowed_wisp.tres",
+    "data/vfx_mending_halo.tres",
+    "data/vfx_comet_step.tres",
+    "data/vfx_soul_thread.tres",
+    "scenes/fx_spell_visual.tscn",
+    "data/particles/spell_sparks.tres",
+    "spell_spectacle_handoff.json"
+  ],
+  "new_assets": [
+    "scripts/spell_visual.gd",
+    "scenes/fx_spell_visual.tscn",
+    "data/particles/spell_sparks.tres",
+    "data/vfx_prismatic_ray.tres",
+    "data/vfx_astral_edge.tres",
+    "data/vfx_furnace_breath.tres",
+    "data/vfx_moon_arc.tres",
+    "data/vfx_cinder_field.tres",
+    "data/vfx_storm_link.tres",
+    "data/vfx_watchful_shards.tres",
+    "data/vfx_rune_mine.tres",
+    "data/vfx_falling_stars.tres",
+    "data/vfx_vowed_wisp.tres",
+    "data/vfx_mending_halo.tres",
+    "data/vfx_comet_step.tres",
+    "data/vfx_soul_thread.tres",
+    "spell_spectacle_handoff.json"
+  ],
+  "tuning": [
+    {
+      "resource": "star_shard.tres",
+      "delivery": "projectile",
+      "uses": 20,
+      "stamina": 12,
+      "element": "magic",
+      "base_amount": 145,
+      "parameters": {
+        "speed": 520,
+        "duration": 2,
+        "radius": 5
+      },
+      "description": "A fast crystalline bolt. Each hit shatters into starlight."
+    },
+    {
+      "resource": "cinder_lance.tres",
+      "delivery": "projectile",
+      "uses": 16,
+      "stamina": 16,
+      "element": "fire",
+      "base_amount": 180,
+      "parameters": {
+        "speed": 440,
+        "duration": 2,
+        "radius": 6
+      },
+      "description": "Launch a white-hot lance with an ember wake."
+    },
+    {
+      "resource": "vow_spear.tres",
+      "delivery": "projectile",
+      "uses": 10,
+      "stamina": 22,
+      "element": "holy",
+      "base_amount": 240,
+      "parameters": {
+        "speed": 380,
+        "duration": 2,
+        "radius": 10,
+        "pierce_count": 1
+      },
+      "description": "A radiant spear that pierces up to two targets."
+    },
+    {
+      "resource": "ember_wave.tres",
+      "delivery": "area",
+      "uses": 10,
+      "stamina": 22,
+      "element": "fire",
+      "base_amount": 160,
+      "parameters": {
+        "radius": 105
+      },
+      "description": "Release an expanding flame ring around yourself."
+    },
+    {
+      "resource": "mending_light.tres",
+      "delivery": "self",
+      "uses": 8,
+      "stamina": 18,
+      "element": "magic",
+      "base_amount": 0,
+      "parameters": {},
+      "description": "Restore 180 health after a committed healing cast."
+    },
+    {
+      "resource": "prismatic_ray.tres",
+      "delivery": "beam",
+      "uses": 12,
+      "stamina": 22,
+      "element": "magic",
+      "base_amount": 50,
+      "parameters": {
+        "duration": 2,
+        "tick_interval": 0.25,
+        "length": 380,
+        "width": 18,
+        "piercing": false
+      },
+      "description": "Hold to channel a prismatic ray for up to 2 seconds. One use; damages the first target."
+    },
+    {
+      "resource": "astral_edge.tres",
+      "delivery": "imbue",
+      "uses": 10,
+      "stamina": 18,
+      "element": "magic",
+      "base_amount": 35,
+      "parameters": {
+        "duration": 15
+      },
+      "description": "Enchant the opposite-hand weapon with 35 bonus magic damage for 15 seconds. Cycling preserves the enchantment."
+    },
+    {
+      "resource": "furnace_breath.tres",
+      "delivery": "cone",
+      "uses": 12,
+      "stamina": 24,
+      "element": "fire",
+      "base_amount": 45,
+      "parameters": {
+        "duration": 2,
+        "tick_interval": 0.25,
+        "radius": 160,
+        "angle_degrees": 70,
+        "held": true
+      },
+      "description": "Hold to pour flames into a forward fan for up to 2 seconds. One use per channel."
+    },
+    {
+      "resource": "moon_arc.tres",
+      "delivery": "wave",
+      "uses": 14,
+      "stamina": 18,
+      "element": "magic",
+      "base_amount": 170,
+      "parameters": {
+        "speed": 280,
+        "distance": 420,
+        "width": 120,
+        "thickness": 16
+      },
+      "description": "Send a broad lunar crescent through enemies, striking each once."
+    },
+    {
+      "resource": "cinder_field.tres",
+      "delivery": "zone",
+      "uses": 10,
+      "stamina": 22,
+      "element": "fire",
+      "base_amount": 30,
+      "parameters": {
+        "radius": 90,
+        "duration": 6,
+        "initial_delay": 0.3,
+        "tick_interval": 0.5
+      },
+      "description": "Place a field of embers. Activates after 0.3 seconds and burns enemies every half-second for 6 seconds."
+    },
+    {
+      "resource": "storm_link.tres",
+      "delivery": "chain",
+      "uses": 12,
+      "stamina": 20,
+      "element": "lightning",
+      "base_amount": 160,
+      "parameters": {
+        "target_count": 4,
+        "jump_radius": 180,
+        "jump_delay": 0.12,
+        "damage_falloff": 0.8,
+        "require_line_of_sight": true
+      },
+      "description": "Strike a selected enemy with lightning that jumps to three more visible targets, losing 20% damage each jump."
+    },
+    {
+      "resource": "watchful_shards.tres",
+      "delivery": "orbiting",
+      "uses": 12,
+      "stamina": 20,
+      "element": "magic",
+      "base_amount": 80,
+      "parameters": {
+        "count": 4,
+        "duration": 12,
+        "automatic": false,
+        "fire_interval": 0.15
+      },
+      "description": "Arm four orbiting shards for 12 seconds. B or touch Command fires a homing volley without spending another use."
+    },
+    {
+      "resource": "rune_mine.tres",
+      "delivery": "trap",
+      "uses": 10,
+      "stamina": 18,
+      "element": "magic",
+      "base_amount": 220,
+      "parameters": {
+        "arming_delay": 0.6,
+        "duration": 15,
+        "trigger_radius": 45,
+        "trigger_count": 1
+      },
+      "description": "Place a rune that arms after 0.6 seconds. An approaching enemy triggers an explosive magic burst."
+    },
+    {
+      "resource": "falling_stars.tres",
+      "delivery": "barrage",
+      "uses": 8,
+      "stamina": 28,
+      "element": "magic",
+      "base_amount": 110,
+      "parameters": {
+        "count": 6,
+        "scatter_radius": 100,
+        "impact_radius": 35,
+        "telegraph_duration": 0.65,
+        "impact_interval": 0.3
+      },
+      "description": "Call six stars onto a selected region. Ground seals mark the exact impact locations."
+    },
+    {
+      "resource": "vowed_wisp.tres",
+      "delivery": "summon",
+      "uses": 8,
+      "stamina": 26,
+      "element": "holy",
+      "base_amount": 55,
+      "parameters": {
+        "count": 1,
+        "duration": 12
+      },
+      "description": "Summon a vulnerable mobile wisp for 12 seconds. It follows you and fires holy bolts at enemies."
+    },
+    {
+      "resource": "mending_halo.tres",
+      "delivery": "aura",
+      "uses": 8,
+      "stamina": 22,
+      "element": "magic",
+      "base_amount": 0,
+      "parameters": {
+        "radius": 90,
+        "duration": 6,
+        "tick_interval": 0.5,
+        "target_filter": "\"Friendly\""
+      },
+      "description": "Carry a healing sanctuary for 6 seconds, restoring 15 health every half-second to you and nearby allies."
+    },
+    {
+      "resource": "comet_step.tres",
+      "delivery": "dash",
+      "uses": 14,
+      "stamina": 16,
+      "element": "magic",
+      "base_amount": 120,
+      "parameters": {
+        "distance": 210,
+        "duration": 0.3,
+        "hit_width": 26,
+        "invulnerable": false
+      },
+      "description": "Surge forward as a comet, striking crossed enemies once. Stops at walls and grants no invulnerability."
+    },
+    {
+      "resource": "soul_thread.tres",
+      "delivery": "tether",
+      "uses": 10,
+      "stamina": 20,
+      "element": "magic",
+      "base_amount": 35,
+      "parameters": {
+        "duration": 2,
+        "tick_interval": 0.25,
+        "break_range": 320,
+        "line_of_sight_grace": 0.15
+      },
+      "description": "Hold a soul tether on a selected enemy for 2 seconds. Completing it deals a final burst; breaking range or sight severs it."
+    }
+  ],
+  "special_payloads": {
+    "astral_edge": "35 unscaled magic bonus for 15s, per actor/weapon token",
+    "mending_light": "180 immediate health",
+    "mending_halo": "15 health every 0.5s, caster/allies",
+    "soul_thread": "140 magic completion attack using new arcane scaling",
+    "rune_mine": "85 radius child explosion",
+    "vowed_wisp": "180 health mobile ally, 12s, 240 attack range, 1s interval",
+    "watchful_shards": "4 manual homing projectiles; turn rate 3"
+  },
+  "runtime_connections": [
+    "GPUParticles2D with shared source material duplicated per emitter",
+    "Profile-selected cast, delivery and impact visuals; no spell-name branches",
+    "Cosmetic setup(profile, snapshot), update_visual(snapshot), stop() protocol; legacy update_delivery hook retained",
+    "World-space ribbon samples and detached particle tails",
+    "Post-movement visual snapshots with clamped cone boundary and beam contact endpoint",
+    "Barrage warnings reuse gameplay impact positions",
+    "Persistent imbue visuals follow selected weapon, resolve stored references before casting, preserve weapon/hand ordering",
+    "Summon visual follows the ally and is destroyed with it",
+    "Per-owner cleanup on death/rest plus scene-owned tails",
+    "Particle allocation capped at 2048; 40 transient-effect budget; eight lights; Reduced Effects halves emitted amount and disables smoke/lights",
+    "Natural channel/dash completion now respects recovery",
+    "Imbue bonus applied after base attribute scaling and before final rounding"
+  ],
+  "compatibility": [
+    "Existing Resource architecture and Mobile renderer retained",
+    "No starting loadout, school, requirement or existing scaling changes in this pass",
+    "Spell file renames preserve UIDs and internal IDs",
+    "No save migration added (no persistence system)",
+    "Existing combat, blood and environmental VFX use original non-spell profiles",
+    "Data-only optional scene overrides remain blank for cast/impact; these use the built-in reusable visual. Delivery_scene explicitly points at fx_spell_visual."
+  ],
+  "unverified": [
+    "All 18 spells' final rendered appearance and numerical balance",
+    "GPU particle material compatibility on the user's Godot 4.7.1 and Mobile device/driver",
+    "Both catalyst hands/facing directions and visual origin alignment",
+    "Channel cancellation/expiry/recovery and no damage after release",
+    "Wall occlusion and first-target beam contact visuals",
+    "Barrage telegraph/impact timing",
+    "Orbit commands and homing/piercing",
+    "Imbue cycling, shrine loadout cleanup and no stale freed references",
+    "Summon navigation, health and cleanup",
+    "Reduced Effects toggle, budgets, pause/death/rest/scene transitions"
+  ],
+  "notes": [
+    "No commits, staging or tests performed.",
+    "Unrelated pre-existing/user edits left untouched.",
+    "The reported freed-object cast in _stop_imbue_visual was fixed during this pass.",
+    "Visual embellishment budgets do not gate gameplay delivery creation or damage."
+  ]
+}

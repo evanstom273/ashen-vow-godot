@@ -1,0 +1,65 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://8mjcbwe5lir5"]
+
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="3_8va0a"]
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://d3cvcwyki6mne" path="res://scripts/resources/projectile_delivery.gd" id="child_script"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://cyoub0ru5awh1" path="res://scripts/resources/summon_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="named_scaling"]
+[ext_resource type="PackedScene" path="res://scenes/spell_companion.tscn" id="scene"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://cf3ausaxqgtqd" path="res://assets/icons/spells/vowed_wisp.svg" id="spell_icon"]
+[ext_resource type="Script" uid="uid://cgex7j5v1voaf" path="res://scripts/resources/summon_definition.gd" id="summon"]
+[ext_resource type="Resource" uid="uid://dm5bynxe5y0vi" path="res://data/vfx_vowed_wisp.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+holy = 55.0
+
+[sub_resource type="Resource" id="NamedScaling"]
+script = ExtResource("named_scaling")
+arcane = 0.035
+
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+scaling = SubResource("NamedScaling")
+poise_damage = 25.0
+stamina_cost = 26.0
+knockback = 100.0
+windup = 0.4
+recovery = 0.3
+
+[sub_resource type="Resource" id="Child"]
+script = ExtResource("child_script")
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+duration = 2.0
+
+[sub_resource type="Resource" id="Summon"]
+script = ExtResource("summon")
+scene = ExtResource("scene")
+health = 180
+attack_range = 960.0
+delivery = SubResource("Child")
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+summon = SubResource("Summon")
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+duration = 12.0
+
+[resource]
+script = ExtResource("spell")
+id = &"delivery_summon"
+display_name = "Vowed Wisp"
+description = "Summon a vulnerable mobile wisp for 12 seconds. It follows you and fires holy bolts at enemies. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = SubResource("Attack")
+delivery_definition = SubResource("Delivery")
+charges = 8
+maximum_charges = 8
+delivery = "Summon"

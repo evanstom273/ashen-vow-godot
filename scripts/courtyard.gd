@@ -4,7 +4,8 @@ extends Node2D
 var rng := RandomNumberGenerator.new()
 var actors: Node2D
 var player: PlayerController
-var ambient_particles: GPUParticles2D
+@export var ambient_vfx: VFXDefinition = preload("res://data/vfx/courtyard_ash.tres")
+var ambient_particles: PhysicalVFX
 var elapsed: float = 0.0
 
 func _ready() -> void:
@@ -20,12 +21,22 @@ func _ready() -> void:
 	add_child(ambient)
 	actors = $Actors
 	player = $Actors/Player
+	# The retained test arena is authored locally at 4x, like the region's actors.
+	# Camera limits/navigation bounds, unlike polygon art, are world coordinates.
+	var northwest: Vector2 = to_global(Vector2(-775, -475))
+	var southeast: Vector2 = to_global(Vector2(775, 475))
+	player.camera.limit_left = roundi(northwest.x)
+	player.camera.limit_top = roundi(northwest.y)
+	player.camera.limit_right = roundi(southeast.x)
+	player.camera.limit_bottom = roundi(southeast.y)
+	SpellNavigation.of(player).bounds = Rect2(northwest, southeast - northwest)
 	for i in 75:
 		var at := Vector2(rng.randf_range(-735,735),rng.randf_range(-435,435))
 		if absf(at.x) < 535 and absf(at.y) < 305: continue
 		_prop("grass" if i % 3 != 0 else "rubble",at)
 	for wall: Rect2 in [Rect2(-820,-520,1640,45),Rect2(-820,475,1640,45),Rect2(-820,-520,45,1040),Rect2(775,-520,45,1040)]:
 		var body := StaticBody2D.new()
+		body.collision_layer = 17 # Ground obstacle + explicit flight blocker.
 		var collider := CollisionShape2D.new()
 		var shape := RectangleShape2D.new()
 		shape.size = wall.size
@@ -76,56 +87,11 @@ func _floor() -> void:
 		for x in range(-13,13): floor_layer.set_cell(Vector2i(x,y),0,Vector2i(rng.randi_range(0,3),0))
 
 func _atmosphere() -> void:
-	ambient_particles = GPUParticles2D.new()
-	ambient_particles.amount = 65
-	ambient_particles.lifetime = 10
-	ambient_particles.preprocess = 5
-	ambient_particles.texture = Feedback.particle_texture
-	ambient_particles.z_index = 40
-	ambient_particles.visibility_rect = Rect2(-1000,-700,2000,1400)
-	var process := ParticleProcessMaterial.new()
-	process.particle_flag_disable_z = true
-	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
-	process.emission_box_extents = Vector3(820,520,0)
-	process.direction = Vector3(0.6,1,0)
-	process.spread = 15
-	process.gravity = Vector3(0,0,0)
-	process.initial_velocity_min = 8
-	process.initial_velocity_max = 16
-	process.scale_min = 0.10
-	process.scale_max = 0.22
-	process.color = Color(0.8,0.85,0.8,0.28)
-	ambient_particles.process_material = process
-	add_child(ambient_particles)
-	for side in [-1,1]:
-		var mist := GPUParticles2D.new()
-		mist.amount = 8
-		mist.lifetime = 12
-		mist.preprocess = 8
-		mist.texture = Feedback.light_texture
-		mist.position = Vector2(side*720,0)
-		mist.z_index = 5
-		var effect_material := ParticleProcessMaterial.new()
-		effect_material.particle_flag_disable_z = true
-		effect_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
-		effect_material.emission_box_extents = Vector3(45,470,0)
-		effect_material.direction = Vector3(0,-1,0)
-		effect_material.initial_velocity_min = 4
-		effect_material.initial_velocity_max = 9
-		effect_material.gravity = Vector3.ZERO
-		effect_material.scale_min = 2
-		effect_material.scale_max = 4
-		effect_material.color = Color(0.3,0.4,0.45,0.08)
-		mist.process_material = effect_material
-		mist.add_to_group("ambient_fx")
-		add_child(mist)
+	ambient_particles = Feedback.physical_effect(global_position, ambient_vfx, &"ambient", Vector2(0.6, 1).normalized(), 1, self, true)
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
 	elapsed += delta
-	ambient_particles.amount_ratio = 0.3 if Feedback.reduced_effects else 1.0
-	for effect: Node in get_tree().get_nodes_in_group("ambient_fx"):
-		(effect as GPUParticles2D).amount_ratio = 0.3 if Feedback.reduced_effects else 1.0
 
 func _draw() -> void:
 	# Fixed handcrafted architectural details, above tiles but below actors.

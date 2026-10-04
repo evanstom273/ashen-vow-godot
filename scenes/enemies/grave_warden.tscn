@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/sentinel.tscn" id="enemy"]
+
+[node name="grave_warden" instance=ExtResource("enemy")]
+use_world_navigation = true
+display_name_override = "Grave Warden"

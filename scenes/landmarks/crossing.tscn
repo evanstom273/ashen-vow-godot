@@ -1,0 +1,102 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/region_landmark.gd" id="landmark"]
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[ext_resource type="Resource" path="res://data/environment/cover_wetland.tres" id="ground_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_crossing.tscn" id="approach"]
+
+[node name="crossing" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("landmark")
+ground_cover = ExtResource("ground_cover")
+cover_bounds_metres = Rect2(-16, -27, 32, 54)
+landmark_id = &"ruined_crossing"
+display_name = "Ruined Crossing"
+map_kind = "bridge"
+discovery_metres = 17.0
+known_initially = false
+reservations_metres = Array[Rect2]([Rect2(-13, -24, 26, 48)])
+floors_metres = Array[Rect2]([])
+
+[node name="NorthWater" type="StaticBody2D" parent="."]
+position = Vector2(0, -1792)
+script = ExtResource("prop")
+kind = "pool"
+footprint = Vector2(9, 19)
+height_metres = 0
+flight_blocker = false
+solid = true
+variation = 13
+
+[node name="SouthWater" type="StaticBody2D" parent="."]
+position = Vector2(0, 1792)
+script = ExtResource("prop")
+kind = "pool"
+footprint = Vector2(9, 19)
+height_metres = 0
+flight_blocker = false
+solid = true
+variation = 50
+
+[node name="BridgeDeck" type="StaticBody2D" parent="."]
+position = Vector2(0, 0)
+script = ExtResource("prop")
+kind = "bridge"
+footprint = Vector2(13, 8)
+height_metres = 0
+flight_blocker = false
+solid = false
+variation = 87
+
+[node name="Pier-6_-4.3" type="StaticBody2D" parent="."]
+position = Vector2(-768, -550.4)
+script = ExtResource("prop")
+kind = "buttress"
+footprint = Vector2(1.2, 1.2)
+height_metres = 1.8
+flight_blocker = false
+solid = true
+variation = 124
+
+[node name="Pier-6_4.3" type="StaticBody2D" parent="."]
+position = Vector2(-768, 550.4)
+script = ExtResource("prop")
+kind = "buttress"
+footprint = Vector2(1.2, 1.2)
+height_metres = 1.8
+flight_blocker = false
+solid = true
+variation = 161
+
+[node name="Pier6_-4.3" type="StaticBody2D" parent="."]
+position = Vector2(768, -550.4)
+script = ExtResource("prop")
+kind = "buttress"
+footprint = Vector2(1.2, 1.2)
+height_metres = 1.8
+flight_blocker = false
+solid = true
+variation = 198
+
+[node name="Pier6_4.3" type="StaticBody2D" parent="."]
+position = Vector2(768, 550.4)
+script = ExtResource("prop")
+kind = "buttress"
+footprint = Vector2(1.2, 1.2)
+height_metres = 1.8
+flight_blocker = false
+solid = true
+variation = 235
+
+[node name="BrokenArch" type="StaticBody2D" parent="."]
+position = Vector2(896, -1024)
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(3, 2)
+height_metres = 1
+flight_blocker = false
+solid = true
+variation = 272
+
+[node name="ApproachDressing" parent="." instance=ExtResource("approach")]

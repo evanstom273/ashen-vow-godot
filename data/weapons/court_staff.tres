@@ -7,6 +7,10 @@
 
 [ext_resource type="PackedScene" path="res://scenes/weapons/court_staff.tscn" id="equipped_model"]
 
+[ext_resource type="Resource" path="res://data/attacks/presentation/court_staff_light.tres" id="presentation_light"]
+
+[ext_resource type="Resource" path="res://data/attacks/presentation/court_staff_charged.tres" id="presentation_charged"]
+
 [resource]
 script = ExtResource("script")
 equipped_scene = ExtResource("equipped_model")
@@ -18,6 +22,6 @@ weight = 4.5
 requirements = ExtResource("requirements")
 is_spell_catalyst = true
 catalyst_schools = Array[String](["Sorcery", "Arcane"])
-light_attack = ExtResource("light")
-charged_attack = ExtResource("charged")
+light_attack = ExtResource("presentation_light")
+charged_attack = ExtResource("presentation_charged")
 blade_color = Color(0.46, 0.58, 0.75, 1)

@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://cvehf7wc0vtn5"]
+
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="3_n33k5"]
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://bibtnoman53oh" path="res://scripts/resources/imbue_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://duiij3aob3j87" path="res://assets/icons/spells/astral_edge.svg" id="spell_icon"]
+[ext_resource type="Resource" uid="uid://dslwb617tua83" path="res://data/vfx_astral_edge.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+magic = 35.0
+
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+poise_damage = 25.0
+stamina_cost = 18.0
+knockback = 100.0
+windup = 0.4
+recovery = 0.3
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+bonus_damage = SubResource("Damage")
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+duration = 15.0
+
+[resource]
+script = ExtResource("spell")
+id = &"delivery_imbue"
+display_name = "Astral Edge"
+description = "Enchant the opposite-hand weapon with 35 bonus magic damage for 15 seconds. Cycling preserves the enchantment. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = SubResource("Attack")
+delivery_definition = SubResource("Delivery")
+charges = 10
+maximum_charges = 10
+delivery = "Weapon Imbue"

@@ -1,0 +1,668 @@
+{
+  "summary": "Stillwood March re-authored around a 450 m camp-to-fort anchor distance, editable landmark kits, deterministic biome/route/scatter Resources, editor preview, shared map geometry and incremental local navigation.",
+  "updated": "2026-10-04",
+  "scope": "Environmental/region authoring only. The current movement, camera zooms, combat, HUD layout, spell tuning, controls, progression and renderer are preserved.",
+  "scale": {
+    "units_per_metre": 128,
+    "boundary_area_m2": 152525,
+    "bounds_metres": {
+      "position": [
+        -260,
+        -120
+      ],
+      "size": [
+        775,
+        235
+      ]
+    },
+    "boundary_points_metres": [
+      [
+        -260,
+        -30
+      ],
+      [
+        -225,
+        -100
+      ],
+      [
+        -150,
+        -105
+      ],
+      [
+        -60,
+        -95
+      ],
+      [
+        30,
+        -100
+      ],
+      [
+        100,
+        -120
+      ],
+      [
+        190,
+        -105
+      ],
+      [
+        270,
+        -120
+      ],
+      [
+        360,
+        -105
+      ],
+      [
+        465,
+        -90
+      ],
+      [
+        515,
+        -35
+      ],
+      [
+        510,
+        60
+      ],
+      [
+        450,
+        105
+      ],
+      [
+        340,
+        110
+      ],
+      [
+        250,
+        95
+      ],
+      [
+        160,
+        115
+      ],
+      [
+        80,
+        105
+      ],
+      [
+        0,
+        85
+      ],
+      [
+        -95,
+        105
+      ],
+      [
+        -200,
+        90
+      ],
+      [
+        -250,
+        40
+      ]
+    ],
+    "camp_to_fort_direct_metres": 450,
+    "principal_route_metres": 589.4187802613002,
+    "ideal_travel_seconds": {
+      "raven_normal": 56.25,
+      "raven_sprint": 37.5,
+      "human_walk_principal": 147.35469506532505,
+      "human_sprint_principal": 98.23646337688336
+    },
+    "travel_caveat": "Arithmetic only; excludes acceleration, obstacles, combat, transformation and stamina exhaustion.",
+    "blocked_area": {
+      "authored_landmark_footprint_sum_m2": 1253.8139858222266,
+      "boundary_strip_sum_m2": 3645.06476776371,
+      "preserved_camp_trunk_sum_m2": 21.49616545692104,
+      "known_raw_sum_m2": 4920.374919042857,
+      "generated_contribution": "Not measured without running the generator. map_data().blocked_area_estimate_m2 includes procedural tree/prop footprints at runtime.",
+      "caveat": "Raw sums include overlaps and boundary strips outside the region. Not an exact collision union or net walkable-area calculation."
+    }
+  },
+  "landmark_anchors_metres": [
+    {
+      "id": "camp",
+      "at": [
+        0,
+        0
+      ],
+      "scene": "scenes/forest_camp.tscn"
+    },
+    {
+      "id": "last_watch",
+      "at": [
+        -200,
+        -35
+      ],
+      "scene": "scenes/landmarks/chapel.tscn"
+    },
+    {
+      "id": "rootbound_graves",
+      "at": [
+        -165,
+        0
+      ],
+      "scene": "scenes/landmarks/graveyard.tscn"
+    },
+    {
+      "id": "widows_pool",
+      "at": [
+        -90,
+        60
+      ],
+      "scene": "scenes/landmarks/widows_pool.tscn"
+    },
+    {
+      "id": "broken_waystone",
+      "at": [
+        -65,
+        -55
+      ],
+      "scene": "scenes/landmarks/waystone.tscn"
+    },
+    {
+      "id": "split_oak",
+      "at": [
+        75,
+        25
+      ],
+      "scene": "scenes/landmarks/split_oak.tscn"
+    },
+    {
+      "id": "ruined_crossing",
+      "at": [
+        185,
+        15
+      ],
+      "scene": "scenes/landmarks/crossing.tscn"
+    },
+    {
+      "id": "old_watchtower",
+      "at": [
+        245,
+        -65
+      ],
+      "scene": "scenes/landmarks/watchtower.tscn"
+    },
+    {
+      "id": "pilgrims_rest",
+      "at": [
+        330,
+        55
+      ],
+      "scene": "scenes/landmarks/pilgrims_rest.tscn"
+    },
+    {
+      "id": "abandoned_quarry",
+      "at": [
+        365,
+        -70
+      ],
+      "scene": "scenes/landmarks/quarry.tscn"
+    },
+    {
+      "id": "greywatch",
+      "at": [
+        450,
+        0
+      ],
+      "scene": "scenes/landmarks/fort.tscn"
+    }
+  ],
+  "routes": [
+    {
+      "id": "camp_to_greywatch",
+      "length_metres": 589.4187802613002,
+      "width_metres": 3.5,
+      "points_metres": [
+        [
+          0,
+          0
+        ],
+        [
+          12,
+          0
+        ],
+        [
+          19,
+          -3
+        ],
+        [
+          32,
+          -3
+        ],
+        [
+          55,
+          20
+        ],
+        [
+          75,
+          25
+        ],
+        [
+          100,
+          -10
+        ],
+        [
+          120,
+          -35
+        ],
+        [
+          150,
+          -20
+        ],
+        [
+          170,
+          20
+        ],
+        [
+          176,
+          15
+        ],
+        [
+          185,
+          15
+        ],
+        [
+          194,
+          15
+        ],
+        [
+          218,
+          35
+        ],
+        [
+          250,
+          18
+        ],
+        [
+          275,
+          -15
+        ],
+        [
+          305,
+          -30
+        ],
+        [
+          335,
+          0
+        ],
+        [
+          365,
+          20
+        ],
+        [
+          395,
+          -10
+        ],
+        [
+          425,
+          8
+        ],
+        [
+          450,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "chapel_road",
+      "length_metres": 223.98313591045672,
+      "width_metres": 2.4,
+      "points_metres": [
+        [
+          0,
+          0
+        ],
+        [
+          -17,
+          3
+        ],
+        [
+          -32,
+          3
+        ],
+        [
+          -55,
+          -2
+        ],
+        [
+          -82,
+          15
+        ],
+        [
+          -115,
+          8
+        ],
+        [
+          -142,
+          -8
+        ],
+        [
+          -165,
+          0
+        ],
+        [
+          -180,
+          -15
+        ],
+        [
+          -192,
+          -19
+        ],
+        [
+          -200,
+          -23
+        ],
+        [
+          -200,
+          -27
+        ]
+      ]
+    },
+    {
+      "id": "widows_loop",
+      "length_metres": 236.63150509201228,
+      "width_metres": 1.8,
+      "points_metres": [
+        [
+          0,
+          3
+        ],
+        [
+          -1,
+          10
+        ],
+        [
+          -4,
+          16
+        ],
+        [
+          -2,
+          24
+        ],
+        [
+          -30,
+          35
+        ],
+        [
+          -60,
+          47
+        ],
+        [
+          -76,
+          67
+        ],
+        [
+          -97,
+          75
+        ],
+        [
+          -115,
+          62
+        ],
+        [
+          -145,
+          40
+        ],
+        [
+          -165,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "waystone_loop",
+      "length_metres": 160.41843914070247,
+      "width_metres": 1.8,
+      "points_metres": [
+        [
+          -32,
+          3
+        ],
+        [
+          -44,
+          -22
+        ],
+        [
+          -65,
+          -48
+        ],
+        [
+          -78,
+          -48
+        ],
+        [
+          -98,
+          -53
+        ],
+        [
+          -133,
+          -30
+        ],
+        [
+          -142,
+          -8
+        ]
+      ]
+    },
+    {
+      "id": "watchtower_loop",
+      "length_metres": 191.7957110361624,
+      "width_metres": 2,
+      "points_metres": [
+        [
+          150,
+          -20
+        ],
+        [
+          180,
+          -58
+        ],
+        [
+          211,
+          -75
+        ],
+        [
+          231,
+          -58
+        ],
+        [
+          245,
+          -57
+        ],
+        [
+          268,
+          -55
+        ],
+        [
+          305,
+          -30
+        ]
+      ]
+    },
+    {
+      "id": "pilgrims_loop",
+      "length_metres": 230.3796623376816,
+      "width_metres": 2.2,
+      "points_metres": [
+        [
+          218,
+          35
+        ],
+        [
+          246,
+          63
+        ],
+        [
+          283,
+          76
+        ],
+        [
+          330,
+          63
+        ],
+        [
+          346,
+          60
+        ],
+        [
+          363,
+          46
+        ],
+        [
+          395,
+          -10
+        ]
+      ]
+    },
+    {
+      "id": "quarry_loop",
+      "length_metres": 178.6285093822349,
+      "width_metres": 2,
+      "points_metres": [
+        [
+          305,
+          -30
+        ],
+        [
+          323,
+          -61
+        ],
+        [
+          365,
+          -70
+        ],
+        [
+          392,
+          -48
+        ],
+        [
+          425,
+          8
+        ]
+      ]
+    }
+  ],
+  "encounters": [],
+  "new_files": [
+    "scripts/resources/region_route_definition.gd",
+    "scripts/resources/region_biome_definition.gd",
+    "scripts/resources/region_scatter_definition.gd",
+    "scripts/region_geometry.gd",
+    "scripts/region_cliff.gd",
+    "scripts/region_landmark.gd",
+    "scenes/landmarks/chapel.tscn",
+    "scenes/landmarks/crossing.tscn",
+    "scenes/landmarks/fort.tscn",
+    "scenes/landmarks/graveyard.tscn",
+    "scenes/landmarks/pilgrims_rest.tscn",
+    "scenes/landmarks/quarry.tscn",
+    "scenes/landmarks/split_oak.tscn",
+    "scenes/landmarks/watchtower.tscn",
+    "scenes/landmarks/waystone.tscn",
+    "scenes/landmarks/widows_pool.tscn"
+  ],
+  "uid_companions": [
+    "scripts/resources/region_route_definition.gd.uid",
+    "scripts/resources/region_biome_definition.gd.uid",
+    "scripts/resources/region_scatter_definition.gd.uid",
+    "scripts/region_geometry.gd.uid",
+    "scripts/region_cliff.gd.uid",
+    "scripts/region_landmark.gd.uid"
+  ],
+  "modified_files": [
+    "scripts/resources/overworld_definition.gd",
+    "data/stillwood_region.tres",
+    "scripts/stillwood_overworld.gd",
+    "scripts/overworld_ground.gd",
+    "scripts/overworld_prop.gd",
+    "scripts/forest_camp.gd",
+    "scripts/forest_tree.gd",
+    "scenes/forest_camp.tscn",
+    "scripts/spell_navigation.gd",
+    "scripts/world_navigation_ui.gd",
+    "WORLD_SCALE_AND_REGION_DESIGN.md",
+    "overworld_handoff.json"
+  ],
+  "inventory_note": "Relative to this overhaul, not all existing uncommitted project work. Existing .uid identities are preserved. Other dirty/untracked files predate this pass and were not reset.",
+  "runtime_connected": [
+    "ForestCamp uses the same seeded placement pipeline for runtime and explicit editor previews. Opening/reopening scenes never triggers full-region generation. Preview instantiates only a bounded local window; authored landmarks remain visible. Preview suppresses enemies, player controls, HUD, audio and gameplay effects.",
+    "OverworldDefinition owns typed routes/biomes/scatter. RegionLandmark scene transforms own landmark/map/discovery locations; encounter markers and footprint/access reservations are editable.",
+    "Six blended soil/vegetation biomes; broadleaf, conifer and dead trees; neighbour-aware seamless ground patches; joined road shoulders/centres; deterministic route-side scenery reserved before trees.",
+    "Ten landmark scene kits: ruined chapel with broken apse, rootbound grave clusters, pool, waystone, split oak, bridge crossing, watchtower, Pilgrim's Rest, terraced quarry and fort gate/courtyard/roofless hall.",
+    "Continuous connected boundary formations replace the old clearing boundaries and previous perimeter rock ring. Collisions stay loaded while decorative processing is culled.",
+    "Ground-only obstacles allow Raven flight but block invalid human landing. Substantial walls and boundary cliffs block flight. Upper architectural artwork and tree canopies retain reveal without affecting collisions.",
+    "Six existing Sentinel encounters reuse the previous regional spatial scale and unchanged combat/AI archetype. No boss is added.",
+    "Local 64x64 navigation grids build incrementally, up to 256 probes per physics frame across pending work. Up to eight ready and eight pending windows; pending/invalid paths return empty for retry. Player window prewarms every 0.5s; rebuild invalidates caches.",
+    "Map derives biome colours, roads, water/solid/floor polygons, canopy aggregates and landmark coordinates from built world data. Distant woodland LOD and prioritised label placement improve legibility. Map redraw is input-driven while paused.",
+    "Existing full-screen M map, wheel zoom, panning, markers, beacons, 2-second arrival fade, transitions, vignette and discovery rules remain. Fort Greywatch is known initially.",
+    "Particle and light budgets remain unchanged: 256 ambient plus 1792 transient particles, eight temporary lights. No new emitters or persistent lights are added by this pass."
+  ],
+  "authoring": [
+    "Open scenes/forest_camp.tscn. Move/edit existing scene instances under Actors/Landmarks, or edit their source scenes.",
+    "Edit routes, biome profiles and scatter in data/stillwood_region.tres. Coordinates/widths use metres; scene transforms use metres times 128.",
+    "On the camp root, under Editor Preview, set Preview Center Metres and Preview Half Extent Metres, then toggle Rebuild Region Preview. Default window is 64x64 m plus margins; half-extent is capped at 64 m. Repeated requests are coalesced. Only ownerless generated roots are replaced; manual nodes and landmark instances remain.",
+    "Keep manual edits outside generated terrain/dressing roots. Generated nodes are not scene-owned or baked into the scene.",
+    "Reload the running scene after authoring changes to refresh the HUD map snapshot. Runtime rebuild already invalidates navigation windows."
+  ],
+  "compatibility": [
+    "Reported route Array type errors are resolved: generation iterates RegionRouteDefinition; map_data explicitly creates separate Array[Dictionary] presentation records.",
+    "Original player/shrine/fire/camp-tree positions and camp proportions remain unchanged.",
+    "Movement Resource, Raven Resource and player scene hashes match the pre-pass baseline. No changes to speed, acceleration, stamina or zoom.",
+    "No shared .tres mutation during generation. Per-enemy display-name edits use duplicated definitions.",
+    "No fake distant fort projection, disconnected level transitions, new enemy archetype, boss, loot, progression, fast travel or persistence."
+  ],
+  "preserved_sha256": {
+    "data/movement/player_movement.tres": "4021ED5ACB65AEA60624C160219666C46C610F184CC0747721066A7D0D6F9056",
+    "data/raven_transformation.tres": "97685DDB7854002D68BD632776C34979BC7DAD27F1B2B8E26D54A4C414F51AA3",
+    "scenes/player.tscn": "A56D97CEBD17F6A04015943A8B831253FEF37192C8CFF5DF05B758BDAF143D32"
+  },
+  "verification": {
+    "performed": [
+      "Source/typed-array inspection",
+      "Resource-path and scene reference inspection",
+      "Source-coordinate route corridor and encounter footprint clearance inspection",
+      "Boundary and route arithmetic",
+      "Preview/runtime ownership and cleanup inspection",
+      "Tracked diff/whitespace review",
+      "Movement/camera resource fingerprints"
+    ],
+    "not_run": [
+      "Godot import",
+      "Godot engine parse",
+      "Automated tests",
+      "Runtime tests"
+    ],
+    "runtime_unverified": [
+      "Visual quality and landmark composition",
+      "Traversal density and balance",
+      "All human/Raven paths, water landings, bridge/gate clearance and boundaries",
+      "Enemy/summon navigation retries and collision",
+      "Canopy/architecture reveal, equipment ordering and Raven above-canopy rendering",
+      "Map/discovery/markers/beacons/fades and input behaviour",
+      "Pause, shrine rest, death, reload and repeated editor regeneration",
+      "CPU/GPU performance and generation latency at widest Raven zoom"
+    ],
+    "limits": [
+      "No claim that static inspection proves Godot startup or engine parsing.",
+      "Blocked-area values are approximate source footprint sums, not measured net walkable terrain.",
+      "Scenery candidates can be skipped for clearance; density needs play review.",
+      "Local grids do not provide full-region long-distance AI routing; out-of-window paths idle/retry.",
+      "Only shallow modular fort exploration is included, not a finished legacy dungeon."
+    ]
+  },
+  "editor_recovery": {
+    "date": "2026-10-04",
+    "finding": "The restored forest scene's @tool _ready() automatically generated the full region. This was a likely contributor to the reopening stall; no crash log confirmed a specific engine failure.",
+    "changes": [
+      "Removed automatic editor rebuild",
+      "Bounded explicit preview to a local window",
+      "Preserved deterministic runtime placement by keeping off-window reservations/random consumption",
+      "Guarded duplicate build requests",
+      "Added build-stage/timing logs"
+    ],
+    "world_changed": false,
+    "verification": "User reported the editor was accessible again. Source inspection only for these changes; no engine import, runtime or automated tests run."
+  }
+}

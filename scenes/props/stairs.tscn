@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[node name="stairs" type="StaticBody2D"]
+script = ExtResource("prop")
+kind = "stairs"
+footprint = Vector2(3, 2)
+height_metres = 0
+solid = false
+flight_blocker = false
+variation = 420

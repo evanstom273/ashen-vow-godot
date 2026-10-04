@@ -44,6 +44,7 @@ func set_controls_enabled(value: bool) -> void:
         visible = value
         return
     if not value and is_instance_valid(player):
+        player.cancel_spell_channel()
         if _action_pressed(&"right"): player.release_hand_action(&"right")
         if _action_pressed(&"left"): player.release_hand_action(&"left")
         if _action_pressed(&"dodge"): player.release_dodge_sprint_hold()
@@ -79,7 +80,7 @@ func _press_touch(index: int, at: Vector2) -> bool:
     if get_tree().paused: return false
     if _try_equipment_cross(at): return true
 
-    for action_name: StringName in [&"right", &"left", &"dodge", &"cast", &"utility", &"interact", &"lock"]:
+    for action_name: StringName in [&"right", &"left", &"dodge", &"cast", &"utility", &"interact", &"lock", &"command"]:
         var rect: Rect2 = rects[action_name]
         if not rect.has_point(at): continue
         _touch_actions[index] = action_name
@@ -91,6 +92,8 @@ func _press_touch(index: int, at: Vector2) -> bool:
             player.begin_dodge_sprint_hold()
         elif action_name == &"cast":
             player.use_selected_spell()
+        elif action_name == &"command":
+            player.command_orbiters()
         elif action_name == &"utility":
             player.use_selected_utility()
         elif action_name == &"interact":
@@ -128,6 +131,8 @@ func _release_touch(index: int, at: Vector2) -> bool:
         player.release_hand_action(&"left")
     elif action_name == &"dodge":
         player.release_dodge_sprint_hold()
+    elif action_name == &"cast":
+        player.release_spell_input()
     elif action_name == &"lock":
         _lock_last = at
         var swipe: float = _lock_last.x - _lock_start.x
@@ -206,6 +211,7 @@ func _action_rects() -> Dictionary:
         &"utility": Rect2(Vector2(x2, y2), button_size),
         &"right": Rect2(Vector2(x3, y2), button_size),
         &"lock": Rect2(Vector2(x3, lock_y), button_size),
+        &"command": Rect2(Vector2(x2, lock_y), button_size),
         &"pause": Rect2(Vector2(size.x - margins.z - 62.0, margins.y + 8.0), Vector2(46, 40))
     }
 
@@ -216,6 +222,7 @@ func _draw() -> void:
 
     if get_tree().paused: return
     _draw_button(rects[&"cast"], "CAST", _action_pressed(&"cast"))
+    _draw_button(rects[&"command"], "COMMAND", _action_pressed(&"command"))
     _draw_button(rects[&"left"], "LH", _action_pressed(&"left"))
     _draw_button(rects[&"dodge"], "DODGE", _action_pressed(&"dodge"))
     _draw_button(rects[&"interact"], "INTERACT", _action_pressed(&"interact"), player.nearby_interactable() != null)

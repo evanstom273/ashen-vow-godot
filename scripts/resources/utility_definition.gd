@@ -6,6 +6,8 @@ extends Resource
 @export var display_name: String = "Utility"
 @export_multiline var description: String = ""
 @export var icon: Texture2D
+## Form utilities toggle instead of consuming restoration charges.
+@export var transformation: TransformationDefinition
 @export_range(0, 99, 1) var charges: int = 1
 @export_range(1, 99, 1) var maximum_charges: int = 1
 @export_range(0, 100000, 1) var health_restore: int = 0

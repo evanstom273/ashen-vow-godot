@@ -4,10 +4,12 @@ extends Node2D
 
 func _ready() -> void:
 	add_to_group("interactable")
+	Elevation.register_tree(self)
+	Elevation.register_visual(self)
 
 
-func can_interact(_player: Node) -> bool:
-	return is_inside_tree() and visible
+func can_interact(player: Node) -> bool:
+	return is_inside_tree() and visible and Elevation.compatible(self, player)
 
 
 func get_interaction_prompt() -> String:

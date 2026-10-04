@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://qie1uoj5k52d"]
+
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="3_bley6"]
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://dyui0ye72nt4o" path="res://scripts/resources/beam_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="named_scaling"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://cqpg4mvm1fjtw" path="res://assets/icons/spells/prismatic_ray.svg" id="spell_icon"]
+[ext_resource type="Resource" uid="uid://cjnglgy1y41rb" path="res://data/vfx_prismatic_ray.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+magic = 50.0
+
+[sub_resource type="Resource" id="NamedScaling"]
+script = ExtResource("named_scaling")
+arcane = 0.035
+
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+scaling = SubResource("NamedScaling")
+poise_damage = 5.0
+knockback = 10.0
+windup = 0.3
+recovery = 0.3
+hit_stop = 0.0
+camera_shake = 0.0
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+length = 1520.0
+width = 72.0
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+duration = 2.0
+tick_interval = 0.25
+
+[resource]
+script = ExtResource("spell")
+id = &"delivery_beam"
+display_name = "Prismatic Ray"
+description = "Hold to channel a prismatic ray for up to 2 seconds. One use; damages the first target. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = SubResource("Attack")
+delivery_definition = SubResource("Delivery")
+charges = 12
+maximum_charges = 12
+delivery = "Beam"

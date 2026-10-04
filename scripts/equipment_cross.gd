@@ -49,6 +49,7 @@ func _draw() -> void:
     var utility: UtilityDefinition = player.utilities[player.utility_index] if not player.utilities.is_empty() else null
     var spell_count: int = player.spell_charges[player.spell_index] if spell != null else -1
     var utility_count: int = player.utility_charges[player.utility_index] if utility != null else -1
+    if utility != null and utility.transformation != null: utility_count = -1
     _draw_slot(Vector2(57, 0), spell, "C", spell_count, 0.0)
     _draw_slot(Vector2(114, 34), player.get_selected_weapon(&"right"), "Q", -1, player.get_charge_progress(&"right"))
     _draw_slot(Vector2(57, 68), utility, "V", utility_count, 0.0)
@@ -74,6 +75,8 @@ func _draw_slot(at: Vector2, item: Resource, key: String, count: int, charge: fl
     draw_rect(rect.grow(-3), Color(GOLD, 0.10), false, 1.0)
     if item != null:
         var texture: Texture2D = item.get("icon") as Texture2D
+        if item is UtilityDefinition and item.transformation != null:
+            texture = item.transformation.icon
         if texture != null:
             var dimensions: Vector2 = texture.get_size()
             var fitted: Vector2 = dimensions * minf(40.0 / dimensions.x, 42.0 / dimensions.y)

@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/forest_tree.gd" id="tree"]
+
+[node name="broadleaf_old" type="StaticBody2D"]
+script = ExtResource("tree")
+tree_family = 0
+variation = 87
+tree_scale = 7.2
+trunk_collision_radius = 48.0

@@ -1,0 +1,114 @@
+ASHEN VOW - ENVIRONMENT POLISH / AUTHORING HANDOFF
+4 October 2026
+
+SCOPE
+Presentation-only pass across Stillwood March. Scale is still 128 units/metre.
+No changes to player/Raven movement, camera, stamina, combat, encounters,
+physical routes, landmark transforms, collision footprints or navigation.
+The existing Mobile renderer, lighting, spell feedback and particle budgets remain.
+
+REGION AUDIT AND TREATMENT
+Deep woodland: fern beds, moss, low shrubs, branches and layered leaf litter.
+Pine woodland / Split Oak: needle-rich floor, roots, worn clearing and broken wood.
+Gravewood / Rootbound Graves: damp moss, roots, disturbed litter and sparse stone;
+  memorial posts frame the road without blocking it or regularising grave rows.
+Stillwood camp: feathered soil edge, trampled shrine approach and lower cover;
+  bare reservations protect shrine/fire/bedrolls/firewood. Their positions stay put.
+Woodland edge: overlapping tree-family probabilities and mixed grass/fern/shrub
+  patches replace the dominant-biome family switch. Existing tree coordinates,
+  density, spacing and trunk radii are preserved.
+Plains: larger varied grass/shrub clumps with stone and bare-earth breaks.
+Fort heath: shorter, drier cover and more stone as the player approaches Greywatch.
+Greywatch gate: worn widening approach, paired dark pennants, contrasting threshold,
+  and broken spring stones instead of a solid-looking overhead gate slab. The
+  actual gate opening, towers and all collision stay unchanged.
+Greywatch interior: sparse stone/moss/weeds and a distinct route to the hall steps.
+Chapel: pale worn approach, modest memorial framing, moss/litter-rich margins.
+  Roof cutaway and existing building/interior collision systems remain intact.
+Watchtower: rubble/gravel approach and low framing towards the accessible forecourt;
+  no false doorway has been painted into the solid tower.
+Pilgrim's Rest: sheltered litter, moss and weeds; clearer southern threshold.
+Ruined Crossing: paired bridge posts and dry approach; wet banks remain reedy and
+  the deck stays free of generated vegetation. Water/bridge geometry is unchanged.
+Widow's Pool: damp soil, irregular shallow/deep water colours, clustered moving
+  reeds, and a subtle dry-bank route, not a path painted across the water.
+Quarry: gravel-biased ground, light apron and chisel/stone-like edging through the
+  existing approach; no new collision shelves or traversal restrictions.
+Broken Waystone: a modest worn stone approach into the existing offering pocket.
+
+WHERE TO TUNE IT
+data/stillwood_region.tres:
+  Each Biome -> Ground Cover sets family weights, density, height, palette,
+  bare fraction and movement response. Weighted biome overlap blends art families.
+  Scatter -> Batched Ground Cover sets cell size, items per cluster and chunk cap.
+  Wind points to the shared weather-motion Resource.
+
+data/environment/stillwood_wind.tres:
+  Direction, Strength, Time Scale, Reduced Effects Multiplier.
+  No weather simulation was added. These are future weather-control inputs.
+data/environment/wind_canopy.tres and wind_undergrowth.tres:
+  Cosmetic displacement in metres, frequency and flutter; trunks/colliders stay fixed.
+  Tree/prop Wind Profile fields can override the shared defaults per instance.
+
+Landmark scene roots:
+  Ground Cover + Cover Bounds Metres select a feathered local ecological override.
+  ApproachDressing -> Definition exposes local points, width, surfaces, edging,
+  frame positions/styles, cloth/accent colours and seed.
+  These approaches are cosmetic: align them with real doors/paths. They cannot
+  carve collision, reroute navigation or change the map.
+
+DRAG-AND-DROP ASSETS
+scenes/vegetation/: fern_bed, moss_patch, leaf_litter, fallen_branches, gravel_patch,
+  reedy_bank, meadow_patch, woodland_floor (all .tscn). Each is one decorative mesh;
+  change its profile, radius, item count or seed in the Inspector.
+scenes/props/approach_*.tscn: twelve editable entrance/approach presets, including
+  the camp and inner hall. Make a Resource unique before changing only one copy.
+scenes/props/ground_cover_zone.tscn: a local ecological override with optional
+  editor bounds and bare-area rectangles. Rebuild terrain after moving/tuning it.
+Existing trees, bushes, grass and reed prefabs inherit the wind integration.
+
+EDITOR WORKFLOW
+If the project was open during this pass, reopen it once so the new shader-global
+and autoload settings are registered by the editor as well as the next game run.
+All new geometry is visible in the 2D editor, including the existing local terrain
+preview and distant overview. Use Rebuild terrain after editing biome/zone data.
+Preview and runtime share the same profiles, world-space seeds and geometry code.
+Generated meshes remain unowned/disposable; manual scene instances are not erased.
+Wind uses runtime gameplay time; editor previews intentionally show a static pose
+instead of starting gameplay, audio, particles or an extra editor animation loop.
+Deleting/rebuilding generated content also removes its owned meshes/materials.
+
+READABILITY AND PERFORMANCE GUARDRAILS
+Ground cover is decorative. It creates zero colliders, lights or particle emitters.
+One shared material and one additional cached mesh per visited terrain chunk.
+Default maximum: 256 decorative items per 16 m chunk, with clustered bare pockets.
+Most paths, entrances, decks, solid footprints and initial enemy spaces are sparse
+or excluded. Tall cover sits below actors and combat indicators at ground Z=-9.
+Tree wind affects canopy art only; foreground reveal is integrated in the same
+shader, and Raven's existing above-canopy rule is untouched.
+One pausable global wind clock; per-object/world-position phase, gust and speed
+variation. No TIME-based animation, per-blade processing or motion blur.
+Reduced Effects reduces wind strength to 35%; roots/litter/stone remain static.
+Retained chunk/notifier culling, lazy tree/prop artwork and the existing 2.5 ms
+region work-queue target. Cover generation advances at most four cells or roughly
+0.9 ms per visit; a single cell and final mesh upload are indivisible, so these
+are scheduling targets, not hard performance guarantees. Ground-cover allocation
+is separate from, and adds nothing to, the existing particle budgets.
+
+STATIC VERIFICATION
+Inspected source, scene and resource links, declared resource IDs, typed-array
+boundaries, material/reveal integration, pause/culling paths and generated ownership.
+Compared existing scene nodes and regional routes against the pre-pass files:
+no original placement or physical-property changes. Movement, Raven definition,
+player, Sentinel, spell runtime, map UI and navigation files retain their hashes.
+Shared .tres definitions are read, never mutated by generated runtime instances.
+git diff --check reports no whitespace errors (existing CRLF notices remain).
+
+RUNTIME-UNVERIFIED - USER REVIEW STILL REQUIRED
+No Godot launch/import commands, automated tests or runtime tests were run.
+Visual quality, foliage density, shader compilation on Mobile, GPU performance
+and the user's 150-165 FPS baseline are NOT verified by static inspection.
+Please review human and Raven travel, gate/chapel/hall/bridge readability, reveal
+and equipment layering, combat telegraphs, all water banks, Reduced Effects,
+pause/unpause, rest/reload, F11, and editor drag/drop/rebuild/save/reopen.
+Resource/source inventory: environment_polish_handoff.json.

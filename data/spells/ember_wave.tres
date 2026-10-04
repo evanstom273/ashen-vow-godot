@@ -1,15 +1,18 @@
 [gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://cd42vb4cpi5ma"]
 
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="4_04xce"]
 [ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
 [ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://dncq42pabx086" path="res://scripts/resources/area_delivery.gd" id="delivery_script"]
 [ext_resource type="Resource" uid="uid://xr3w3ggdbdmu" path="res://data/stats/spell_requirements.tres" id="requirements"]
 [ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="scaling"]
 [ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Resource" uid="uid://bd3u8gmifxg3d" path="res://data/vfx_ember_wave.tres" id="vfx_profile"]
 
 [sub_resource type="Resource" id="Damage"]
 script = ExtResource("damage")
 physical = 0.0
-fire = 100.0
+fire = 160.0
 
 [sub_resource type="Resource" id="Scaling"]
 script = ExtResource("scaling")
@@ -21,25 +24,29 @@ display_name = "Ember Wave"
 damage = SubResource("Damage")
 scaling = SubResource("Scaling")
 poise_damage = 25.0
-stamina_cost = 14.0
+knockback = 100.0
 windup = 0.22
-recovery = 0.28
+recovery = 0.25
 movement_multiplier = 0.35
 reach = 480.0
 slash_color = Color(1, 0.52, 0.2, 1)
 swing_sound = &"fire"
 
+[sub_resource type="Resource" id="DeliveryProfile"]
+script = ExtResource("delivery_script")
+radius = 420.0
+wall_occlusion = false
+vfx = ExtResource("vfx_profile")
+
 [resource]
 script = ExtResource("spell")
 id = &"ember_wave"
 display_name = "Ember Wave"
-description = "Releases a damaging ring around the caster. Replenished at shrines."
+description = "Release an expanding flame ring around yourself. Uses replenish at shrines."
 school = "Arcane"
 requirements = ExtResource("requirements")
 cast = SubResource("Cast")
-charges = 5
-maximum_charges = 5
+delivery_definition = SubResource("DeliveryProfile")
+charges = 10
+maximum_charges = 10
 delivery = "Area"
-projectile_speed = 0.0
-lifetime = 2.0
-area_radius = 105.0

@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/building_floor.gd" id="floor_script"]
+[ext_resource type="Script" path="res://scripts/resources/building_floor_definition.gd" id="floor_definition"]
+[ext_resource type="Script" path="res://scripts/resources/elevation_definition.gd" id="elevation_definition"]
+
+[sub_resource type="Resource" id="Elevation"]
+script = ExtResource("elevation_definition")
+level = 0
+
+[sub_resource type="Resource" id="Floor"]
+script = ExtResource("floor_definition")
+elevation = SubResource("Elevation")
+regions_metres = Array[PackedVector2Array]([PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)])
+
+[node name="Floor" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("floor_script")
+definition = SubResource("Floor")
+floor_art = Array[NodePath]([NodePath("FloorArt")])
+interior_art = Array[NodePath]([NodePath("InteriorArt")])
+permanent_walls = Array[NodePath]([NodePath("Walls")])
+roof_art = Array[NodePath]([NodePath("RoofArt")])
+upper_facade = Array[NodePath]([NodePath("UpperFacade")])
+
+[node name="FloorArt" type="Polygon2D" parent="."]
+z_index = -14
+polygon = PackedVector2Array(-512, -512, 512, -512, 512, 512, -512, 512)
+color = Color(0.27, 0.30, 0.28, 1)
+
+[node name="Walls" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="InteriorArt" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Occupants" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="RoofArt" type="Node2D" parent="."]
+z_index = 5
+z_as_relative = false
+
+[node name="UpperFacade" type="Node2D" parent="."]
+y_sort_enabled = true

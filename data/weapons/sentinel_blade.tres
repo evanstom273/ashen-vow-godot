@@ -5,6 +5,10 @@
 
 [ext_resource type="PackedScene" path="res://scenes/weapons/sentinel_blade.tscn" id="equipped_model"]
 
+[ext_resource type="Resource" path="res://data/attacks/presentation/sentinel_blade_light.tres" id="presentation_light"]
+
+[ext_resource type="Resource" path="res://data/attacks/presentation/sentinel_blade_charged.tres" id="presentation_charged"]
+
 [resource]
 script = ExtResource("script")
 equipped_scene = ExtResource("equipped_model")
@@ -14,6 +18,6 @@ category = "Greatsword"
 weight = 8.0
 is_spell_catalyst = false
 catalyst_schools = Array[String]([])
-light_attack = ExtResource("attack")
-charged_attack = ExtResource("attack")
+light_attack = ExtResource("presentation_light")
+charged_attack = ExtResource("presentation_charged")
 blade_color = Color(0.64, 0.67, 0.63, 1)

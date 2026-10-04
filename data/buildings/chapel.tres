@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/building_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"last_watch_interior"
+display_name = "Chapel of the Last Watch"
+fade_seconds = 0.22
+outside_interior_opacity = 0.0
+lower_floor_opacity = 0.12
+upper_floor_opacity = 0.0
+reveal_while_airborne = false

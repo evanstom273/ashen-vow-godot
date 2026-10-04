@@ -9,7 +9,7 @@
 [ext_resource type="Script" uid="uid://drkinirsld8x3" path="res://scripts/resources/class_definition.gd" id="script"]
 [ext_resource type="Resource" uid="uid://bx4o5r66t2jnp" path="res://data/loadout_spells.tres" id="spell_loadout"]
 [ext_resource type="Resource" path="res://data/stats/wanderer_attributes.tres" id="stats"]
-[ext_resource type="Resource" path="res://data/loadout_utilities.tres" id="utility_loadout"]
+[ext_resource type="Resource" uid="uid://bucme6clgw620" path="res://data/loadout_utilities.tres" id="utility_loadout"]
 [ext_resource type="Resource" uid="uid://ca6i22cga5tp1" path="res://data/vitals/wanderer_vitals.tres" id="vitals"]
 [ext_resource type="Resource" uid="uid://cyejnpa2yk0xy" path="res://data/weapons/wanderer_sword.tres" id="weapon"]
 

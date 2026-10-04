@@ -1,0 +1,52 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/region_landmark.gd" id="landmark"]
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+[ext_resource type="Script" path="res://scripts/forest_tree.gd" id="tree"]
+
+[ext_resource type="Resource" path="res://data/environment/cover_pinewood.tres" id="ground_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_split_oak.tscn" id="approach"]
+
+[node name="split_oak" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("landmark")
+ground_cover = ExtResource("ground_cover")
+cover_bounds_metres = Rect2(-15, -16, 30, 32)
+landmark_id = &"split_oak"
+display_name = "Split Oak Clearing"
+map_kind = "tree"
+discovery_metres = 13.0
+known_initially = false
+reservations_metres = Array[Rect2]([Rect2(-8, -8, 16, 16)])
+floors_metres = Array[Rect2]([])
+
+[node name="FallenHalf" type="StaticBody2D" parent="."]
+position = Vector2(-384, -1536)
+script = ExtResource("prop")
+kind = "fallen_tree"
+footprint = Vector2(9, 1.7)
+height_metres = 1
+flight_blocker = false
+solid = true
+variation = 13
+
+[node name="Roots" type="StaticBody2D" parent="."]
+position = Vector2(-384, -1024)
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(2, 1)
+height_metres = 0.5
+flight_blocker = false
+solid = true
+variation = 50
+
+[node name="SplitOak" type="StaticBody2D" parent="."]
+position = Vector2(-384, -1024)
+script = ExtResource("tree")
+tree_family = 2
+tree_scale = 7.2
+trunk_collision_radius = 55.0
+reveal_radius = 190.0
+reveal_edge_softness = 64.0
+
+[node name="ApproachDressing" parent="." instance=ExtResource("approach")]

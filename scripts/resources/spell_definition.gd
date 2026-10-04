@@ -9,19 +9,62 @@ extends Resource
 @export var icon: Texture2D
 @export var requirements: AttributeStats
 @export var cast: AttackDefinition
+## Selected delivery owns gameplay settings and its VFX profile.
+@export var delivery_definition: SpellDeliveryDefinition
 @export_range(0, 99, 1) var charges: int = 3
 @export_range(1, 99, 1) var maximum_charges: int = 3
 @export_range(0, 100000, 1) var health_restore: int = 0
 @export_range(0, 100000, 0.1) var stamina_restore: float = 0.0
 @export_range(1, 10, 1) var memory_slots: int = 1
-@export_group("Delivery")
-@export_enum("Projectile", "Area", "Self", "Target") var delivery: String = "Projectile"
-@export var projectile_scene: PackedScene
-@export var cast_effect: PackedScene
-@export_range(0, 3000, 1) var projectile_speed: float = 350.0
-@export_range(1, 64, 0.5) var projectile_radius: float = 7.0
-@export_range(0.01, 60, 0.01) var lifetime: float = 3.0
-@export_range(0, 1000, 1) var area_radius: float = 0.0
+@export_enum("Projectile", "Area", "Self", "Target", "Beam", "Weapon Imbue", "Cone", "Wave / Arc", "Ground Zone", "Chain", "Orbiting", "Trap / Mine", "Barrage / Rain", "Summon", "Aura", "Dash / Movement", "Tether")
+var delivery: String = "Projectile":
+	set(value):
+		var kinds: Dictionary = {
+			"Projectile": "projectile",
+			"Area": "area",
+			"Self": "self",
+			"Target": "target",
+			"Beam": "beam",
+			"Weapon Imbue": "imbue",
+			"Cone": "cone",
+			"Wave / Arc": "wave",
+			"Ground Zone": "zone",
+			"Chain": "chain",
+			"Orbiting": "orbiting",
+			"Trap / Mine": "trap",
+			"Barrage / Rain": "barrage",
+			"Summon": "summon",
+			"Aura": "aura",
+			"Dash / Movement": "dash",
+			"Tether": "tether"
+		}
 
+		if not kinds.has(value):
+			return
+
+		var selected_kind: StringName = StringName(kinds[value])
+
+		if delivery_definition == null or delivery_definition.kind() != selected_kind:
+			var script_path: String = (
+				"res://scripts/resources/"
+				+ String(selected_kind)
+				+ "_delivery.gd"
+			)
+			var definition_script: Script = load(script_path) as Script
+			if definition_script == null or not definition_script.can_instantiate():
+				push_error("Cannot create delivery definition: " + script_path)
+				return
+
+			var new_definition: SpellDeliveryDefinition = (
+				definition_script.new() as SpellDeliveryDefinition
+			)
+			if new_definition == null:
+				push_error("Invalid delivery definition: " + script_path)
+				return
+
+			delivery_definition = new_definition
+
+		delivery = value
+		emit_changed()
 func starting_charges() -> int:
-    return clampi(charges, 0, maximum_charges)
+	return clampi(charges, 0, maximum_charges)

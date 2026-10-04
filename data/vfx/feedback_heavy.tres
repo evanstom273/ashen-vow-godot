@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CombatFeedbackDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/combat_feedback_definition.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+resource_name = "heavy feedback"
+shake_strength = 5
+duration = 0.22
+directional_kick = 2.5
+zoom_punch = 0.012
+hit_stop = 0.045
+brightness_pulse = -0.025
+contrast_pulse = 0.04
+vibration_low = 0.4
+vibration_high = 0.3
+hud_response = 0.65
+frequency = 23.0
+falloff = 2.0
+minimum_interval = 0.16
+recurring_scale = 0.08
+recurring_interval = 0.5
+rumble_key = &"rumble"

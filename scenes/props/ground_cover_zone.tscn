@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/region_cover_zone.gd" id="1"]
+[ext_resource type="Resource" path="res://data/environment/cover_deepwood.tres" id="2"]
+[node name="GroundCoverZone" type="Node2D"]
+script = ExtResource("1")
+profile = ExtResource("2")
+bounds_metres = Rect2(-5, -5, 10, 10)
+show_editor_bounds = true

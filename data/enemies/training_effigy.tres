@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("script")
+hit_surface = 3
 id = &"training_effigy"
 display_name = "Training Effigy"
 attributes = ExtResource("stats")

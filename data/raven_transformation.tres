@@ -1,0 +1,64 @@
+[gd_resource type="Resource" script_class="TransformationDefinition" format=3 uid="uid://k6svylcb55bg"]
+
+[ext_resource type="Script" uid="uid://ip8opq2wvhgv" path="res://scripts/resources/transformation_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/raven_form.tscn" id="2"]
+[ext_resource type="Script" uid="uid://wsbx5iu6bxdr" path="res://scripts/resources/movement_definition.gd" id="3"]
+[ext_resource type="Script" uid="uid://brmj1euuu2m0j" path="res://scripts/resources/vfx_definition.gd" id="4"]
+[ext_resource type="Texture2D" uid="uid://csnx0a5rei40x" path="res://assets/icons/raven_feather.svg" id="feather"]
+[ext_resource type="Texture2D" uid="uid://cf3rw1fkqqjdk" path="res://assets/icons/raven_form.svg" id="icon"]
+
+[sub_resource type="Resource" id="Movement"]
+script = ExtResource("3")
+walk_speed = 1024.0
+sprint_multiplier = 1.0
+acceleration = 2700.0
+deceleration = 3400.0
+sprint_stamina_per_second = 12.0
+
+[sub_resource type="Resource" id="Wake"]
+script = ExtResource("4")
+color = Color(0.25, 0.27, 0.32, 0.55)
+lifetime = 0.5
+light_energy = 0.0
+particle_texture = ExtResource("feather")
+emission_amount = 3
+particle_lifetime = 0.4
+emission_speed = 24.0
+particle_scale = 3.0
+gravity = 12.0
+
+[sub_resource type="Resource" id="Feathers"]
+script = ExtResource("4")
+color = Color(0.16, 0.18, 0.23, 0.85)
+core_color = Color(0.5, 0.52, 0.58, 1)
+light_energy = 0.0
+particle_texture = ExtResource("feather")
+emission_amount = 36
+particle_lifetime = 0.55
+emission_speed = 70.0
+particle_scale = 5.0
+gravity = 24.0
+
+[resource]
+script = ExtResource("1")
+id = &"raven"
+display_name = "Raven"
+icon = ExtResource("icon")
+visual_scene = ExtResource("2")
+movement = SubResource("Movement")
+allow_sprint = true
+sprint_speed = 1536.0
+sprint_vfx = SubResource("Wake")
+sprint_vfx_interval = 0.07
+traversal_tags = Array[StringName]([&"airborne", &"flyover"])
+visual_z_index = 6
+reveal_foreground = false
+transition_duration = 0.4
+transform_vfx = SubResource("Feathers")
+revert_vfx = SubResource("Feathers")
+movement_vfx = SubResource("Wake")
+camera_lead = 0.0
+camera_zoom_absolute = true
+wheel_zoom_enabled = true
+camera_zoom_min = 0.1
+camera_zoom_max = 0.2

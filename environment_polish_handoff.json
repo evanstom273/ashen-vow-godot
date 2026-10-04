@@ -1,0 +1,443 @@
+{
+  "date": "2026-10-04",
+  "task": "Region-wide environmental polish, readability and foliage density",
+  "scale_units_per_metre": 128,
+  "verification": "Source/resource/diff inspection only. No Godot launch/import command, automated test, runtime test or GPU measurement.",
+  "unchanged": [
+    "Human/Raven movement and camera definitions",
+    "Player/enemy/spell combat values and runtime",
+    "Original scene-node transforms and physical properties",
+    "Regional route coordinates and widths, landmark anchors, boundary",
+    "Map and navigation code",
+    "Renderer, lighting configuration, spell effects and particle budgets"
+  ],
+  "profiles_by_area": {
+    "graveyard": "cover_gravewood",
+    "forest": "cover_deepwood + cover_pinewood",
+    "camp": "cover_camp",
+    "forest_edge": "cover_woodland_edge",
+    "plains": "cover_meadow",
+    "fort_heath": "cover_heath",
+    "fort": "cover_fort",
+    "chapel": "cover_chapel",
+    "water": "cover_wetland",
+    "quarry": "cover_quarry",
+    "watchtower": "cover_ruins",
+    "pilgrims_rest": "cover_pilgrims",
+    "waystone": "cover_gravewood",
+    "split_oak": "cover_pinewood"
+  },
+  "architecture": {
+    "wind": "One pausable autoload clock, shared shader include, position/phase/speed variation; canopy shader preserves foreground reveal.",
+    "cover": "Seeded world-space clusters, weighted biome profiles, local context buckets, cached 2D meshes with vertex wind weights.",
+    "authoring": "Resource-driven profiles; editable approach/patch/zone scenes; existing editor-preview pipeline retained.",
+    "execution": "Decoration only. All colliders, gameplay actors and shared Resource payloads stay unchanged.",
+    "work_scheduling": "Existing 2.5ms target; incremental cover visits of up to 4 cells / ~0.9ms. A cell and final upload are indivisible."
+  },
+  "limits": {
+    "items_per_chunk": 256,
+    "chunk_metres": 16,
+    "wind_clock_nodes": 1,
+    "cover_meshes_per_generated_chunk": 1,
+    "new_particle_emitters": 0,
+    "new_colliders": 0,
+    "new_lights": 0,
+    "reduced_effects_wind_multiplier": 0.35
+  },
+  "static_findings": [
+    "No missing res:// references in scoped assets",
+    "No duplicate or undefined ExtResource/SubResource IDs",
+    "Original authored scene nodes retain their gameplay/placement properties",
+    "Regional route and boundary lines unchanged",
+    "Seven protected movement/combat/navigation file hashes match",
+    "git diff --check: no whitespace errors"
+  ],
+  "runtime_unverified": [
+    "Godot parsing/import and Mobile shader compilation",
+    "Visual quality and density at both camera scales",
+    "Both forms' reveal, occlusion and equipment layering",
+    "Entrances, gates, chapel roof and bridge readability",
+    "GPU/frame time and 150-165 FPS baseline",
+    "Foliage prewarm/pop-in while sprinting Raven",
+    "Pause/rest/reload/F11 and Reduced Effects",
+    "Editor drag/drop, Resource edits, rebuild and save/reopen"
+  ],
+  "assets": [
+    {
+      "path": "res://ENVIRONMENT_POLISH.txt",
+      "kind": "new"
+    },
+    {
+      "path": "res://LEVEL_AUTHORING.txt",
+      "kind": "modified"
+    },
+    {
+      "path": "res://data/environment/approach_camp.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_chapel.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_crossing.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_fort.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_graveyard.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_inner_hall.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_pilgrims_rest.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_quarry.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_split_oak.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_watchtower.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_waystone.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/approach_widows_pool.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_camp.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_chapel.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_deepwood.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_fort.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_gravewood.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_heath.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_meadow.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_pilgrims.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_pinewood.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_quarry.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_ruins.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_wetland.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/cover_woodland_edge.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/ground_cover_material.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/patch_fallen_branches.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/patch_fern_bed.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/patch_gravel_patch.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/patch_leaf_litter.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/patch_moss_patch.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/patch_reedy_bank.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/stillwood_wind.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/wind_canopy.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/environment/wind_undergrowth.tres",
+      "kind": "new"
+    },
+    {
+      "path": "res://data/stillwood_region.tres",
+      "kind": "modified"
+    },
+    {
+      "path": "res://environment_polish_handoff.json",
+      "kind": "new"
+    },
+    {
+      "path": "res://project.godot",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/forest_camp.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/chapel.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/crossing.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/fort.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/graveyard.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/pilgrims_rest.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/quarry.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/split_oak.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/watchtower.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/waystone.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/landmarks/widows_pool.tscn",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scenes/props/approach_camp.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_chapel.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_crossing.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_fort.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_graveyard.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_inner_hall.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_pilgrims_rest.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_quarry.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_split_oak.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_watchtower.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_waystone.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/approach_widows_pool.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/props/ground_cover_zone.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/vegetation/fallen_branches.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/vegetation/fern_bed.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/vegetation/gravel_patch.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/vegetation/leaf_litter.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/vegetation/meadow_patch.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/vegetation/moss_patch.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/vegetation/reedy_bank.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scenes/vegetation/woodland_floor.tscn",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/environment_wind.gd",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/foreground_reveal.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scripts/forest_camp.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scripts/forest_tree.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scripts/ground_cover_builder.gd",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/ground_cover_patch.gd",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/landmark_approach.gd",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/overworld_ground.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scripts/overworld_prop.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scripts/region_cover_zone.gd",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/region_landmark.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scripts/resources/environment_wind_definition.gd",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/resources/foliage_wind_definition.gd",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/resources/ground_cover_profile.gd",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/resources/landmark_approach_definition.gd",
+      "kind": "new"
+    },
+    {
+      "path": "res://scripts/resources/overworld_definition.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scripts/resources/region_biome_definition.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scripts/resources/region_scatter_definition.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://scripts/stillwood_overworld.gd",
+      "kind": "modified"
+    },
+    {
+      "path": "res://shaders/foliage_motion.gdshaderinc",
+      "kind": "new"
+    },
+    {
+      "path": "res://shaders/foliage_wind.gdshader",
+      "kind": "new"
+    },
+    {
+      "path": "res://shaders/foreground_reveal.gdshader",
+      "kind": "modified"
+    }
+  ]
+}

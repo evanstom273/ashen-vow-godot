@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="AttackDefinition" format=3 uid="uid://cug5t06md7m4e"]
+
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage_type"]
+[ext_resource type="Script" uid="uid://dvuq7ohyikore" path="res://scripts/resources/max_health_drain_definition.gd" id="drain"]
+[ext_resource type="Resource" uid="uid://cp15lx7o6k1yl" path="res://data/vfx_blackflame_bond.tres" id="vfx"]
+
+[sub_resource type="Resource" id="FireDamage"]
+script = ExtResource("damage_type")
+physical = 0.0
+fire = 120.0
+
+[sub_resource type="Resource" id="Blackflame"]
+script = ExtResource("drain")
+vfx = ExtResource("vfx")
+
+[resource]
+script = ExtResource("attack")
+display_name = "Blackflame"
+damage = SubResource("FireDamage")
+max_health_drain = SubResource("Blackflame")
+poise_damage = 0.0
+stamina_cost = 20.0
+knockback = 0.0
+windup = 0.3
+recovery = 0.3
+hit_stop = 0.0
+camera_shake = 0.0

@@ -1,10 +1,13 @@
 [gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://ctfapta8ql21w"]
 
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="4_nd28d"]
 [ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
 [ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://bc2b20nf1hcev" path="res://scripts/resources/self_delivery.gd" id="delivery_script"]
 [ext_resource type="Resource" uid="uid://xr3w3ggdbdmu" path="res://data/stats/spell_requirements.tres" id="requirements"]
 [ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="scaling"]
 [ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Resource" uid="uid://cc4geg4q5byrx" path="res://data/vfx_mending_light.tres" id="vfx_profile"]
 
 [sub_resource type="Resource" id="Damage"]
 script = ExtResource("damage")
@@ -20,23 +23,30 @@ display_name = "Mending Light"
 damage = SubResource("Damage")
 scaling = SubResource("Scaling")
 poise_damage = 0.0
-stamina_cost = 10.0
-windup = 0.22
-recovery = 0.28
+stamina_cost = 18.0
+knockback = 0.0
+windup = 0.55
+recovery = 0.25
 movement_multiplier = 0.35
 reach = 480.0
 slash_color = Color(0.55, 1, 0.73, 1)
 swing_sound = &"shrine"
 
+[sub_resource type="Resource" id="DeliveryProfile"]
+script = ExtResource("delivery_script")
+vfx = ExtResource("vfx_profile")
+target_filter = "Caster"
+
 [resource]
 script = ExtResource("spell")
 id = &"mending_light"
 display_name = "Mending Light"
-description = "Restores health when the cast completes. Replenished at shrines."
+description = "Restore 180 health after a committed healing cast. Uses replenish at shrines."
 school = "Arcane"
 requirements = ExtResource("requirements")
 cast = SubResource("Cast")
+delivery_definition = SubResource("DeliveryProfile")
+charges = 8
+maximum_charges = 8
 health_restore = 180
 delivery = "Self"
-projectile_speed = 0.0
-lifetime = 2.0

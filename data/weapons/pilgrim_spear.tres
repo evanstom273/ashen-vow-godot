@@ -7,6 +7,10 @@
 
 [ext_resource type="PackedScene" path="res://scenes/weapons/pilgrim_spear.tscn" id="equipped_model"]
 
+[ext_resource type="Resource" path="res://data/attacks/presentation/pilgrim_spear_light.tres" id="presentation_light"]
+
+[ext_resource type="Resource" path="res://data/attacks/presentation/pilgrim_spear_charged.tres" id="presentation_charged"]
+
 [resource]
 script = ExtResource("script")
 equipped_scene = ExtResource("equipped_model")
@@ -16,6 +20,6 @@ description = "A long road-warden's spear."
 category = "Spear"
 weight = 4.0
 requirements = ExtResource("requirements")
-light_attack = ExtResource("light")
-charged_attack = ExtResource("charged")
+light_attack = ExtResource("presentation_light")
+charged_attack = ExtResource("presentation_charged")
 blade_color = Color(0.7, 0.76, 0.7, 1)

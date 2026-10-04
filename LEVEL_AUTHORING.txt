@@ -1,0 +1,114 @@
+ASHEN VOW - LEVEL AUTHORING
+Updated 4 October 2026
+
+OPEN THE LEVEL
+Open res://scenes/forest_camp.tscn in the 2D editor.
+The world-authoring plugin is enabled in project.godot. Its 2D toolbar contains
+"Rebuild terrain" and "Roof cutaway". If Godot has not picked up the new plugin,
+check Project > Project Settings > Plugins for Ashen Vow World Authoring.
+
+Terrain preview now starts automatically. A lightweight overview covers the
+region; nearby ground, vegetation and roadside props use the runtime generation
+pipeline. Detail follows the editor view after panning/zooming settles. Far-away
+trees/props deliberately use simplified silhouettes, not full-detail thousands
+of live nodes. Ground meshes and nearby decorative nodes prepare in batches.
+This is a structural level preview, not a live combat/VFX simulation.
+
+The ForestCamp Inspector also exposes:
+- Preview Follow Viewport: disable to work with a fixed detail window.
+- Preview Center Metres and Preview Half Extent Metres: manual detail window.
+- Rebuild Region Preview: regenerate after changing authored placements/data.
+The detail window is bounded to 16-64 metres half-extent.
+
+EDIT ENEMIES
+Enemies are actual scene instances now, not Marker2D spawn instructions.
+Expand Actors > Landmarks; editable children are enabled for the existing kits.
+The chapel Sentinel is under:
+  chapel > Building > GroundFloor > Occupants > court_sentinel1
+Select and move the enemy itself. Roof cutaway is editor-only and exposes the
+interior. Local instance overrides remain saved in forest_camp.tscn. Opening a
+landmark scene directly edits its reusable source instead.
+
+Drag additional enemies from res://scenes/enemies/:
+  court_sentinel.tscn
+  grave_warden.tscn
+  greywatch_warden.tscn
+  training_dummy.tscn
+The three wardens use the existing Sentinel AI/stats; they are not new archetypes.
+Display Name Override changes a placement label without mutating shared stats.
+Place outdoor enemies under Actors or another Y-sorted authored container.
+For buildings, place them under the correct BuildingFloor/Occupants, not its
+fading Interior artwork group. The actor inherits the floor on startup.
+Rebuild terrain after moving/adding an enemy so generated dressing clears its
+starting position. These scenes use world navigation and reset to their authored
+local positions at shrine rest.
+
+DRAG-AND-DROP ASSET LIBRARY
+All paths below are res:// paths. Drag the .tscn, not its implementation .gd.
+
+scenes/landmarks/ - complete editable compositions (existing kits)
+  chapel, graveyard, fort, watchtower, quarry, widows_pool, crossing,
+  pilgrims_rest, split_oak, waystone
+
+scenes/vegetation/ - reusable individual plants
+  broadleaf, broadleaf_old, conifer, conifer_tall, dead_tree,
+  bush, thicket, grass_clump, reeds
+
+scenes/props/ - reusable individual props
+  campfire, shrine, boulder, rock_small, rubble,
+  headstone, leaning_headstone, tomb_slab, waystone,
+  low_wall, high_wall, buttress, arch, stairs, bridge_deck, tower,
+  fallen_tree, abandoned_tent, lake, pond, dressing_exclusion
+
+Each name above has a .tscn extension. Inspector fields control variations,
+footprints, height, collision and tree family/size. Ordinary low props and
+trees remain flyable; high walls/towers explicitly block flight.
+The campfire in forest_camp is now an instance of its reusable prefab.
+Shrine scene colours/layer now match their runtime starting values.
+
+Important kit distinctions:
+- props/tower is a solid tower prop; landmarks/watchtower is the complete ruin.
+- props/arch is overhead artwork; add separate solid piers/walls around it.
+- props/bridge_deck is a walkable visual, not a water-collision eraser. Use
+  landmarks/crossing for the existing bridge plus separated water footprints.
+- props/stairs is decorative. Logical floor transitions use scenes/buildings/
+  and their elevation resources; the art alone does not change storey.
+- Lake/pond bodies block humanoids and prevent landing, but permit flight.
+- Duplicate landmark kits need a new Landmark ID if they should be separate
+  map/discovery destinations. Positions come from their scene transforms.
+  Routes do not automatically reroute when a landmark moves.
+
+HAND-PLACED VERSUS GENERATED
+Put your own instances under Actors, a landmark, or a building floor.
+Do not edit generated preview nodes: they are disposable, unowned, and not saved.
+Rebuild replaces only generated content, never owned manual placements.
+Generated trees respect authored tree spacing, prop footprints, enemy clearance,
+landmark reservations and explicit dressing exclusions.
+
+To replace a generated grove with your own composition, drag in
+props/dressing_exclusion.tscn, set Bounds Metres, then click Rebuild terrain.
+It reserves dressing space without adding collision or erasing ground/routes.
+Place your own trees/props inside it. The reservation also applies at runtime.
+
+Region routes, biome colours/density and scatter settings are authored in
+data/stillwood_region.tres. Physical scale remains 128 world units per metre.
+Terrain is still resource/procedural authoring, not a newly added terrain brush.
+
+VERIFICATION / LIMITS
+Source, scene-reference, typed-container, ownership and diff inspection only.
+No Godot launches/import commands, automated tests or runtime tests were run.
+Later check editor reopen, panning at wide zoom, drag/drop and undo, saving and
+reopening overrides, roof cutaway, generation after exclusions, and runtime
+enemy navigation/rest reset. Visual quality and editor/runtime performance have
+not been measured. Gameplay particles, audio and AI are not started in preview.
+
+An active editor saved additional scene overrides during this work, including
+a moved chapel Sentinel. Those edits were preserved, not reset to old anchors.
+
+ENVIRONMENTAL POLISH ADDITIONS
+See ENVIRONMENT_POLISH.txt for the region audit and tuning guide.
+New batched vegetation patches live in scenes/vegetation; editable approach
+presets and ground_cover_zone.tscn live in scenes/props. Their profiles are in
+data/environment. Landmark roots now expose Ground Cover / Cover Bounds Metres.
+Wind is shared and pausable; no new collisions or per-blade processing were added.
+After editing generated cover/biome/zone settings, click Rebuild terrain.

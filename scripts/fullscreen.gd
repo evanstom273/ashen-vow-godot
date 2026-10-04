@@ -2,6 +2,9 @@ extends Node
 ## Global F11 and Alt+Enter shortcut for toggling fullscreen.
 
 var previous_mode: DisplayServer.WindowMode = DisplayServer.WINDOW_MODE_WINDOWED
+var _toggle_pending: bool = false
+var _toggle_started_usec: int = 0
+var _mode_change_usec: int = 0
 
 
 func _ready() -> void:
@@ -21,6 +24,11 @@ func _input(event: InputEvent) -> void:
 
 
 func _toggle_fullscreen() -> void:
+	# Do not stack display mode changes while a previous one awaits its first frame.
+	if _toggle_pending: return
+	_toggle_pending = true
+	_toggle_started_usec = Time.get_ticks_usec()
+	print("[Display] Fullscreen toggle requested")
 	var current_mode := DisplayServer.window_get_mode()
 	if current_mode == DisplayServer.WINDOW_MODE_FULLSCREEN or current_mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		var target_mode := previous_mode if (previous_mode != DisplayServer.WINDOW_MODE_FULLSCREEN and previous_mode != DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN) else DisplayServer.WINDOW_MODE_WINDOWED
@@ -28,3 +36,11 @@ func _toggle_fullscreen() -> void:
 	else:
 		previous_mode = current_mode
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	_mode_change_usec = Time.get_ticks_usec()-_toggle_started_usec
+	print("[Display] Window mode change returned in ",_mode_change_usec/1000.0," ms; waiting for rendered frame")
+	RenderingServer.frame_post_draw.connect(_report_fullscreen_frame,CONNECT_ONE_SHOT)
+
+
+func _report_fullscreen_frame() -> void:
+	print("[Display] First frame after fullscreen toggle: ",(Time.get_ticks_usec()-_toggle_started_usec)/1000.0," ms total")
+	_toggle_pending = false

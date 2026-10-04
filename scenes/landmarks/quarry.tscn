@@ -1,0 +1,124 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/region_landmark.gd" id="landmark"]
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[ext_resource type="Resource" path="res://data/environment/cover_quarry.tres" id="ground_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_quarry.tscn" id="approach"]
+
+[node name="quarry" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("landmark")
+ground_cover = ExtResource("ground_cover")
+cover_bounds_metres = Rect2(-18, -18, 38, 36)
+landmark_id = &"abandoned_quarry"
+display_name = "Abandoned Quarry"
+map_kind = "quarry"
+discovery_metres = 20.0
+known_initially = false
+reservations_metres = Array[Rect2]([Rect2(-13, -11, 26, 22)])
+floors_metres = Array[Rect2]([])
+ground_polygons_metres = Array[PackedVector2Array]([PackedVector2Array(-14, -4, -10, -11, 1, -13, 11, -9, 15, -2, 11, 8, 2, 12, -9, 9), PackedVector2Array(-11, -2, -8, -8, 1, -10, 9, -7, 12, -1, 8, 7, 1, 9, -7, 6), PackedVector2Array(-7, 0, -5, -5, 1, -7, 6, -4, 9, 1, 6, 5, 0, 7, -5, 4)])
+ground_colors = Array[Color]([Color(0.32, 0.35, 0.28, 1), Color(0.24, 0.28, 0.24, 1), Color(0.38, 0.38, 0.30, 1)])
+
+[node name="Ledge0" type="StaticBody2D" parent="."]
+position = Vector2(-1361.2518551518813, -261.6740884754752)
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(5, 3)
+height_metres = 2
+flight_blocker = false
+solid = true
+variation = 13
+
+[node name="Ledge1" type="StaticBody2D" parent="."]
+position = Vector2(-1147.2423589945647, -593.6519144742326)
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(5, 3)
+height_metres = 2.5
+flight_blocker = false
+solid = true
+variation = 50
+
+[node name="Ledge2" type="StaticBody2D" parent="."]
+position = Vector2(-786.1491043917069, -849.5197937780438)
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(5, 3)
+height_metres = 3
+flight_blocker = false
+solid = true
+variation = 87
+
+[node name="Ledge3" type="StaticBody2D" parent="."]
+position = Vector2(-324.2665404803386, -996.473838822578)
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(5, 3)
+height_metres = 2
+flight_blocker = false
+solid = true
+variation = 124
+
+[node name="Ledge4" type="StaticBody2D" parent="."]
+position = Vector2(179.18905387054306, -1015.6736074863745)
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(5, 3)
+height_metres = 2.5
+flight_blocker = false
+solid = true
+variation = 161
+
+[node name="Ledge5" type="StaticBody2D" parent="."]
+position = Vector2(659.6714731909299, -904.6575674574373)
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(5, 3)
+height_metres = 3
+flight_blocker = false
+solid = true
+variation = 198
+
+[node name="Ledge6" type="StaticBody2D" parent="."]
+position = Vector2(1055.5798189901293, -677.6586803128698)
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(5, 3)
+height_metres = 2
+flight_blocker = false
+solid = true
+variation = 235
+
+[node name="Ledge7" type="StaticBody2D" parent="."]
+position = Vector2(1316.1561262718512, -363.77964542775567)
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(5, 3)
+height_metres = 2.5
+flight_blocker = false
+solid = true
+variation = 272
+
+[node name="BrokenCrane" type="StaticBody2D" parent="."]
+position = Vector2(-896, 896)
+script = ExtResource("prop")
+kind = "fallen_tree"
+footprint = Vector2(6, 1)
+height_metres = 0.5
+flight_blocker = false
+solid = true
+variation = 309
+
+[node name="CutBlocks" type="StaticBody2D" parent="."]
+position = Vector2(512, 1664)
+script = ExtResource("prop")
+kind = "slab"
+footprint = Vector2(4, 2)
+height_metres = 0.7
+flight_blocker = false
+solid = true
+variation = 346
+
+[node name="ApproachDressing" parent="." instance=ExtResource("approach")]

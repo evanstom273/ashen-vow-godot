@@ -7,6 +7,10 @@
 
 [ext_resource type="PackedScene" path="res://scenes/weapons/wanderer_sword.tscn" id="equipped_model"]
 
+[ext_resource type="Resource" path="res://data/attacks/presentation/wanderer_sword_light.tres" id="presentation_light"]
+
+[ext_resource type="Resource" path="res://data/attacks/presentation/wanderer_sword_charged.tres" id="presentation_charged"]
+
 [resource]
 script = ExtResource("script")
 equipped_scene = ExtResource("equipped_model")
@@ -16,5 +20,5 @@ description = "A plain blade carried into the outer court."
 requirements = ExtResource("requirements")
 is_spell_catalyst = false
 catalyst_schools = Array[String]([])
-light_attack = ExtResource("attack")
-charged_attack = ExtResource("charged")
+light_attack = ExtResource("presentation_light")
+charged_attack = ExtResource("presentation_charged")

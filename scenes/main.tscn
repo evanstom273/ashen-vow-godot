@@ -8,66 +8,109 @@
 [ext_resource type="PackedScene" path="res://scenes/court_prop.tscn" id="6"]
 
 [node name="Main" type="Node2D" unique_id=1543279268]
+scale = Vector2(4, 4)
 script = ExtResource("1")
+ambient_vfx = null
 
 [node name="Actors" type="Node2D" parent="." unique_id=2102076948]
 y_sort_enabled = true
 
 [node name="Player" parent="Actors" unique_id=516222773 instance=ExtResource("2")]
 position = Vector2(-180, 170)
+scale = Vector2(1, 1)
 
 [node name="TrainingEffigy" parent="Actors" unique_id=222267192 instance=ExtResource("3")]
 position = Vector2(-420, 20)
+scale = Vector2(1, 1)
 
 [node name="TrainingEffigyII" parent="Actors" unique_id=4483291 instance=ExtResource("3")]
 position = Vector2(-420, 130)
+scale = Vector2(1, 1)
 
 [node name="AshenShrine" parent="Actors" unique_id=856659894 instance=ExtResource("4")]
 position = Vector2(-200, 260)
+scale = Vector2(1, 1)
 
 [node name="CourtSentinel" parent="Actors" unique_id=1527484995 instance=ExtResource("5")]
 position = Vector2(240, -95)
+scale = Vector2(1, 1)
 collision_layer = 2
 motion_mode = 1
 
 [node name="pillar1" parent="Actors" unique_id=1671952261 instance=ExtResource("6")]
 position = Vector2(-640, -250)
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="pillar2" parent="Actors" unique_id=1149161753 instance=ExtResource("6")]
 position = Vector2(640, -250)
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="pillar3" parent="Actors" unique_id=1519284797 instance=ExtResource("6")]
 position = Vector2(-640, 250)
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="pillar4" parent="Actors" unique_id=1148150700 instance=ExtResource("6")]
 position = Vector2(640, 250)
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="pillar5" parent="Actors" unique_id=1847211984 instance=ExtResource("6")]
 position = Vector2(-140, -360)
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="pillar6" parent="Actors" unique_id=1293033613 instance=ExtResource("6")]
 position = Vector2(140, -360)
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="brazier7" parent="Actors" unique_id=1169959696 instance=ExtResource("6")]
 position = Vector2(-490, -240)
 kind = "brazier"
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="brazier8" parent="Actors" unique_id=1162947502 instance=ExtResource("6")]
 position = Vector2(490, -240)
 kind = "brazier"
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="brazier9" parent="Actors" unique_id=992042739 instance=ExtResource("6")]
 position = Vector2(-470, 310)
 kind = "brazier"
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="brazier10" parent="Actors" unique_id=1297650233 instance=ExtResource("6")]
 position = Vector2(470, 310)
 kind = "brazier"
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="banner11" parent="Actors" unique_id=1863556953 instance=ExtResource("6")]
 position = Vector2(-280, 265)
 kind = "banner"
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null
 
 [node name="banner12" parent="Actors" unique_id=1891053811 instance=ExtResource("6")]
 position = Vector2(-130, -370)
 kind = "banner"
+flame_vfx = null
+ember_vfx = null
+smoke_vfx = null

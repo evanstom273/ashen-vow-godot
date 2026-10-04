@@ -9,7 +9,8 @@ enum DeliveryMode { IMMEDIATE, PICKUP }
 @export_range(0, 1000000, 1) var minimum_amount: int = 0
 @export_range(0, 1000000, 1) var maximum_amount: int = 0
 @export_range(0, 100, 0.01) var amount_multiplier: float = 1.0
-@export_range(1, 500, 1) var pickup_radius: float = 48.0
+## World units: 1.5 metres at the regional scale.
+@export_range(1, 2000, 1) var pickup_radius: float = 192.0
 @export var display_name: String = "Embers"
 @export var icon: Texture2D
 @export var color: Color = Color("e6b968")

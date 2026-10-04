@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://btq0vid1dak07"]
+
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="3_vrj4m"]
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://dncq42pabx086" path="res://scripts/resources/area_delivery.gd" id="child_script"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://bw8pkj6urim5o" path="res://scripts/resources/trap_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="named_scaling"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://b7v86rp5ti05s" path="res://assets/icons/spells/rune_mine.svg" id="spell_icon"]
+[ext_resource type="Resource" uid="uid://bb8dw7hw1wmvo" path="res://data/vfx_rune_mine.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+magic = 220.0
+
+[sub_resource type="Resource" id="NamedScaling"]
+script = ExtResource("named_scaling")
+arcane = 0.035
+
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+scaling = SubResource("NamedScaling")
+poise_damage = 25.0
+stamina_cost = 18.0
+knockback = 100.0
+windup = 0.4
+recovery = 0.3
+
+[sub_resource type="Resource" id="Child"]
+script = ExtResource("child_script")
+radius = 340.0
+at_caster = false
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+duration = 2.0
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+arming_delay = 0.6
+trigger_radius = 180.0
+child = SubResource("Child")
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+duration = 15.0
+
+[resource]
+script = ExtResource("spell")
+id = &"delivery_trap"
+display_name = "Rune Mine"
+description = "Place a rune that arms after 0.6 seconds. An approaching enemy triggers an explosive magic burst. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = SubResource("Attack")
+delivery_definition = SubResource("Delivery")
+charges = 10
+maximum_charges = 10
+delivery = "Trap / Mine"

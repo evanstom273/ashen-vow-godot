@@ -7,6 +7,10 @@
 
 [ext_resource type="PackedScene" path="res://scenes/weapons/ashen_seal.tscn" id="equipped_model"]
 
+[ext_resource type="Resource" path="res://data/attacks/presentation/ashen_seal_light.tres" id="presentation_light"]
+
+[ext_resource type="Resource" path="res://data/attacks/presentation/ashen_seal_charged.tres" id="presentation_charged"]
+
 [resource]
 script = ExtResource("script")
 equipped_scene = ExtResource("equipped_model")
@@ -18,6 +22,6 @@ weight = 0.8
 requirements = ExtResource("requirements")
 is_spell_catalyst = true
 catalyst_schools = Array[String](["Incantation", "Arcane"])
-light_attack = ExtResource("light")
-charged_attack = ExtResource("charged")
+light_attack = ExtResource("presentation_light")
+charged_attack = ExtResource("presentation_charged")
 blade_color = Color(0.78, 0.55, 0.34, 1)

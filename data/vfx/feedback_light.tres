@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CombatFeedbackDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/combat_feedback_definition.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+resource_name = "light feedback"
+shake_strength = 0.8
+duration = 0.1
+directional_kick = 0.3
+hit_stop = 0
+vibration_low = 0.05
+vibration_high = 0.08
+hud_response = 0.1
+frequency = 23.0
+falloff = 2.0
+minimum_interval = 0.16
+recurring_scale = 0.08
+recurring_interval = 0.5

@@ -1,0 +1,78 @@
+{
+  "summary": "VFX pass; merge conflict markers resolved preserving pulled mobile controls and shrine loadout features.",
+  "changed_files": [
+    "E:/Projects/ashen-vow-godot/data/enemies/training_effigy.tres",
+    "E:/Projects/ashen-vow-godot/data/spells/cinder_lance.tres",
+    "E:/Projects/ashen-vow-godot/data/spells/ember_wave.tres",
+    "E:/Projects/ashen-vow-godot/data/spells/mending_light.tres",
+    "E:/Projects/ashen-vow-godot/data/spells/star_shard.tres",
+    "E:/Projects/ashen-vow-godot/data/spells/vow_spear.tres",
+    "E:/Projects/ashen-vow-godot/scripts/court_hud.gd",
+    "E:/Projects/ashen-vow-godot/scripts/court_prop.gd",
+    "E:/Projects/ashen-vow-godot/scripts/feedback.gd",
+    "E:/Projects/ashen-vow-godot/scripts/player.gd",
+    "E:/Projects/ashen-vow-godot/scripts/player_visuals.gd",
+    "E:/Projects/ashen-vow-godot/scripts/sentinel.gd",
+    "E:/Projects/ashen-vow-godot/scripts/shrine.gd",
+    "E:/Projects/ashen-vow-godot/scripts/spell_projectile.gd",
+    "E:/Projects/ashen-vow-godot/scripts/training_dummy.gd",
+    "E:/Projects/ashen-vow-godot/scripts/world_vfx.gd",
+    "E:/Projects/ashen-vow-godot/scripts/resources/enemy_definition.gd",
+    "E:/Projects/ashen-vow-godot/scripts/resources/spell_definition.gd"
+  ],
+  "new_resources": [
+    "E:/Projects/ashen-vow-godot/data/vfx_cinder_lance.tres",
+    "E:/Projects/ashen-vow-godot/data/vfx_ember_wave.tres",
+    "E:/Projects/ashen-vow-godot/data/vfx_flesh.tres",
+    "E:/Projects/ashen-vow-godot/data/vfx_mending_light.tres",
+    "E:/Projects/ashen-vow-godot/data/vfx_metal.tres",
+    "E:/Projects/ashen-vow-godot/data/vfx_star_shard.tres",
+    "E:/Projects/ashen-vow-godot/data/vfx_stone.tres",
+    "E:/Projects/ashen-vow-godot/data/vfx_vow_spear.tres",
+    "E:/Projects/ashen-vow-godot/data/vfx_wood.tres"
+  ],
+  "new_scenes": [],
+  "reused_foundation": [
+    "E:/Projects/ashen-vow-godot/scripts/resources/vfx_definition.gd",
+    "E:/Projects/ashen-vow-godot/scripts/world_vfx.gd"
+  ],
+  "connected": [
+    "Explicit profiles for five spells; catalyst cast buildup, release flash, world-space fading trails, distinct silhouettes, impact/expiry effects.",
+    "Receiver-owned accepted-damage effects for flesh, armored flesh, metal, wood, stone; optional AttackDefinition.vfx override.",
+    "Blood toggle; 12-second stains with 4-second fade; shrine and scene cleanup.",
+    "Reduced Effects halves particles, removes temporary lights/smoke, shortens trails.",
+    "Caps: 40 transient effects, 8 temporary lights, 64 stains.",
+    "Tapered melee slash, torch flame cores and smooth lighting, shrine healing pulse.",
+    "One-shot fire playback releases voice slots instead of looping indefinitely."
+  ],
+  "unchanged": [
+    "damage and hit geometry",
+    "AI and lock-on",
+    "spell uses",
+    "weapon size and weapon-over-hand layering",
+    "Mobile renderer"
+  ],
+  "verification": {
+    "performed": [
+      "Read-only source/resource inspection",
+      "git diff --check",
+      "Conflict marker search"
+    ],
+    "not_performed": [
+      "Godot parse/import run",
+      "automated tests",
+      "runtime visual verification",
+      "performance profiling",
+      "mobile device verification"
+    ],
+    "runtime_checklist": [
+      "All five cast, travel/release and impact effects",
+      "Interruptions, rejected/dodged hits, wall collisions and expiry",
+      "Dummy splinters without blood; armored sparks with smaller blood spray",
+      "Pause and scene/actor cleanup; shrine stain clearing",
+      "Effect budgets under rapid casting; live Blood/Reduced Effects toggles",
+      "Weapon size, layering and slash alignment"
+    ]
+  },
+  "data_only": "No new VFX fields intentionally data-only. Custom scene overrides need Node2D roots and receive a bounded lifetime. No sample custom override scenes supplied."
+}

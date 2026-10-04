@@ -1,0 +1,970 @@
+{
+  "pass": "Game-wide world-scale audit",
+  "date": "2026-10-04",
+  "units": {
+    "world_units_per_metre": 128,
+    "standard_actor_art_scale": 4,
+    "spell_resource_conversion": "Old lengths and linear speeds x4; resources now store final world units. No cast-time actor multiplier.",
+    "actor_conversion": "Melee geometry, AI and recoil retain actor-local tuning and convert using actual world-transform scale once.",
+    "presentation": "Profile-local polygon/light dimensions use art_scale; world-space GPU material values are converted on private copies. Snapshot geometry remains world-space."
+  },
+  "unchanged": {
+    "human_speeds": [
+      512,
+      768
+    ],
+    "raven_speeds": [
+      1024,
+      1536
+    ],
+    "human_zoom": 0.25,
+    "raven_zoom_limits": [
+      0.1,
+      0.25
+    ],
+    "note": "These are the CURRENT saved values, including the user's Raven minimum of .1. No movement resource, camera zoom, acceleration, stamina, damage, uses, costs, timers, counts, angles, status scaling, equipment models or world geography was retuned."
+  },
+  "coverage": [
+    "All 20 named spells and all 17 delivery classes, including inherited defaults and nested orbiter/mine/summon payloads.",
+    "All 10 player-usable weapon resources and 20 light/charged action assignments use the shared actor-scaled melee path for both hands; their tuning and model scale are not multiplied again.",
+    "Sentinel approach/detection/disengage/melee/lunge/recoil derive actual actor scale; explicit overrides remain supported.",
+    "Summon body size, follow/acquisition/attack ranges, travel speed, waypoint tolerance and spawn placement.",
+    "Cast placement clearance, target padding, dash swept width, wave thickness, beam geometry, chain jumps, tether breaks.",
+    "Spell, impact, healing, blood, movement, transformation, imbue and environment presentation coordinate spaces.",
+    "Shrine/interactable/currency radii and correct world-space death-drop spawning beneath scaled parents.",
+    "Readability of damage totals and positional one-shot sound and screen-feedback attenuation distances.",
+    "Retained courtyard and reusable scene defaults, without double-scaling the forest instances.",
+    "Already-metric overworld, map/compass/beacons, bridge/water/reversion collision, reveal, local navigation, traversal and UI reviewed rather than enlarged again."
+  ],
+  "runtime_connections": {
+    "interaction_and_pickup_radius": 192,
+    "placement_clearance": 48,
+    "summon_collision_radius": 40,
+    "navigation_default_cell_size": 128,
+    "navigation_default_agent_radius": 64,
+    "lock_acquisition_preserved": 1536,
+    "one_shot_audio_max_distance": 4800,
+    "screen_feedback_distance_cull": 2600,
+    "screen_feedback_distance_falloff": 3600,
+    "reveal_defaults": {
+      "radius": 190,
+      "softness": 64
+    },
+    "spell_validation_dimension_limit": 8000,
+    "presentation_budgets_preserved": {
+      "total_particles": 2048,
+      "ambient": 256,
+      "transient": 1792,
+      "transient_effects": 40,
+      "temporary_lights": 8
+    }
+  },
+  "compatibility": [
+    "Inspector values are world units on DeliveryDefinition/SummonDefinition. Five spell files need no textual edits: they inherit corrected defaults or have only self/imbue behavior.",
+    "AttackDefinition.reach/hit_radius are melee geometry, not spell flight range. Spell.cast.reach is ignored by delivery geometry.",
+    "No shared .tres mutated during scaling; material copies and per-instance transforms only.",
+    "Forest scene instance scale=4 replaces reusable scene defaults, not multiplies them. Generated enemies assign scale=4. The legacy courtyard root is 4 with actor-instance overrides 1, yielding global 4.",
+    "Detached spell runtimes use identity world scale even if their owning scene is scaled. Model/profile scale is separate from physics queries.",
+    "Motion blur remains disabled; decorative trails are not re-enabled.",
+    "Map and screen-space HUD elements are not scaled."
+  ],
+  "changed_files": [
+    "WORLD_SCALE_AND_REGION_DESIGN.md",
+    "data/README.md",
+    "data/spells/blackflame_bond.tres",
+    "data/spells/blackflame_shard.tres",
+    "data/spells/cinder_lance.tres",
+    "data/spells/comet_step.tres",
+    "data/spells/ember_wave.tres",
+    "data/spells/falling_stars.tres",
+    "data/spells/furnace_breath.tres",
+    "data/spells/mending_halo.tres",
+    "data/spells/moon_arc.tres",
+    "data/spells/prismatic_ray.tres",
+    "data/spells/rune_mine.tres",
+    "data/spells/soul_thread.tres",
+    "data/spells/star_shard.tres",
+    "data/spells/vow_spear.tres",
+    "data/spells/vowed_wisp.tres",
+    "scenes/main.tscn",
+    "scenes/player.tscn",
+    "scenes/sentinel.tscn",
+    "scenes/shrine.tscn",
+    "scenes/training_dummy.tscn",
+    "scripts/combat_presentation.gd",
+    "scripts/court_prop.gd",
+    "scripts/courtyard.gd",
+    "scripts/currency_drop.gd",
+    "scripts/damage_number.gd",
+    "scripts/feedback.gd",
+    "scripts/foreground_reveal.gd",
+    "scripts/forest_camp.gd",
+    "scripts/forest_tree.gd",
+    "scripts/physical_vfx.gd",
+    "scripts/player.gd",
+    "scripts/player_transformation.gd",
+    "scripts/player_visuals.gd",
+    "scripts/resources/area_delivery.gd",
+    "scripts/resources/attack_definition.gd",
+    "scripts/resources/aura_delivery.gd",
+    "scripts/resources/barrage_delivery.gd",
+    "scripts/resources/beam_delivery.gd",
+    "scripts/resources/chain_delivery.gd",
+    "scripts/resources/cone_delivery.gd",
+    "scripts/resources/currency_drop_definition.gd",
+    "scripts/resources/dash_delivery.gd",
+    "scripts/resources/enemy_definition.gd",
+    "scripts/resources/movement_definition.gd",
+    "scripts/resources/orbiting_delivery.gd",
+    "scripts/resources/projectile_delivery.gd",
+    "scripts/resources/shrine_definition.gd",
+    "scripts/resources/spell_delivery_definition.gd",
+    "scripts/resources/summon_definition.gd",
+    "scripts/resources/tether_delivery.gd",
+    "scripts/resources/transformation_definition.gd",
+    "scripts/resources/trap_delivery.gd",
+    "scripts/resources/vfx_definition.gd",
+    "scripts/resources/vital_stats.gd",
+    "scripts/resources/wave_delivery.gd",
+    "scripts/resources/zone_delivery.gd",
+    "scripts/sentinel.gd",
+    "scripts/spell_burst.gd",
+    "scripts/spell_delivery_runtime.gd",
+    "scripts/spell_delivery_service.gd",
+    "scripts/spell_navigation.gd",
+    "scripts/spell_projectile.gd",
+    "scripts/spell_summon.gd",
+    "scripts/spell_visual.gd",
+    "scripts/stillwood_overworld.gd",
+    "scripts/world_scale.gd",
+    "world_scale_audit.json"
+  ],
+  "new_files": [
+    "scripts/world_scale.gd",
+    "world_scale_audit.json"
+  ],
+  "new_resources_or_scenes": [],
+  "numeric_resource_changes": [
+    {
+      "path": "data/spells/vow_spear.tres",
+      "changes": [
+        {
+          "field": "speed",
+          "from": 380,
+          "to": 1520
+        },
+        {
+          "field": "radius",
+          "from": 10,
+          "to": 40
+        }
+      ]
+    },
+    {
+      "path": "data/spells/vowed_wisp.tres",
+      "changes": [
+        {
+          "field": "attack_range",
+          "from": 240,
+          "to": 960
+        }
+      ]
+    },
+    {
+      "path": "data/spells/star_shard.tres",
+      "changes": [
+        {
+          "field": "speed",
+          "from": 520,
+          "to": 2080
+        },
+        {
+          "field": "radius",
+          "from": 5,
+          "to": 20
+        }
+      ]
+    },
+    {
+      "path": "data/spells/soul_thread.tres",
+      "changes": [
+        {
+          "field": "break_range",
+          "from": 320,
+          "to": 1280
+        }
+      ]
+    },
+    {
+      "path": "data/spells/rune_mine.tres",
+      "changes": [
+        {
+          "field": "radius",
+          "from": 85,
+          "to": 340
+        },
+        {
+          "field": "trigger_radius",
+          "from": 45,
+          "to": 180
+        }
+      ]
+    },
+    {
+      "path": "data/spells/prismatic_ray.tres",
+      "changes": [
+        {
+          "field": "length",
+          "from": 380,
+          "to": 1520
+        },
+        {
+          "field": "width",
+          "from": 18,
+          "to": 72
+        }
+      ]
+    },
+    {
+      "path": "data/spells/moon_arc.tres",
+      "changes": [
+        {
+          "field": "speed",
+          "from": 280,
+          "to": 1120
+        },
+        {
+          "field": "distance",
+          "from": 420,
+          "to": 1680
+        },
+        {
+          "field": "width",
+          "from": 120,
+          "to": 480
+        },
+        {
+          "field": "thickness",
+          "from": 16,
+          "to": 64
+        }
+      ]
+    },
+    {
+      "path": "data/spells/mending_halo.tres",
+      "changes": [
+        {
+          "field": "radius",
+          "from": 90,
+          "to": 360
+        }
+      ]
+    },
+    {
+      "path": "data/spells/furnace_breath.tres",
+      "changes": [
+        {
+          "field": "radius",
+          "from": 160,
+          "to": 640
+        }
+      ]
+    },
+    {
+      "path": "data/spells/falling_stars.tres",
+      "changes": [
+        {
+          "field": "impact_radius",
+          "from": 35,
+          "to": 140
+        }
+      ]
+    },
+    {
+      "path": "data/spells/ember_wave.tres",
+      "changes": [
+        {
+          "field": "radius",
+          "from": 105,
+          "to": 420
+        }
+      ]
+    },
+    {
+      "path": "data/spells/comet_step.tres",
+      "changes": [
+        {
+          "field": "distance",
+          "from": 210,
+          "to": 840
+        },
+        {
+          "field": "hit_width",
+          "from": 26,
+          "to": 104
+        }
+      ]
+    },
+    {
+      "path": "data/spells/cinder_lance.tres",
+      "changes": [
+        {
+          "field": "speed",
+          "from": 440,
+          "to": 1760
+        },
+        {
+          "field": "radius",
+          "from": 6,
+          "to": 24
+        }
+      ]
+    },
+    {
+      "path": "data/spells/blackflame_shard.tres",
+      "changes": [
+        {
+          "field": "speed",
+          "from": 520,
+          "to": 2080
+        },
+        {
+          "field": "radius",
+          "from": 6,
+          "to": 24
+        }
+      ]
+    },
+    {
+      "path": "data/spells/blackflame_bond.tres",
+      "changes": [
+        {
+          "field": "break_range",
+          "from": 320,
+          "to": 1280
+        },
+        {
+          "field": "cast_range",
+          "from": 320,
+          "to": 1280
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/zone_delivery.gd",
+      "changes": [
+        {
+          "field": "radius",
+          "from": 90,
+          "to": 360
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/wave_delivery.gd",
+      "changes": [
+        {
+          "field": "speed",
+          "from": 230,
+          "to": 920
+        },
+        {
+          "field": "distance",
+          "from": 350,
+          "to": 1400
+        },
+        {
+          "field": "width",
+          "from": 90,
+          "to": 360
+        },
+        {
+          "field": "thickness",
+          "from": 12,
+          "to": 48
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/trap_delivery.gd",
+      "changes": [
+        {
+          "field": "trigger_radius",
+          "from": 40,
+          "to": 160
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/tether_delivery.gd",
+      "changes": [
+        {
+          "field": "break_range",
+          "from": 300,
+          "to": 1200
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/spell_delivery_definition.gd",
+      "changes": [
+        {
+          "field": "cast_range",
+          "from": 400,
+          "to": 1600
+        },
+        {
+          "field": "placement_distance",
+          "from": 180,
+          "to": 720
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/projectile_delivery.gd",
+      "changes": [
+        {
+          "field": "speed",
+          "from": 350,
+          "to": 1400
+        },
+        {
+          "field": "radius",
+          "from": 7,
+          "to": 28
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/orbiting_delivery.gd",
+      "changes": [
+        {
+          "field": "orbit_radius",
+          "from": 40,
+          "to": 160
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/dash_delivery.gd",
+      "changes": [
+        {
+          "field": "distance",
+          "from": 180,
+          "to": 720
+        },
+        {
+          "field": "hit_width",
+          "from": 24,
+          "to": 96
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/cone_delivery.gd",
+      "changes": [
+        {
+          "field": "radius",
+          "from": 140,
+          "to": 560
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/chain_delivery.gd",
+      "changes": [
+        {
+          "field": "jump_radius",
+          "from": 180,
+          "to": 720
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/beam_delivery.gd",
+      "changes": [
+        {
+          "field": "length",
+          "from": 350,
+          "to": 1400
+        },
+        {
+          "field": "width",
+          "from": 16,
+          "to": 64
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/barrage_delivery.gd",
+      "changes": [
+        {
+          "field": "scatter_radius",
+          "from": 100,
+          "to": 400
+        },
+        {
+          "field": "impact_radius",
+          "from": 30,
+          "to": 120
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/aura_delivery.gd",
+      "changes": [
+        {
+          "field": "radius",
+          "from": 85,
+          "to": 340
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/area_delivery.gd",
+      "changes": [
+        {
+          "field": "radius",
+          "from": 80,
+          "to": 320
+        }
+      ]
+    },
+    {
+      "path": "scripts/resources/summon_definition.gd",
+      "changes": [
+        {
+          "field": "speed",
+          "from": 100,
+          "to": 400
+        },
+        {
+          "field": "follow_distance",
+          "from": 70,
+          "to": 280
+        },
+        {
+          "field": "acquisition_range",
+          "from": 300,
+          "to": 1200
+        },
+        {
+          "field": "attack_range",
+          "from": 200,
+          "to": 800
+        }
+      ]
+    }
+  ],
+  "resolved_spell_geometry": [
+    {
+      "file": "data/spells/watchful_shards.tres",
+      "name": "Watchful Shards",
+      "kind": "Orbiting",
+      "primary": {
+        "script": "scripts/resources/orbiting_delivery.gd",
+        "duration": 12,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "count": 4,
+        "orbit_radius": 160,
+        "orbit_speed": 2,
+        "fire_interval": 0.15
+      },
+      "nested": {
+        "Child": {
+          "script": "scripts/resources/projectile_delivery.gd",
+          "duration": 2,
+          "tick_interval": 0.3,
+          "cast_range": 1600,
+          "placement_distance": 720,
+          "max_instances": 1,
+          "speed": 1400,
+          "radius": 28,
+          "turn_rate": 3,
+          "pierce_count": 0
+        }
+      }
+    },
+    {
+      "file": "data/spells/vow_spear.tres",
+      "name": "Vow Spear",
+      "primary": {
+        "script": "scripts/resources/projectile_delivery.gd",
+        "duration": 2,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "speed": 1520,
+        "radius": 40,
+        "turn_rate": 3,
+        "pierce_count": 1
+      },
+      "nested": {},
+      "kind": "Projectile"
+    },
+    {
+      "file": "data/spells/vowed_wisp.tres",
+      "name": "Vowed Wisp",
+      "kind": "Summon",
+      "primary": {
+        "script": "scripts/resources/summon_delivery.gd",
+        "duration": 12,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "count": 1
+      },
+      "nested": {
+        "Child": {
+          "script": "scripts/resources/projectile_delivery.gd",
+          "duration": 2,
+          "tick_interval": 0.3,
+          "cast_range": 1600,
+          "placement_distance": 720,
+          "max_instances": 1,
+          "speed": 1400,
+          "radius": 28,
+          "turn_rate": 3,
+          "pierce_count": 0
+        },
+        "Summon": {
+          "script": "scripts/resources/summon_definition.gd",
+          "health": 180,
+          "speed": 400,
+          "follow_distance": 280,
+          "acquisition_range": 1200,
+          "attack_range": 960,
+          "attack_interval": 1
+        }
+      }
+    },
+    {
+      "file": "data/spells/storm_link.tres",
+      "name": "Storm Link",
+      "kind": "Chain",
+      "primary": {
+        "script": "scripts/resources/chain_delivery.gd",
+        "duration": 6,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "target_count": 4,
+        "jump_radius": 720,
+        "jump_delay": 0.12,
+        "damage_falloff": 0.8
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/star_shard.tres",
+      "name": "Star Shard",
+      "primary": {
+        "script": "scripts/resources/projectile_delivery.gd",
+        "duration": 2,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "speed": 2080,
+        "radius": 20,
+        "turn_rate": 3,
+        "pierce_count": 0
+      },
+      "nested": {},
+      "kind": "Projectile"
+    },
+    {
+      "file": "data/spells/soul_thread.tres",
+      "name": "Soul Thread",
+      "kind": "Tether",
+      "primary": {
+        "script": "scripts/resources/tether_delivery.gd",
+        "duration": 2,
+        "tick_interval": 0.25,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "break_range": 1280,
+        "line_of_sight_grace": 0.15,
+        "movement_multiplier": 0.4
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/rune_mine.tres",
+      "name": "Rune Mine",
+      "kind": "Trap / Mine",
+      "primary": {
+        "script": "scripts/resources/trap_delivery.gd",
+        "duration": 15,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "arming_delay": 0.6,
+        "trigger_radius": 180,
+        "trigger_count": 1,
+        "rearm_interval": 1
+      },
+      "nested": {
+        "Child": {
+          "script": "scripts/resources/area_delivery.gd",
+          "duration": 2,
+          "tick_interval": 0.3,
+          "cast_range": 1600,
+          "placement_distance": 720,
+          "max_instances": 1,
+          "radius": 340
+        }
+      }
+    },
+    {
+      "file": "data/spells/prismatic_ray.tres",
+      "name": "Prismatic Ray",
+      "kind": "Beam",
+      "primary": {
+        "script": "scripts/resources/beam_delivery.gd",
+        "duration": 2,
+        "tick_interval": 0.25,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "length": 1520,
+        "width": 72,
+        "turn_rate": 3,
+        "movement_multiplier": 0.25
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/moon_arc.tres",
+      "name": "Moon Arc",
+      "kind": "Wave / Arc",
+      "primary": {
+        "script": "scripts/resources/wave_delivery.gd",
+        "duration": 6,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "speed": 1120,
+        "distance": 1680,
+        "width": 480,
+        "thickness": 64,
+        "curvature": 0
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/mending_light.tres",
+      "name": "Mending Light",
+      "kind": "Self",
+      "primary": {
+        "script": "scripts/resources/self_delivery.gd",
+        "duration": 6,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/mending_halo.tres",
+      "name": "Mending Halo",
+      "kind": "Aura",
+      "primary": {
+        "script": "scripts/resources/aura_delivery.gd",
+        "duration": 6,
+        "tick_interval": 0.5,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "radius": 360
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/furnace_breath.tres",
+      "name": "Furnace Breath",
+      "kind": "Cone",
+      "primary": {
+        "script": "scripts/resources/cone_delivery.gd",
+        "duration": 2,
+        "tick_interval": 0.25,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "radius": 640,
+        "angle_degrees": 70,
+        "turn_rate": 3,
+        "movement_multiplier": 0.25
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/falling_stars.tres",
+      "name": "Falling Stars",
+      "kind": "Barrage / Rain",
+      "primary": {
+        "script": "scripts/resources/barrage_delivery.gd",
+        "duration": 6,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "count": 6,
+        "scatter_radius": 400,
+        "impact_radius": 140,
+        "impact_interval": 0.3,
+        "telegraph_duration": 0.65
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/ember_wave.tres",
+      "name": "Ember Wave",
+      "kind": "Area",
+      "primary": {
+        "script": "scripts/resources/area_delivery.gd",
+        "duration": 6,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "radius": 420
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/comet_step.tres",
+      "name": "Comet Step",
+      "kind": "Dash / Movement",
+      "primary": {
+        "script": "scripts/resources/dash_delivery.gd",
+        "duration": 0.3,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "distance": 840,
+        "steering": 0,
+        "hit_width": 104,
+        "invulnerability_start": 0,
+        "invulnerability_end": 1
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/cinder_lance.tres",
+      "name": "Cinder Lance",
+      "primary": {
+        "script": "scripts/resources/projectile_delivery.gd",
+        "duration": 2,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "speed": 1760,
+        "radius": 24,
+        "turn_rate": 3,
+        "pierce_count": 0
+      },
+      "nested": {},
+      "kind": "Projectile"
+    },
+    {
+      "file": "data/spells/cinder_field.tres",
+      "name": "Cinder Field",
+      "kind": "Ground Zone",
+      "primary": {
+        "script": "scripts/resources/zone_delivery.gd",
+        "duration": 6,
+        "tick_interval": 0.5,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "radius": 360,
+        "initial_delay": 0.3
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/blackflame_shard.tres",
+      "name": "Blackflame Shard",
+      "primary": {
+        "script": "scripts/resources/projectile_delivery.gd",
+        "duration": 2,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "speed": 2080,
+        "radius": 24,
+        "turn_rate": 3,
+        "pierce_count": 0
+      },
+      "nested": {},
+      "kind": "Projectile"
+    },
+    {
+      "file": "data/spells/blackflame_bond.tres",
+      "name": "Blackflame Bond",
+      "kind": "Tether",
+      "primary": {
+        "script": "scripts/resources/tether_delivery.gd",
+        "duration": 2,
+        "tick_interval": 0.05,
+        "cast_range": 1280,
+        "placement_distance": 720,
+        "max_instances": 1,
+        "break_range": 1280,
+        "line_of_sight_grace": 0.15,
+        "movement_multiplier": 0.4
+      },
+      "nested": {}
+    },
+    {
+      "file": "data/spells/astral_edge.tres",
+      "name": "Astral Edge",
+      "kind": "Weapon Imbue",
+      "primary": {
+        "script": "scripts/resources/imbue_delivery.gd",
+        "duration": 15,
+        "tick_interval": 0.3,
+        "cast_range": 1600,
+        "placement_distance": 720,
+        "max_instances": 1
+      },
+      "nested": {}
+    }
+  ],
+  "verification": {
+    "mode": "Source/resource/reference/diff inspection only; no engine, imports, automated tests or runtime tests.",
+    "files_inspected": 292,
+    "missing_static_resource_paths": [],
+    "undeclared_resource_ids": [],
+    "conflict_markers": [],
+    "tracked_diff_whitespace": "Clean. Git CRLF normalization notices are not whitespace errors.",
+    "numeric_spell_comparison": "All changed numeric spell/resource values are spatial; non-spatial numeric tuning remains unchanged.",
+    "limits": "Static source inspection does not establish GDScript engine parsing, runtime correctness or visual/performance quality."
+  },
+  "runtime_unverified": [
+    "All 20 spell cast/release/travel/contact/expiry paths, both catalyst hands and controller/touch placement.",
+    "Projectile pierce/homing, wall collision, beam/cone occlusion, mine triggering, barrage warning alignment, channel cancellation and tether completion.",
+    "All weapon families and both hands at melee contact range, charged attacks and imbue cycling.",
+    "Summon navigation/size/collision/targeting in the forest and courtyard.",
+    "Dodge/recoil/movement effects, blood size, particle coverage and temporary-light reach at all camera zooms.",
+    "Player/enemy currency drop location/recovery, damage-number placement and readability, interaction prompts and audio falloff.",
+    "Reduced Effects, Blood toggle, budgets, pause, shrine rest, death/respawn, equipment replacement, scene teardown.",
+    "Standalone/reused base scenes and retained courtyard scale/camera limits/navigation.",
+    "Gameplay balance, feel, visual quality and CPU/GPU performance."
+  ],
+  "follow_up": "Review in Godot when authorized; tune Inspector world-unit geometry to taste, without applying another global 4x."
+}

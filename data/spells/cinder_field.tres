@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://cqmsscvx0ehin"]
+
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="3_7sbot"]
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://brth6napgn1yf" path="res://scripts/resources/zone_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="named_scaling"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://c5ltdhfb6tate" path="res://assets/icons/spells/cinder_field.svg" id="spell_icon"]
+[ext_resource type="Resource" uid="uid://byk85y8c71n0w" path="res://data/vfx_cinder_field.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+fire = 30.0
+
+[sub_resource type="Resource" id="NamedScaling"]
+script = ExtResource("named_scaling")
+arcane = 0.035
+
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+scaling = SubResource("NamedScaling")
+poise_damage = 5.0
+knockback = 10.0
+windup = 0.4
+recovery = 0.3
+hit_stop = 0.0
+camera_shake = 0.0
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+initial_delay = 0.3
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+tick_interval = 0.5
+
+[resource]
+script = ExtResource("spell")
+id = &"delivery_zone"
+display_name = "Cinder Field"
+description = "Place a field of embers. Activates after 0.3 seconds and burns enemies every half-second for 6 seconds. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = SubResource("Attack")
+delivery_definition = SubResource("Delivery")
+charges = 10
+maximum_charges = 10
+delivery = "Ground Zone"

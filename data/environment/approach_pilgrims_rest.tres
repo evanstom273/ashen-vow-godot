@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LandmarkApproachDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/resources/landmark_approach_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+points_metres = PackedVector2Array(0, 11, 0, 8, 0, 5, 0, 2)
+width_metres = 3
+surface = Color(0.4275, 0.4078, 0.3098, 1)
+edging = Color(0.5451, 0.5373, 0.4392, 1)
+worn_centre = Color(0.4275, 0.4078, 0.3098, 1)
+edge_style = 0
+frame_positions_metres = PackedVector2Array(-2.7, 6, 2.7, 6)
+frame_style = 1
+cloth_color = Color(0.4196, 0.3804, 0.3137, 1)
+accent_color = Color(0.7020, 0.6275, 0.4824, 1)
+threshold = true

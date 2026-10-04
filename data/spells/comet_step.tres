@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://hyaog1cm6wl4"]
+
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="3_gq6yg"]
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://b30evx6ipjace" path="res://scripts/resources/dash_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="named_scaling"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://6x0a4gtg6dve" path="res://assets/icons/spells/comet_step.svg" id="spell_icon"]
+[ext_resource type="Resource" uid="uid://cq6mfxbp3mpyr" path="res://data/vfx_comet_step.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+magic = 120.0
+
+[sub_resource type="Resource" id="NamedScaling"]
+script = ExtResource("named_scaling")
+arcane = 0.035
+
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+scaling = SubResource("NamedScaling")
+poise_damage = 25.0
+stamina_cost = 16.0
+knockback = 0.0
+windup = 0.12
+recovery = 0.25
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+distance = 840.0
+hit_width = 104.0
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+duration = 0.3
+
+[resource]
+script = ExtResource("spell")
+id = &"delivery_dash"
+display_name = "Comet Step"
+description = "Surge forward as a comet, striking crossed enemies once. Stops at walls and grants no invulnerability. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = SubResource("Attack")
+delivery_definition = SubResource("Delivery")
+charges = 14
+maximum_charges = 14
+delivery = "Dash / Movement"

@@ -1,4 +1,6 @@
 extends CanvasLayer
+@export var area_title: String = "THE OUTER COURT"
+@export var area_subtitle: String = "Where the embers remember"
 var player: PlayerController
 var root: Control
 var health_bar: ProgressBar
@@ -20,6 +22,7 @@ var damage_delay: float = 0
 var currency_label: Label
 var mobile_controls: MobileControls
 var shrine_loadout_menu: ShrineLoadoutMenu
+var world_navigation: WorldNavigationUI
 
 func _ready() -> void:
 	layer = 50
@@ -61,7 +64,7 @@ func _ready() -> void:
 	health_stack.add_child(health_bar)
 	stamina_bar = _bar(Color("8d9d72"),Vector2(200,7))
 	status.add_child(stamina_bar)
-	var controls_hint := _label("TAB  controls     ESC  pause",11,Color("929b98"))
+	var controls_hint := _label("TAB: controls    ESC: pause    M: map",11,Color("929b98"))
 	if MobileControls.should_enable(): controls_hint.text = "TOUCH CONTROLS"
 	status.add_child(controls_hint)
 	currency_label = _label("Embers  0",13,Color("e6b968"))
@@ -107,7 +110,7 @@ func _ready() -> void:
 	var target_box := VBoxContainer.new()
 	root.add_child(target_box)
 	target_box.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	target_box.position += Vector2(-130,28)
+	target_box.position += Vector2(-130,110)
 	target_name = _label("",13,Color("c7bc9b"))
 	target_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	target_box.add_child(target_name)
@@ -118,16 +121,19 @@ func _ready() -> void:
 	title.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	title.position += Vector2(-230,-130)
 	title.custom_minimum_size = Vector2(460,80)
-	var heading := _label("THE OUTER COURT",30,Color("d9d0b4"))
+	var heading := _label(area_title,30,Color("d9d0b4"))
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_child(heading)
-	var subtitle := _label("Where the embers remember",14,Color("99aaa8"))
+	var subtitle := _label(area_subtitle,14,Color("99aaa8"))
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_child(subtitle)
 	help_panel = _panel()
 	root.add_child(help_panel)
 	help_panel.position = Vector2(32,130)
 	var help := _label("WASD / arrows   Move\nLMB   Right hand   /   RMB   Left hand\nSpace tap   Dodge   /   hold   Sprint\nQ/R   Weapons   C   Spells   V   Utilities\nF   Cast   /   G   Use   /   MMB   Lock target\nWheel   Switch target   /   E   Interact\nF11   Fullscreen",14,Color("ccd1bf"))
+	help.text += "\n\nGAMEPAD\nLS Move / RS Aim / R3 Lock / RS flick Switch target\nRB/R1 Right attack / LB/L1 Left attack\nRT/R2 & LT/L2 Tap attack / hold charge\nB/Circle Tap dodge / hold sprint\nD-pad: Up spell / Down item / Left & Right weapons\nX/Square Use item / Y/Triangle Interact\nA/Cross Cast / L3 Command orbiters\nMenus: D-pad navigate / A confirm / B back"
+	help.add_theme_font_size_override("font_size", 12)
+	help_panel.position.y = 40
 	help_panel.add_child(help)
 	help_panel.visible = false
 	_build_menu()
@@ -137,6 +143,16 @@ func _ready() -> void:
 	player.shrine_menu_requested.connect(_open_shrine_loadout)
 	player.damaged.connect(func() -> void: damage_delay = 0.45)
 	player.interaction_changed.connect(func(text: String) -> void: prompt.text = text)
+	# Below the full-screen map; ignores pointer input and samples independently.
+	var fps_counter := preload("res://scripts/fps_counter.gd").new()
+	fps_counter.name = "FPSCounter"
+	root.add_child(fps_counter)
+	world_navigation = WorldNavigationUI.new()
+	world_navigation.player = player
+	root.add_child(world_navigation)
+	world_navigation.map_toggled.connect(func(open: bool) -> void:
+		help_panel.hide()
+		if is_instance_valid(mobile_controls): mobile_controls.set_controls_enabled(not open))
 
 func _label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -202,15 +218,25 @@ func _build_menu() -> void:
 		slider.value_changed.connect(func(value: float) -> void: AudioServer.set_bus_volume_db(AudioServer.get_bus_index(bus),linear_to_db(maxf(0.0001,value))))
 		box.add_child(slider)
 	var reduced := CheckButton.new()
-	reduced.text = "Reduced particles"
+	reduced.text = "Reduced effects"
 	reduced.button_pressed = Feedback.reduced_effects
 	reduced.toggled.connect(func(value: bool) -> void: Feedback.reduced_effects = value)
 	box.add_child(reduced)
-	var shake_toggle := CheckButton.new()
-	shake_toggle.text = "Camera shake"
-	shake_toggle.button_pressed = Feedback.shake_strength > 0
-	shake_toggle.toggled.connect(func(value: bool) -> void: Feedback.shake_strength = 1.0 if value else 0.0)
-	box.add_child(shake_toggle)
+	var blood := CheckButton.new()
+	blood.text = "Blood"
+	blood.button_pressed = Feedback.blood_enabled
+	blood.toggled.connect(func(value: bool) -> void:
+		Feedback.blood_enabled = value
+		if not value: Feedback.clear_blood())
+	box.add_child(blood)
+	box.add_child(_label("Screen shake intensity (0 = off)", 13, Color("a8b7af")))
+	var shake_slider := HSlider.new()
+	shake_slider.min_value = 0.0
+	shake_slider.max_value = 1.0
+	shake_slider.step = 0.05
+	shake_slider.value = Feedback.shake_strength
+	shake_slider.value_changed.connect(func(value: float) -> void: Feedback.shake_strength = value)
+	box.add_child(shake_slider)
 	menu.visible = false
 
 func _button(text: String, callback: Callable) -> Button:
@@ -225,8 +251,7 @@ func _open_shrine_loadout() -> void:
 	menu.visible = false
 	help_panel.visible = false
 	get_tree().paused = true
-	player._right_held = false
-	player.set_mobile_movement(Vector2.ZERO)
+	player.reset_control_holds()
 	if is_instance_valid(mobile_controls): mobile_controls.set_controls_enabled(false)
 	shrine_loadout_menu.open_for(player)
 
@@ -236,12 +261,21 @@ func _close_shrine_loadout(_applied: bool) -> void:
 	prompt.text = ""
 
 func _pause(value: bool) -> void:
+	if value: player.reset_control_holds()
 	get_tree().paused = value
 	menu.visible = value
 	player._right_held = false
 	if value: resume_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	if is_instance_valid(world_navigation) and world_navigation.handle_input(event): return
+	if is_instance_valid(shrine_loadout_menu) and shrine_loadout_menu.handle_menu_input(event):
+		return
+	if event.is_action_pressed("ui_cancel") and get_tree().paused:
+		if shrine_loadout_menu.visible: shrine_loadout_menu.cancel()
+		elif player.health > 0: _pause(false)
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("pause") and is_instance_valid(shrine_loadout_menu) and shrine_loadout_menu.visible:
 		shrine_loadout_menu.cancel()
 		get_viewport().set_input_as_handled()
@@ -264,14 +298,15 @@ func _process(delta: float) -> void:
 	stamina_bar.value = lerpf(stamina_bar.value,player.stamina/player.max_stamina*100.0,1-exp(-delta*20))
 	currency_label.text = (player.currency_definition.display_name if player.currency_definition != null else "Embers") + "  " + str(player.current_currency)
 	stamina_bar.modulate = Color("ffb9a0") if player._denied_timer > 0 else Color.WHITE
-	feedback.text = player.message if player.message_time > 0 else ""
+	feedback.text = player.message if player.message_time > 0 else player.delivery_status()
 	var target: Node2D = player.locked_target
 	target_bar.visible = is_instance_valid(target) and target.get("health") != null and target.is_targetable()
 	target_name.text = ""
 	if is_instance_valid(target):
 		target_name.text = String(target.get_display_name()).to_upper() if target.has_method("get_display_name") else String(target.name).to_upper()
 		if target_bar.visible: target_bar.value = lerpf(target_bar.value,float(target.health)/target.max_health*100,1-exp(-delta*12))
-	atmosphere.set_shader_parameter("danger",0.6 if float(player.health)/player.max_health <= 0.2 else 0.0)
+	var response: float = Feedback.presentation.hud_strength if is_instance_valid(Feedback.presentation) else 0.0
+	health_bar.modulate = Color.WHITE.lerp(Color(1.4, 1.15, 1.1), response)
 	if player.health <= 0 and not menu.visible:
 		death_time += delta
 		if death_time > 1.3:

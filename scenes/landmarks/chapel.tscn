@@ -1,0 +1,244 @@
+[gd_scene format=3 uid="uid://bds1djokffvoc"]
+
+[ext_resource type="Script" uid="uid://2dw1v62xnjbh" path="res://scripts/resources/elevation_definition.gd" id="6_gjaqy"]
+[ext_resource type="Resource" path="res://data/buildings/chapel.tres" id="building_definition"]
+[ext_resource type="Script" uid="uid://dq33y2oi4htxp" path="res://scripts/building_interior.gd" id="building_script"]
+[ext_resource type="Resource" path="res://data/buildings/chapel_ground_floor.tres" id="floor_definition"]
+[ext_resource type="Script" uid="uid://biwc1pux77fi4" path="res://scripts/building_floor.gd" id="floor_script"]
+[ext_resource type="Script" uid="uid://wd84r5hgichr" path="res://scripts/region_landmark.gd" id="landmark"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/court_sentinel.tscn" id="placed_enemy"]
+[ext_resource type="Script" uid="uid://do78dbsfwhoo6" path="res://scripts/overworld_prop.gd" id="prop"]
+[ext_resource type="Resource" path="res://data/buildings/chapel_roof.tres" id="roof_definition"]
+[ext_resource type="Script" uid="uid://dlvacyrxdyrqy" path="res://scripts/building_roof.gd" id="roof_script"]
+
+[ext_resource type="Resource" path="res://data/environment/cover_chapel.tres" id="ground_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_chapel.tscn" id="approach"]
+
+[sub_resource type="Resource" id="ground"]
+script = ExtResource("6_gjaqy")
+
+[node name="chapel" type="Node2D" unique_id=550012946]
+y_sort_enabled = true
+script = ExtResource("landmark")
+ground_cover = ExtResource("ground_cover")
+cover_bounds_metres = Rect2(-13, -21, 26, 40)
+landmark_id = &"last_watch"
+display_name = "Chapel of the Last Watch"
+map_kind = "chapel"
+discovery_metres = 16.0
+reservations_metres = Array[Rect2]([Rect2(-10, -19, 20, 28), Rect2(-3, 8, 6, 9)])
+floors_metres = Array[Rect2]([Rect2(-8, -12, 16, 20)])
+ground_polygons_metres = Array[PackedVector2Array]([PackedVector2Array(-5, -11, -5, -14, -3, -17, 3, -17, 5, -14, 5, -11)])
+ground_colors = Array[Color]([Color(0.3, 0.34, 0.29, 1)])
+
+[node name="Building" type="Node2D" parent="." unique_id=1290790825]
+y_sort_enabled = true
+script = ExtResource("building_script")
+definition = ExtResource("building_definition")
+preview_interior = true
+
+[node name="GroundFloor" type="Node2D" parent="Building" unique_id=1443832023]
+y_sort_enabled = true
+script = ExtResource("floor_script")
+definition = ExtResource("floor_definition")
+interior_art = Array[NodePath]([NodePath("Interior")])
+permanent_walls = Array[NodePath]([NodePath("Walls")])
+roof_art = Array[NodePath]([NodePath("Roof")])
+upper_facade = Array[NodePath]([NodePath("Facade")])
+metadata/elevation_definition = SubResource("ground")
+
+[node name="Walls" type="Node2D" parent="Building/GroundFloor" unique_id=216093407]
+y_sort_enabled = true
+
+[node name="ApseWestShoulder" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=1354694517]
+position = Vector2(-832, -1536)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(3, 1.2)
+height_metres = 4.0
+flight_blocker = true
+variation = 13
+
+[node name="ApseEastShoulder" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=783374569]
+position = Vector2(832, -1536)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(3, 1.2)
+height_metres = 3.2
+flight_blocker = true
+
+[node name="ApseWestReturn" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=1669951185]
+position = Vector2(-640, -1664)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(1, 3)
+height_metres = 3.0
+flight_blocker = true
+
+[node name="ApseEastReturn" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=825901792]
+position = Vector2(640, -1664)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(1, 3)
+height_metres = 2.2
+flight_blocker = true
+
+[node name="ApseNorth" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=282716336]
+position = Vector2(0, -2176)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(6, 1.2)
+height_metres = 3.8
+flight_blocker = true
+
+[node name="ApseBrokenWest" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=1404797451]
+position = Vector2(-512, -1984)
+rotation = 0.588
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(1, 4)
+height_metres = 2.5
+flight_blocker = true
+
+[node name="ApseCollapsedEast" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=1889325408]
+position = Vector2(512, -1984)
+collision_mask = 0
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(2, 3)
+height_metres = 0.7
+variation = 67
+
+[node name="WestNave" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=725330024]
+position = Vector2(-1024, -384)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(1.2, 18)
+height_metres = 3.5
+flight_blocker = true
+variation = 50
+
+[node name="EastNave" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=2109674903]
+position = Vector2(1024, -384)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(1.2, 18)
+height_metres = 3.5
+flight_blocker = true
+variation = 87
+
+[node name="PorchWest" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=639424735]
+position = Vector2(-768, 1024)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "buttress"
+footprint = Vector2(4, 1.5)
+height_metres = 2.5
+flight_blocker = true
+variation = 124
+
+[node name="AbutmentWest" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=1231602580]
+position = Vector2(-768, -1408)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "buttress"
+footprint = Vector2(2, 3)
+height_metres = 4.0
+flight_blocker = true
+variation = 161
+
+[node name="PorchEast" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=2135488083]
+position = Vector2(768, 1024)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "buttress"
+footprint = Vector2(4, 1.5)
+height_metres = 2.5
+flight_blocker = true
+variation = 198
+
+[node name="AbutmentEast" type="StaticBody2D" parent="Building/GroundFloor/Walls" unique_id=345288372]
+position = Vector2(768, -1408)
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("prop")
+kind = "buttress"
+footprint = Vector2(2, 3)
+height_metres = 4.0
+flight_blocker = true
+variation = 235
+
+[node name="Interior" type="Node2D" parent="Building/GroundFloor" unique_id=251645232]
+y_sort_enabled = true
+
+[node name="Altar" type="StaticBody2D" parent="Building/GroundFloor/Interior" unique_id=1459138726]
+position = Vector2(0, -1152)
+collision_mask = 0
+script = ExtResource("prop")
+kind = "slab"
+footprint = Vector2(2.8, 1.5)
+height_metres = 0.4
+variation = 309
+
+[node name="Occupants" type="Node2D" parent="Building/GroundFloor" unique_id=246713041]
+y_sort_enabled = true
+
+[node name="court_sentinel1" parent="Building/GroundFloor/Occupants" unique_id=330901185 instance=ExtResource("placed_enemy")]
+position = Vector2(-4, -15)
+collision_layer = 2
+motion_mode = 1
+
+[node name="Facade" type="Node2D" parent="Building/GroundFloor" unique_id=1618321024]
+y_sort_enabled = true
+
+[node name="BrokenLintel" type="StaticBody2D" parent="Building/GroundFloor/Facade" unique_id=434965882]
+position = Vector2(0, 1024)
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("prop")
+kind = "arch"
+footprint = Vector2(8, 1)
+height_metres = 4.0
+solid = false
+variation = 272
+
+[node name="Approach" type="Node2D" parent="Building/GroundFloor" unique_id=819585352]
+y_sort_enabled = true
+
+[node name="EntrySteps" type="StaticBody2D" parent="Building/GroundFloor/Approach" unique_id=1254386860]
+position = Vector2(0, 1280)
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("prop")
+kind = "stairs"
+footprint = Vector2(5, 3)
+height_metres = 0.4
+solid = false
+variation = 346
+
+[node name="Roof" type="Node2D" parent="Building/GroundFloor" unique_id=1070348975]
+z_index = 5
+z_as_relative = false
+script = ExtResource("roof_script")
+definition = ExtResource("roof_definition")
+
+[node name="ApproachDressing" parent="." instance=ExtResource("approach")]

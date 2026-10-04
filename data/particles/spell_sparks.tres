@@ -1,0 +1,16 @@
+[gd_resource type="ParticleProcessMaterial" format=3 uid="uid://d31fqccm0nc33"]
+
+[sub_resource type="Gradient" id="Fade"]
+offsets = PackedFloat32Array(0, 0.15, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="Ramp"]
+gradient = SubResource("Fade")
+
+[resource]
+particle_flag_disable_z = true
+spread = 180.0
+gravity = Vector3(0, -18, 0)
+damping_min = 15.0
+damping_max = 35.0
+color_ramp = SubResource("Ramp")

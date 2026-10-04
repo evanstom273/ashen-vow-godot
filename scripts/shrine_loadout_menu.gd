@@ -21,9 +21,68 @@ var _slot_box: VBoxContainer
 var _available_box: VBoxContainer
 var _details_title: Label
 var _details_body: Label
+var _details_scroll: ScrollContainer
 var _section_title: Label
 var _capacity_label: Label
 var _tab_buttons: Dictionary = {}
+var _action_buttons: Array[Button] = []
+var _stick_direction := Vector2.ZERO
+var _stick_repeat: float = 0.0
+
+func handle_menu_input(event: InputEvent) -> bool:
+    if not visible: return false
+    var confirm: bool = event.is_action("ui_accept")
+    var back: bool = event.is_action("ui_cancel") or event.is_action("pause")
+    # Route physical face buttons explicitly while the gameplay tree is paused.
+    if event is InputEventJoypadButton:
+        confirm = event.button_index == JOY_BUTTON_A
+        back = event.button_index == JOY_BUTTON_B or event.button_index == JOY_BUTTON_START
+    if not confirm and not back: return false
+    # Consume both edges before GUI dispatch, so rebuilding the focused row
+    # cannot activate a second button on release or leak input into gameplay.
+    get_viewport().set_input_as_handled()
+    if not event.is_pressed() or event.is_echo(): return true
+    if back:
+        cancel()
+    else:
+        var focused: Control = get_viewport().gui_get_focus_owner()
+        if focused is Button and is_ancestor_of(focused):
+            var button := focused as Button
+            if not button.disabled: button.pressed.emit()
+        else:
+            (_tab_buttons[_section] as Button).grab_focus()
+    return true
+
+func _process(delta: float) -> void:
+    if not visible:
+        _stick_direction = Vector2.ZERO
+        _stick_repeat = 0.0
+        return
+    var stick := Vector2.ZERO
+    for device: int in Input.get_connected_joypads():
+        var candidate := Vector2(Input.get_joy_axis(device, JOY_AXIS_LEFT_X), Input.get_joy_axis(device, JOY_AXIS_LEFT_Y))
+        if candidate.length_squared() > stick.length_squared(): stick = candidate
+    var direction := Vector2.ZERO
+    if stick.length() > 0.55:
+        direction = Vector2(signf(stick.x), 0) if absf(stick.x) > absf(stick.y) else Vector2(0, signf(stick.y))
+    _stick_repeat -= delta
+    if direction.is_zero_approx():
+        _stick_direction = Vector2.ZERO
+        _stick_repeat = 0.0
+        return
+    if direction != _stick_direction or _stick_repeat <= 0.0:
+        var focused: Control = get_viewport().gui_get_focus_owner()
+        if focused == null or not is_ancestor_of(focused):
+            (_tab_buttons[_section] as Button).grab_focus()
+        else:
+            var neighbor: NodePath = focused.focus_neighbor_right
+            if direction.x < 0: neighbor = focused.focus_neighbor_left
+            elif direction.y < 0: neighbor = focused.focus_neighbor_top
+            elif direction.y > 0: neighbor = focused.focus_neighbor_bottom
+            var next: Control = focused.get_node_or_null(neighbor) as Control
+            if next != null: next.grab_focus()
+        _stick_repeat = 0.32 if direction != _stick_direction else 0.14
+        _stick_direction = direction
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
@@ -39,6 +98,7 @@ func open_for(target: PlayerController) -> void:
     _selected_slot = 0
     visible = true
     _refresh_all()
+    (_tab_buttons[_section] as Button).grab_focus()
 
 func cancel() -> void:
     if not visible: return
@@ -140,6 +200,7 @@ func _build_ui() -> void:
     available_panel.add_child(available_wrap)
     available_wrap.add_child(_label("AVAILABLE", 11, MUTED))
     var scroll := ScrollContainer.new()
+    scroll.follow_focus = true
     scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
     scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
     available_wrap.add_child(scroll)
@@ -157,18 +218,26 @@ func _build_ui() -> void:
     details.add_child(details_wrap)
     details_wrap.add_child(_label("DETAILS", 11, MUTED))
     _details_title = _label("Empty slot", 17, TEXT)
+    _details_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     details_wrap.add_child(_details_title)
+    _details_scroll = ScrollContainer.new()
+    _details_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _details_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _details_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    _details_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+    details_wrap.add_child(_details_scroll)
     _details_body = _label("", 11, Color("c5c4b6"))
     _details_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    _details_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    details_wrap.add_child(_details_body)
+    _details_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _details_scroll.add_child(_details_body)
 
     var actions := HBoxContainer.new()
     actions.alignment = BoxContainer.ALIGNMENT_END
     actions.add_theme_constant_override("separation", 10)
     main.add_child(actions)
-    actions.add_child(_button("DISCARD", cancel, Vector2(132, 40)))
-    actions.add_child(_button("APPLY & RETURN", _apply_and_close, Vector2(190, 40), true))
+    _action_buttons.append(_button("DISCARD", cancel, Vector2(132, 40)))
+    _action_buttons.append(_button("APPLY & RETURN", _apply_and_close, Vector2(190, 40), true))
+    for button: Button in _action_buttons: actions.add_child(button)
 
 func _add_tab(parent: HBoxContainer, section: StringName, text: String) -> void:
     var button := _button(text, _set_section.bind(section), Vector2(0, 38))
@@ -180,11 +249,14 @@ func _set_section(section: StringName) -> void:
     _section = section
     _selected_slot = 0
     _refresh_all()
+    (_slot_box.get_child(0) as Button).grab_focus()
 
 func _select_slot(index: int) -> void:
     _selected_slot = index
     _refresh_slots()
     _refresh_details(_selected_item())
+    _wire_focus()
+    (_available_box.get_child(0) as Button).grab_focus()
 
 func _equip_weapon(item: WeaponDefinition) -> void:
     var draft: Array[WeaponDefinition] = _draft_right if _section == &"right" else _draft_left
@@ -207,6 +279,8 @@ func _clear_slot() -> void:
 
 func _refresh_all() -> void:
     if not is_instance_valid(player): return
+    var focused: Control = get_viewport().gui_get_focus_owner()
+    var available_index: int = focused.get_index() if focused != null and focused.get_parent() == _available_box else -1
     var titles := {&"right": "RIGHT HAND", &"left": "LEFT HAND", &"spell": "PREPARED SPELLS"}
     _section_title.text = titles[_section]
     var capacity: int = player.get_spell_slot_capacity() if _section == &"spell" else player.get_weapon_slot_capacity(_section)
@@ -221,6 +295,35 @@ func _refresh_all() -> void:
     _refresh_slots()
     _refresh_available()
     _refresh_details(_selected_item())
+    _wire_focus()
+    if visible and available_index >= 0:
+        (_available_box.get_child(mini(available_index, _available_box.get_child_count() - 1)) as Button).grab_focus()
+
+func _link_focus(button: Control, top: Control, bottom: Control, left: Control, right: Control) -> void:
+    button.focus_neighbor_top = button.get_path_to(top)
+    button.focus_neighbor_bottom = button.get_path_to(bottom)
+    button.focus_neighbor_left = button.get_path_to(left)
+    button.focus_neighbor_right = button.get_path_to(right)
+
+func _wire_focus() -> void:
+    # Explicit neighbors keep scrolling lists and rebuilt rows reachable.
+    var tabs: Array = _tab_buttons.values()
+    var slot: Control = _slot_box.get_child(_selected_slot) as Control
+    var first_item: Control = _available_box.get_child(0) as Control
+    for i in tabs.size():
+        _link_focus(tabs[i], tabs[i], slot, tabs[posmod(i - 1, tabs.size())], tabs[(i + 1) % tabs.size()])
+    for i in _slot_box.get_child_count():
+        var row: Control = _slot_box.get_child(i) as Control
+        var above: Control = _slot_box.get_child(i - 1) as Control if i > 0 else _tab_buttons[_section] as Control
+        var below: Control = _slot_box.get_child(i + 1) as Control if i + 1 < _slot_box.get_child_count() else _action_buttons[0]
+        _link_focus(row, above, below, row, first_item)
+    for i in _available_box.get_child_count():
+        var row: Control = _available_box.get_child(i) as Control
+        var above: Control = _available_box.get_child(i - 1) as Control if i > 0 else _tab_buttons[_section] as Control
+        var below: Control = _available_box.get_child(i + 1) as Control if i + 1 < _available_box.get_child_count() else _action_buttons[1]
+        _link_focus(row, above, below, slot, _action_buttons[1])
+    _link_focus(_action_buttons[0], slot, _action_buttons[0], _action_buttons[1], _action_buttons[1])
+    _link_focus(_action_buttons[1], first_item, _action_buttons[1], _action_buttons[0], _action_buttons[0])
 
 func _refresh_slots() -> void:
     _clear_children(_slot_box)
@@ -244,6 +347,7 @@ func _refresh_available() -> void:
             var button := _button(spell.display_name + "   ·   " + spell.school, _equip_spell.bind(spell), Vector2(0, 40))
             button.alignment = HORIZONTAL_ALIGNMENT_LEFT
             _available_box.add_child(button)
+            button.focus_entered.connect(_refresh_details.bind(spell))
     else:
         for weapon: WeaponDefinition in CATALOG.weapons:
             if weapon == null: continue
@@ -253,6 +357,7 @@ func _refresh_available() -> void:
             var button := _button(label_text, _equip_weapon.bind(weapon), Vector2(0, 40))
             button.alignment = HORIZONTAL_ALIGNMENT_LEFT
             _available_box.add_child(button)
+            button.focus_entered.connect(_refresh_details.bind(weapon))
 
 func _selected_item() -> Resource:
     return _draft_item(_selected_slot)
@@ -263,6 +368,7 @@ func _draft_item(index: int) -> Resource:
     return _draft_spells[index] if index < _draft_spells.size() else null
 
 func _refresh_details(item: Resource) -> void:
+    _details_scroll.scroll_vertical = 0
     if item == null:
         _details_title.text = "Empty slot"
         _details_body.text = "Leave this slot empty. Gameplay cycling skips empty slots."
@@ -320,6 +426,12 @@ func _button(text: String, callback: Callable, minimum: Vector2, primary: bool =
     button.add_theme_stylebox_override("normal", normal)
     button.add_theme_stylebox_override("hover", hover)
     button.add_theme_stylebox_override("pressed", hover)
+    var focus := StyleBoxFlat.new()
+    focus.bg_color = Color(0, 0, 0, 0)
+    focus.border_color = GOLD_BRIGHT
+    focus.set_border_width_all(2)
+    button.add_theme_stylebox_override("focus", focus)
+    button.focus_mode = Control.FOCUS_ALL
     button.add_theme_color_override("font_color", TEXT)
     button.pressed.connect(callback)
     return button

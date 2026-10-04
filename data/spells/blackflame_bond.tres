@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://bb3urc6nlri00"]
+
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="2_rgidp"]
+[ext_resource type="Resource" uid="uid://cug5t06md7m4e" path="res://data/attacks/blackflame.tres" id="blackflame"]
+[ext_resource type="Script" uid="uid://cdtn7tqnjxc3x" path="res://scripts/resources/tether_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://424ruschd2a" path="res://assets/icons/spells/blackflame_bond.svg" id="spell_icon"]
+[ext_resource type="Resource" uid="uid://cp15lx7o6k1yl" path="res://data/vfx_blackflame_bond.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+break_range = 1280.0
+attack = ExtResource("blackflame")
+vfx = ExtResource("vfx")
+duration = 2.0
+tick_interval = 0.05
+cast_range = 1280.0
+
+[resource]
+script = ExtResource("spell")
+id = &"blackflame_bond"
+display_name = "Blackflame Bond"
+description = "Hold a blackflame tether for up to 2 seconds. First contact deals 120 fire damage and applies one lingering burn: 2% of maximum health over 0.75 seconds at 10 Arcane, rising with diminishing returns to 5% over 1.25 seconds at 60 Arcane. Higher Arcane grants no further benefit. Fire damage respects fire defence; the percentage burn bypasses defence but respects invulnerability. The burn finishes after release. Holding the link does not repeat the impact or burn. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = ExtResource("blackflame")
+delivery_definition = SubResource("Delivery")
+charges = 10
+maximum_charges = 10
+delivery = "Tether"

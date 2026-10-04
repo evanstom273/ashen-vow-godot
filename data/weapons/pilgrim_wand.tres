@@ -7,6 +7,10 @@
 
 [ext_resource type="PackedScene" path="res://scenes/weapons/pilgrim_wand.tscn" id="equipped_model"]
 
+[ext_resource type="Resource" path="res://data/attacks/presentation/pilgrim_wand_light.tres" id="presentation_light"]
+
+[ext_resource type="Resource" path="res://data/attacks/presentation/pilgrim_wand_charged.tres" id="presentation_charged"]
+
 [resource]
 script = ExtResource("script")
 equipped_scene = ExtResource("equipped_model")
@@ -17,6 +21,6 @@ category = "Wand"
 weight = 1.2
 requirements = ExtResource("requirements")
 is_spell_catalyst = true
-light_attack = ExtResource("light")
-charged_attack = ExtResource("charged")
+light_attack = ExtResource("presentation_light")
+charged_attack = ExtResource("presentation_charged")
 blade_color = Color(0.71, 0.66, 0.52, 1)

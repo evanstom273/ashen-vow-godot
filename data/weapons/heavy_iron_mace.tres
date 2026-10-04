@@ -7,6 +7,10 @@
 
 [ext_resource type="PackedScene" path="res://scenes/weapons/heavy_iron_mace.tscn" id="equipped_model"]
 
+[ext_resource type="Resource" path="res://data/attacks/presentation/heavy_iron_mace_light.tres" id="presentation_light"]
+
+[ext_resource type="Resource" path="res://data/attacks/presentation/heavy_iron_mace_charged.tres" id="presentation_charged"]
+
 [resource]
 script = ExtResource("script")
 equipped_scene = ExtResource("equipped_model")
@@ -16,6 +20,6 @@ description = "A blunt court relic with a patient swing."
 category = "Hammer"
 weight = 9.0
 requirements = ExtResource("requirements")
-light_attack = ExtResource("light")
-charged_attack = ExtResource("charged")
+light_attack = ExtResource("presentation_light")
+charged_attack = ExtResource("presentation_charged")
 blade_color = Color(0.42, 0.45, 0.46, 1)

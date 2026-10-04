@@ -1,0 +1,296 @@
+{
+  "title": "Grounded Combat and Courtyard VFX Pass",
+  "date": "2026-10-03",
+  "summary": "Presentation-only physical combat, heavier stylised blood, movement and courtyard polish. Resource-based profiles and shared particle budgets.",
+  "changed_assets": [
+    "scripts/feedback.gd",
+    "scripts/physical_vfx.gd",
+    "scripts/melee_trail.gd",
+    "scripts/resources/movement_vfx_definition.gd",
+    "scripts/resources/vfx_definition.gd",
+    "scripts/resources/attack_definition.gd",
+    "scripts/resources/enemy_definition.gd",
+    "scripts/resources/shrine_definition.gd",
+    "scripts/player.gd",
+    "scripts/player_visuals.gd",
+    "scripts/sentinel.gd",
+    "scripts/training_dummy.gd",
+    "scripts/spell_summon.gd",
+    "scripts/court_prop.gd",
+    "scripts/courtyard.gd",
+    "scripts/shrine.gd",
+    "shaders/runes.gdshader",
+    "data/weapons/ashen_dagger.tres",
+    "data/weapons/ashen_seal.tres",
+    "data/weapons/court_shield_bash.tres",
+    "data/weapons/court_staff.tres",
+    "data/weapons/heavy_iron_mace.tres",
+    "data/weapons/pilgrim_spear.tres",
+    "data/weapons/pilgrim_wand.tres",
+    "data/weapons/sentinel_blade.tres",
+    "data/weapons/sentinel_greatblade.tres",
+    "data/weapons/wanderer_sword.tres",
+    "data/vfx/footstep.tres",
+    "data/vfx/sprint.tres",
+    "data/vfx/dodge_takeoff.tres",
+    "data/vfx/dodge_wake.tres",
+    "data/vfx/settle.tres",
+    "data/vfx/death_dust.tres",
+    "data/vfx/windup_glint.tres",
+    "data/vfx/brazier_flame.tres",
+    "data/vfx/brazier_embers.tres",
+    "data/vfx/brazier_smoke.tres",
+    "data/vfx/shrine_idle.tres",
+    "data/vfx/shrine_rest.tres",
+    "data/vfx/courtyard_ash.tres",
+    "data/vfx/flesh.tres",
+    "data/vfx/armored_blood.tres",
+    "data/vfx/metal.tres",
+    "data/vfx/wood.tres",
+    "data/vfx/stone.tres",
+    "data/vfx/melee_dagger.tres",
+    "data/vfx/melee_dagger_charged.tres",
+    "data/vfx/melee_sword.tres",
+    "data/vfx/melee_sword_charged.tres",
+    "data/vfx/melee_spear.tres",
+    "data/vfx/melee_spear_charged.tres",
+    "data/vfx/melee_greatblade.tres",
+    "data/vfx/melee_greatblade_charged.tres",
+    "data/vfx/melee_mace.tres",
+    "data/vfx/melee_mace_charged.tres",
+    "data/vfx/melee_shield.tres",
+    "data/vfx/melee_shield_charged.tres",
+    "data/vfx/player_movement.tres",
+    "data/attacks/presentation/ashen_dagger_light.tres",
+    "data/attacks/presentation/ashen_dagger_charged.tres",
+    "data/attacks/presentation/ashen_seal_light.tres",
+    "data/attacks/presentation/ashen_seal_charged.tres",
+    "data/attacks/presentation/court_shield_bash_light.tres",
+    "data/attacks/presentation/court_shield_bash_charged.tres",
+    "data/attacks/presentation/court_staff_light.tres",
+    "data/attacks/presentation/court_staff_charged.tres",
+    "data/attacks/presentation/heavy_iron_mace_light.tres",
+    "data/attacks/presentation/heavy_iron_mace_charged.tres",
+    "data/attacks/presentation/pilgrim_spear_light.tres",
+    "data/attacks/presentation/pilgrim_spear_charged.tres",
+    "data/attacks/presentation/pilgrim_wand_light.tres",
+    "data/attacks/presentation/pilgrim_wand_charged.tres",
+    "data/attacks/presentation/sentinel_blade_light.tres",
+    "data/attacks/presentation/sentinel_blade_charged.tres",
+    "data/attacks/presentation/sentinel_greatblade_light.tres",
+    "data/attacks/presentation/sentinel_greatblade_charged.tres",
+    "data/attacks/presentation/wanderer_sword_light.tres",
+    "data/attacks/presentation/wanderer_sword_charged.tres",
+    "grounded_vfx_handoff.json"
+  ],
+  "new_assets": [
+    "scripts/physical_vfx.gd",
+    "scripts/melee_trail.gd",
+    "scripts/resources/movement_vfx_definition.gd",
+    "data/vfx/footstep.tres",
+    "data/vfx/sprint.tres",
+    "data/vfx/dodge_takeoff.tres",
+    "data/vfx/dodge_wake.tres",
+    "data/vfx/settle.tres",
+    "data/vfx/death_dust.tres",
+    "data/vfx/windup_glint.tres",
+    "data/vfx/brazier_flame.tres",
+    "data/vfx/brazier_embers.tres",
+    "data/vfx/brazier_smoke.tres",
+    "data/vfx/shrine_idle.tres",
+    "data/vfx/shrine_rest.tres",
+    "data/vfx/courtyard_ash.tres",
+    "data/vfx/flesh.tres",
+    "data/vfx/armored_blood.tres",
+    "data/vfx/metal.tres",
+    "data/vfx/wood.tres",
+    "data/vfx/stone.tres",
+    "data/vfx/melee_dagger.tres",
+    "data/vfx/melee_dagger_charged.tres",
+    "data/vfx/melee_sword.tres",
+    "data/vfx/melee_sword_charged.tres",
+    "data/vfx/melee_spear.tres",
+    "data/vfx/melee_spear_charged.tres",
+    "data/vfx/melee_greatblade.tres",
+    "data/vfx/melee_greatblade_charged.tres",
+    "data/vfx/melee_mace.tres",
+    "data/vfx/melee_mace_charged.tres",
+    "data/vfx/melee_shield.tres",
+    "data/vfx/melee_shield_charged.tres",
+    "data/vfx/player_movement.tres",
+    "data/attacks/presentation/ashen_dagger_light.tres",
+    "data/attacks/presentation/ashen_dagger_charged.tres",
+    "data/attacks/presentation/ashen_seal_light.tres",
+    "data/attacks/presentation/ashen_seal_charged.tres",
+    "data/attacks/presentation/court_shield_bash_light.tres",
+    "data/attacks/presentation/court_shield_bash_charged.tres",
+    "data/attacks/presentation/court_staff_light.tres",
+    "data/attacks/presentation/court_staff_charged.tres",
+    "data/attacks/presentation/heavy_iron_mace_light.tres",
+    "data/attacks/presentation/heavy_iron_mace_charged.tres",
+    "data/attacks/presentation/pilgrim_spear_light.tres",
+    "data/attacks/presentation/pilgrim_spear_charged.tres",
+    "data/attacks/presentation/pilgrim_wand_light.tres",
+    "data/attacks/presentation/pilgrim_wand_charged.tres",
+    "data/attacks/presentation/sentinel_blade_light.tres",
+    "data/attacks/presentation/sentinel_blade_charged.tres",
+    "data/attacks/presentation/sentinel_greatblade_light.tres",
+    "data/attacks/presentation/sentinel_greatblade_charged.tres",
+    "data/attacks/presentation/wanderer_sword_light.tres",
+    "data/attacks/presentation/wanderer_sword_charged.tres",
+    "grounded_vfx_handoff.json"
+  ],
+  "profile_assignments": {
+    "melee": "data/vfx/melee_<dagger|sword|spear|greatblade|mace|shield>[_charged].tres; referenced by per-weapon light/charged AttackDefinition copies",
+    "movement": "data/vfx/player_movement.tres: footstep, sprint, dodge_takeoff, dodge_wake, settle, death",
+    "surfaces": "data/vfx/flesh.tres, armored_blood.tres, metal.tres, wood.tres, stone.tres",
+    "enemy_windup": "data/vfx/windup_glint.tres via EnemyDefinition.windup_vfx",
+    "shrine": "data/vfx/shrine_idle.tres and shrine_rest.tres via ShrineDefinition",
+    "brazier": "data/vfx/brazier_flame.tres, brazier_embers.tres, brazier_smoke.tres via court_prop exports",
+    "atmosphere": "data/vfx/courtyard_ash.tres via courtyard export"
+  },
+  "attack_copy_sources": [
+    {
+      "path": "data/attacks/presentation/ashen_dagger_light.tres",
+      "source": "data/attacks/dagger_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/ashen_dagger_charged.tres",
+      "source": "data/attacks/sword_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/ashen_seal_light.tres",
+      "source": "data/attacks/bashing_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/ashen_seal_charged.tres",
+      "source": "data/attacks/bashing_charged.tres"
+    },
+    {
+      "path": "data/attacks/presentation/court_shield_bash_light.tres",
+      "source": "data/attacks/bashing_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/court_shield_bash_charged.tres",
+      "source": "data/attacks/bashing_charged.tres"
+    },
+    {
+      "path": "data/attacks/presentation/court_staff_light.tres",
+      "source": "data/attacks/spear_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/court_staff_charged.tres",
+      "source": "data/attacks/sentinel_sweep.tres"
+    },
+    {
+      "path": "data/attacks/presentation/heavy_iron_mace_light.tres",
+      "source": "data/attacks/mace_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/heavy_iron_mace_charged.tres",
+      "source": "data/attacks/sentinel_sweep.tres"
+    },
+    {
+      "path": "data/attacks/presentation/pilgrim_spear_light.tres",
+      "source": "data/attacks/spear_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/pilgrim_spear_charged.tres",
+      "source": "data/attacks/sword_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/pilgrim_wand_light.tres",
+      "source": "data/attacks/dagger_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/pilgrim_wand_charged.tres",
+      "source": "data/attacks/sword_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/sentinel_blade_light.tres",
+      "source": "data/attacks/sentinel_sweep.tres"
+    },
+    {
+      "path": "data/attacks/presentation/sentinel_blade_charged.tres",
+      "source": "data/attacks/sentinel_sweep.tres"
+    },
+    {
+      "path": "data/attacks/presentation/sentinel_greatblade_light.tres",
+      "source": "data/attacks/greatblade_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/sentinel_greatblade_charged.tres",
+      "source": "data/attacks/sentinel_sweep.tres"
+    },
+    {
+      "path": "data/attacks/presentation/wanderer_sword_light.tres",
+      "source": "data/attacks/sword_light.tres"
+    },
+    {
+      "path": "data/attacks/presentation/wanderer_sword_charged.tres",
+      "source": "data/attacks/sentinel_sweep.tres"
+    }
+  ],
+  "runtime_connections": [
+    "World-space tapered melee ribbon sampled from the animated model, respecting active attack phase; charged release dust and hold glint",
+    "Independent per-hand ribbons and existing enchanted weapon visuals retained",
+    "Sentinel ribbon samples the existing drawn blade endpoints; danger arc dimensions and timing untouched",
+    "Accepted damage plus receiver passed to hit_effect; 0.12s secondary-effect limiter and reusable per-receiver confirmation",
+    "Directional 32-droplet flesh / 16-droplet armored baseline profiles; capped cosmetic damage scaling",
+    "Metal sparks, wood/stone chips and dust; surface blood remains independent of optional attack impact overrides",
+    "Blood Off clears sprays and stains; 12-second stain lifetime, final-four-second fade, 64 oldest-first cap",
+    "Distinct step/sprint/dodge/wake/settle/death profiles; existing movement/audio event timing retained",
+    "Brazier polygon flame + GPU ember/smoke profiles retain persistent light/collision/audio; slow light variation",
+    "Dedicated shrine idle/rest visuals; removed duplicate borrowed spell burst, generic shrine burst and extra drawn rest ring",
+    "Sparse courtyard ash replaces the older atmosphere emitters/mist; ambient emitter visibility culling",
+    "Gameplay-paused particle/trail/expiry clocks and explicit shrine rune shader elapsed time",
+    "Actor ownership, weak validity guards, scene-owned lifetimes, shrine cleanup; no physical-effect reparenting during scene teardown"
+  ],
+  "budgets": {
+    "total_allocated_gpu_particles": 2048,
+    "ambient": 256,
+    "transient": 1792,
+    "transient_effect_nodes": 40,
+    "temporary_lights": 8,
+    "stains": 64,
+    "reduced_effects": "Half emitted amount; no smoke or temporary lights; shorter melee/spell trails; unchanged base lighting and essential silhouettes.",
+    "fallback": "Secondary decoration can be skipped; lightweight weapon ribbons and per-receiver hit confirmation do not require particle allocations.",
+    "custom_scenes": "Pre-existing GPUParticles2D nodes in override scenes are budgeted before instancing into the tree; dynamically created custom emitters should use Feedback.budget_emitter."
+  },
+  "compatibility": [
+    "Original attack assets preserved; 20 presentation copies keep original non-VFX properties and external tuning references.",
+    "Weapon definitions retain identity, UIDs, equipped scenes and gameplay metadata; only attack references now select presentation copies.",
+    "Existing null-valued charge metadata in sword_light was preserved in its copies rather than changing user-authored timing data.",
+    "Feedback.burst remains compatible; available_spell_particles delegates to shared transient accounting.",
+    "No spell tuning, AI decisions, damage calculations, hitboxes, movement values, renderer, HUD layout, audio keys, hit-stop or camera-shake strengths changed.",
+    "Old VFX resource files remain for compatibility; physical feedback uses the new explicit profiles.",
+    "Persistent brazier/shrine lighting remains outside the temporary-light pool, with no new persistent lights."
+  ],
+  "static_review": {
+    "resources_inspected": 61,
+    "reference_issues": 0,
+    "duplicate_property_issues": 0,
+    "attack_copies_reviewed": 20,
+    "attack_gameplay_properties_unchanged": true,
+    "merge_markers_found": false,
+    "diff_check": "No whitespace errors; existing Windows line-ending notices only."
+  },
+  "not_run": [
+    "Godot imports or parsing",
+    "Automated tests",
+    "Runtime/gameplay tests",
+    "Screenshot/render review",
+    "GPU performance measurements"
+  ],
+  "runtime_acceptance_pending": [
+    "Every weapon family and both hands, light/charged attacks, unchanged size/layering and imbue cycling",
+    "Accepted versus rejected hits, all five surface categories, repeated hits and impact overrides",
+    "Blood toggle immediately removes active sprays/stains and retains non-blood confirmation",
+    "Walk/sprint/dodge/idle emission and no movement changes",
+    "Danger arc readability during overlapping melee and spells",
+    "Shrine rest produces one coordinated sequence and clears transient effects",
+    "Shared budget saturation, ambient culling, Reduced Effects toggling and pause",
+    "Death, equipment replacement, actor removal and scene reload without stale references/orphans",
+    "Visual quality and combined spell/combat/environment GPU performance"
+  ]
+}

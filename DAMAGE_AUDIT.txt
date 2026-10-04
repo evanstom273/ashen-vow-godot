@@ -1,0 +1,111 @@
+ASHEN VOW - DAMAGE INVESTIGATION
+4 October 2026. Source inspection only; no combat rebalance applied.
+
+CONCLUSION
+There are concrete authoring inconsistencies and presentation behaviours that
+can make damage feel inconsistent. I did not establish one reproduced runtime
+cause for the reported feel. I found no world-scale multiplier in the inspected
+health-damage calculation: scale changes melee/query geometry and recoil, not
+the numerical health damage.
+
+PRIORITY FINDINGS
+
+1. Wanderer Sword light/charged definitions are inconsistent.
+The live weapon points to data/attacks/presentation/wanderer_sword_light.tres
+and wanderer_sword_charged.tres. The charged definition is a Sentinel sweep:
+145 physical, no AttributeScaling reference, zero stamina cost, 0.65s windup,
+0.12s active, 0.85s recovery. The light definition is 110 physical by default,
+22 stamina, 0.10/0.10/0.18s timing, strength 0.025 and dexterity 0.020 per point
+above 10. Charging therefore gives only ~32% more base damage with much more
+commitment, and no attribute scaling for that charged action.
+Recommended next fix: give this weapon an explicitly authored player charged
+action. This is a balance decision; it has not been silently changed here.
+
+2. Invalid serialized values in the light action.
+Both data/attacks/presentation/wanderer_sword_light.tres and the older
+data/attacks/sword_light.tres contain:
+  charge_threshold = null
+  charged_action_name = null
+These fields are typed float and StringName in AttackDefinition. The controller
+compares hold time directly against charge_threshold. The exact loader/runtime
+outcome has NOT been tested; do not assume a reliable charge threshold from
+these files. Recommended repair: explicit valid values (or remove the invalid
+overrides to use the declared defaults, currently 0.45 and "charged").
+
+3. Damage numbers are rolling totals, not per-hit labels.
+scripts/damage_number.gd resets its total only when the gap since the previous
+accepted hit reaches 0.8 seconds. Closely spaced sword hits, beam ticks and burn
+ticks accumulate in one label. A growing displayed number is not that much
+damage on every tick. Receivers cap the displayed amount at remaining health.
+
+4. The visually armoured Sentinel has zero mitigation.
+Its current vitals use data/defences/unarmoured.tres, which leaves all five
+damage-negation channels at zero. It has 560 HP and damage_invulnerability 0.
+It can therefore accept every valid rapid tick, unlike a receiver with a
+post-hit protection window. Armoured-flesh VFX do not provide actual armour.
+
+5. New elevation filtering can reject an otherwise overlapping attack.
+Receivers now check Elevation.accepts_hit; spell queries also filter by cast
+elevation. Same-floor damage is not numerically reduced by this check. Wrong
+floor assignment rejects a hit entirely. Default outside and chapel ground
+floor are level 0. New enemy placements must be parented under the intended
+BuildingFloor (or use the established explicit elevation component).
+Actual stair transitions/failed-hit scenarios remain runtime-unverified.
+
+6. Editing an old resource may not edit the live payload.
+Wanderer Sword still declares old sword_light/sentinel_sweep external references,
+but its actual light_attack/charged_attack fields use the presentation copies.
+For spells, delivery_definition.attack overrides the cast-context attack when
+present; otherwise the cast attack is used. Always inspect the assigned live
+reference, not a similarly named file.
+
+EXPECTED NUMBERS FROM CURRENT SOURCE
+All player attributes 10, target full 560 HP, zero defence, no buffs/imbues,
+no rejected hits. These are arithmetic expectations, not runtime test results.
+
+  Wanderer Sword light:      110 physical per accepted hit (6 hits to kill).
+  Wanderer Sword charged:    145 physical per accepted hit (4 hits to kill).
+  Star Shard:                145 magic per accepted hit (4 hits to kill).
+  Prismatic Ray:              50 magic per 0.25s scheduled tick; a fully landed
+                              2s channel targets 8 ticks / 400 total.
+  Blackflame Shard at 10:    120 fire impact + ~11 HP over 0.75s.
+  Blackflame Shard at 60:    120 fire impact + 28 HP over 1.25s.
+
+Blackflame's percentage component is total damage, not percent per tick.
+The normal fire hit is mitigated; the resolved percentage burn bypasses defence
+but still passes receiver invulnerability checks. Same-ID burns refresh rather
+than stack; they also stop when attribution dies. Its separate fire attack has
+no attribute scaling reference. No burn tuning was changed by this pass.
+
+ADDITIONAL SOURCE OBSERVATIONS
+- Player melee deduplicates targets for the whole committed attack and checks
+  the shape, arc and floor. It does not do a world-wall line-of-sight check, so
+  a close target across thin geometry may be eligible.
+- A target is marked as hit before its receiver accepts/rejects damage; that
+  swing does not retry it later in its active phase.
+- Mitigation is percentage-by-channel, then attribute multiplier, then unscaled
+  imbue bonus and one final integer rounding. There is no flat armour subtraction.
+- Percentage burns schedule small integer amounts at roughly 0.05s intervals,
+  retaining rounding remainder on refresh; small totals will have zero/one-HP
+  visual steps. Rapid feedback is deliberately restrained, separate from HP.
+- These are pre-existing behaviours, not changes made during the editor pass.
+
+FOLLOW-UP PRIORITY
+First repair the invalid light-attack fields and decide the intended player
+charged-sword profile. Then reproduce one light hit, one charged hit, a complete
+beam and Blackflame against the same unarmoured enemy, watching actual HP delta
+rather than the rolling label. Check same-floor versus cross-floor rejection
+separately. Running that review requires explicit permission under the project's
+standing no-tests/no-Godot-launch instruction.
+
+INSPECTED PATHS
+scripts/resources/attack_definition.gd, damage_profile.gd, defence_profile.gd,
+attribute_scaling.gd, max_health_drain_definition.gd;
+scripts/player.gd, sentinel.gd, spell_delivery_service.gd,
+spell_delivery_runtime.gd, spell_effects.gd, elevation.gd, damage_number.gd;
+the live Wanderer weapon/attack/damage/scaling files, Sentinel stats/vitals/
+defence, player starting attributes, and Star Shard/Prismatic Ray/Blackflame
+spell and payload resources.
+
+No damage, health, stamina, scaling, hit geometry or spell tuning was changed.
+This is not a claim that every spell/weapon balance combination is correct.

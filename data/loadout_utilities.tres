@@ -1,11 +1,12 @@
-[gd_resource type="Resource" script_class="UtilityLoadoutDefinition" format=3]
+[gd_resource type="Resource" script_class="UtilityLoadoutDefinition" format=3 uid="uid://bucme6clgw620"]
 
-[ext_resource type="Script" path="res://scripts/resources/utility_loadout_definition.gd" id="script"]
-[ext_resource type="Script" path="res://scripts/resources/utility_definition.gd" id="utility_type"]
 [ext_resource type="Resource" path="res://data/utility_healing_flask.tres" id="flask"]
+[ext_resource type="Resource" path="res://data/utility_raven_form.tres" id="raven"]
+[ext_resource type="Script" uid="uid://cbef6prpncq1" path="res://scripts/resources/utility_loadout_definition.gd" id="script"]
 [ext_resource type="Resource" path="res://data/utility_stamina_tonic.tres" id="tonic"]
+[ext_resource type="Script" uid="uid://btce5rqe7ocde" path="res://scripts/resources/utility_definition.gd" id="utility_type"]
 
 [resource]
 script = ExtResource("script")
 display_name = "Prepared utilities"
-utilities = Array[ExtResource("utility_type")]([ExtResource("flask"), ExtResource("tonic")])
+utilities = Array[ExtResource("utility_type")]([ExtResource("flask"), ExtResource("tonic"), ExtResource("raven")])

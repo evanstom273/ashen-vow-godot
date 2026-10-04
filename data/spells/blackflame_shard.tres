@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://cf6dachevhn42"]
+
+[ext_resource type="Resource" uid="uid://cug5t06md7m4e" path="res://data/attacks/blackflame.tres" id="1_1fp3g"]
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="2_oaikm"]
+[ext_resource type="Script" uid="uid://d3cvcwyki6mne" path="res://scripts/resources/projectile_delivery.gd" id="3_ox1qi"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="5_gnu3k"]
+[ext_resource type="Resource" uid="uid://v4mpq6nvgi50" path="res://data/vfx_blackflame_shard.tres" id="shard_vfx"]
+[ext_resource type="Texture2D" uid="uid://cuhltiev3gcwy" path="res://assets/icons/spells/blackflame_shard.svg" id="spell_icon"]
+
+[sub_resource type="Resource" id="Resource_1fp3g"]
+script = ExtResource("3_ox1qi")
+speed = 2080.0
+radius = 24.0
+attack = ExtResource("1_1fp3g")
+vfx = ExtResource("shard_vfx")
+duration = 2.0
+
+[resource]
+script = ExtResource("5_gnu3k")
+id = &"blackflame_shard"
+display_name = "Blackflame Shard"
+description = "Launch a pale-edged blackflame shard toward your aim or locked enemy. Deals 120 fire damage on impact, then burns 2% of the target's maximum health over 0.75 seconds at 10 Arcane. Diminishing returns raise the burn to 5% over 1.25 seconds at 60 Arcane, with no benefit above 60. Fire damage respects fire defence; the percentage burn bypasses defence but respects invulnerability. The burn persists after impact. Repeated hits refresh the burn instead of stacking it. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = ExtResource("1_1fp3g")
+delivery_definition = SubResource("Resource_1fp3g")
+charges = 10
+maximum_charges = 10

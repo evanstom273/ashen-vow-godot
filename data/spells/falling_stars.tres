@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://8jxl7hf6eay6"]
+
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="3_emnf6"]
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://by700iwpvmb6r" path="res://scripts/resources/barrage_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="named_scaling"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://dgsrigbjif3f8" path="res://assets/icons/spells/falling_stars.svg" id="spell_icon"]
+[ext_resource type="Resource" uid="uid://bg2c88ns5rhdf" path="res://data/vfx_falling_stars.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+magic = 110.0
+
+[sub_resource type="Resource" id="NamedScaling"]
+script = ExtResource("named_scaling")
+arcane = 0.035
+
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+scaling = SubResource("NamedScaling")
+poise_damage = 25.0
+stamina_cost = 28.0
+knockback = 100.0
+windup = 0.4
+recovery = 0.3
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+impact_radius = 140.0
+impact_interval = 0.3
+telegraph_duration = 0.65
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+
+[resource]
+script = ExtResource("spell")
+id = &"delivery_barrage"
+display_name = "Falling Stars"
+description = "Call six stars onto a selected region. Ground seals mark the exact impact locations. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = SubResource("Attack")
+delivery_definition = SubResource("Delivery")
+charges = 8
+maximum_charges = 8
+delivery = "Barrage / Rain"

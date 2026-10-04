@@ -3,10 +3,12 @@ extends StaticBody2D
 @export_enum("pillar", "brazier", "grass", "banner", "rubble") var kind: String = "pillar"
 var clock: float = 0.0
 var light: PointLight2D
-var particles: GPUParticles2D
 var actor: Node2D
 var art: Node2D
 var faded: float = 1.0
+@export var flame_vfx: VFXDefinition = preload("res://data/vfx/brazier_flame.tres")
+@export var ember_vfx: VFXDefinition = preload("res://data/vfx/brazier_embers.tres")
+@export var smoke_vfx: VFXDefinition = preload("res://data/vfx/brazier_smoke.tres")
 
 func _ready() -> void:
 	clock = absf(position.x * 0.013 + position.y * 0.021)
@@ -50,31 +52,14 @@ func _ready() -> void:
 		glow_material.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
 		glow.material = glow_material
 		add_child(glow)
-		particles = GPUParticles2D.new()
-		particles.amount = 12
-		particles.lifetime = 1.8
-		particles.texture = Feedback.particle_texture
-		particles.position.y = -35
-		var effect_material := ParticleProcessMaterial.new()
-		effect_material.particle_flag_disable_z = true
-		effect_material.direction = Vector3(0,-1,0)
-		effect_material.spread = 16
-		effect_material.gravity = Vector3(5,-4,0)
-		effect_material.initial_velocity_min = 14
-		effect_material.initial_velocity_max = 32
-		effect_material.scale_min = 0.12
-		effect_material.scale_max = 0.3
-		effect_material.color = Color("ffc08b")
-		particles.process_material = effect_material
-		add_child(particles)
-		var smoke: GPUParticles2D = Feedback.ambient_emitter(true)
-		smoke.position.y = -44
-		add_child(smoke)
+		Feedback.physical_effect(to_global(Vector2(0, -34)), flame_vfx, &"flame", Vector2.UP, 1, self, true)
+		Feedback.physical_effect(to_global(Vector2(0, -35)), ember_vfx, &"embers", Vector2.UP, 1, self, true)
+		Feedback.physical_effect(to_global(Vector2(0, -44)), smoke_vfx, &"smoke", Vector2.UP, 1, self, true)
 		var sound := AudioStreamPlayer2D.new()
 		sound.stream = Feedback.sounds.get("fire")
 		sound.bus = "Ambience"
 		sound.volume_db = -15
-		sound.max_distance = 380
+		sound.max_distance = 380 * WorldScale.actor_scale(self)
 		add_child(sound)
 		if DisplayServer.get_name() != "headless": sound.play()
 
@@ -84,12 +69,12 @@ func _process(delta: float) -> void:
 		queue_redraw()
 		return
 	if not is_instance_valid(actor): actor = get_tree().get_first_node_in_group("player")
-	var behind: bool = is_instance_valid(actor) and actor.global_position.y < global_position.y and actor.global_position.y > global_position.y - 85 and absf(actor.global_position.x - global_position.x) < 36
+	var relative: Vector2 = to_local(actor.global_position) if is_instance_valid(actor) else Vector2.INF
+	var behind: bool = relative.y < 0 and relative.y > -85 and absf(relative.x) < 36
 	faded = move_toward(faded, 0.35 if behind and kind in ["pillar", "banner"] else 1.0, delta * 4)
 	modulate.a = faded
 	if light != null:
-		light.energy = 1.2 + sin(clock * 9) * 0.08 + sin(clock * 17) * 0.05
-		particles.amount_ratio = 0.4 if Feedback.reduced_effects else 1.0
+		light.energy = 1.25 + sin(clock * 1.7) * 0.1 + sin(clock * 2.3) * 0.05
 	queue_redraw()
 
 func _draw() -> void:
@@ -113,11 +98,13 @@ func _draw() -> void:
 			draw_rect(Rect2(-12,-5,24,11),Color("414247"))
 			draw_rect(Rect2(-5,-26,10,24),Color("555653"))
 			draw_polygon(PackedVector2Array([Vector2(-18,-34),Vector2(18,-34),Vector2(10,-21),Vector2(-10,-21)]),PackedColorArray([Color("6b6556")]))
-			for i in 4:
-				var x: float = -10 + i * 7
-				var height: float = 15 + sin(clock*8+i*1.8)*6
-				draw_colored_polygon(PackedVector2Array([Vector2(x-5,-33),Vector2(x+sin(clock*5+i)*3,-33-height),Vector2(x+5,-33)]),Color("e5a15c"))
-				draw_line(Vector2(x,-34),Vector2(x,-39-height*0.35),Color("ffe1a0"),3,true)
+			if Engine.is_editor_hint():
+				for i in 4:
+					var x: float = -10 + i * 7
+					var height: float = 15 + sin(clock*8+i*1.8)*6
+					draw_colored_polygon(PackedVector2Array([Vector2(x-5,-33),Vector2(x+sin(clock*5+i)*3,-33-height),Vector2(x+5,-33)]),Color("e5a15c"))
+					draw_colored_polygon(PackedVector2Array([Vector2(x-3,-33),Vector2(x+sin(clock*4+i)*2,-33-height*0.7),Vector2(x+3,-33)]),Color("ffd887"))
+					draw_line(Vector2(x,-34),Vector2(x,-39-height*0.35),Color("ffe1a0"),3,true)
 		"grass":
 			for i in 7:
 				var x: float = i * 3 - 9

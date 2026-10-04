@@ -7,6 +7,10 @@
 
 [ext_resource type="PackedScene" path="res://scenes/weapons/court_shield_bash.tscn" id="equipped_model"]
 
+[ext_resource type="Resource" path="res://data/attacks/presentation/court_shield_bash_light.tres" id="presentation_light"]
+
+[ext_resource type="Resource" path="res://data/attacks/presentation/court_shield_bash_charged.tres" id="presentation_charged"]
+
 [resource]
 script = ExtResource("script")
 equipped_scene = ExtResource("equipped_model")
@@ -19,6 +23,6 @@ requirements = ExtResource("requirements")
 usable_in_right_hand = false
 is_spell_catalyst = false
 catalyst_schools = Array[String]([])
-light_attack = ExtResource("light")
-charged_attack = ExtResource("charged")
+light_attack = ExtResource("presentation_light")
+charged_attack = ExtResource("presentation_charged")
 blade_color = Color(0.58, 0.48, 0.32, 1)

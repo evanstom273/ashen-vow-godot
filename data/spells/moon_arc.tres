@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://c0wlo3nhv3vix"]
+
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="3_w6cnn"]
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://jx35adokujgx" path="res://scripts/resources/wave_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://dqci086c5ci30" path="res://scripts/resources/attribute_scaling.gd" id="named_scaling"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://bbbw7gpdkambd" path="res://assets/icons/spells/moon_arc.svg" id="spell_icon"]
+[ext_resource type="Resource" uid="uid://bshwn5vn2wk11" path="res://data/vfx_moon_arc.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+magic = 170.0
+
+[sub_resource type="Resource" id="NamedScaling"]
+script = ExtResource("named_scaling")
+arcane = 0.035
+
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+scaling = SubResource("NamedScaling")
+poise_damage = 25.0
+stamina_cost = 18.0
+knockback = 100.0
+windup = 0.22
+recovery = 0.25
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+speed = 1120.0
+distance = 1680.0
+width = 480.0
+thickness = 64.0
+attack = SubResource("Attack")
+vfx = ExtResource("vfx")
+
+[resource]
+script = ExtResource("spell")
+id = &"delivery_wave"
+display_name = "Moon Arc"
+description = "Send a broad lunar crescent through enemies, striking each once. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = SubResource("Attack")
+delivery_definition = SubResource("Delivery")
+charges = 14
+maximum_charges = 14
+delivery = "Wave / Arc"

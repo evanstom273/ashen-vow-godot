@@ -9,6 +9,8 @@ var health: int = 1
 func _ready() -> void:
 	health = max_health
 	add_to_group("targetable")
+	Elevation.register_tree(self)
+	Elevation.register_visual(self)
 
 
 func is_targetable() -> bool:
@@ -19,7 +21,8 @@ func get_target_point() -> Vector2:
 	return global_position
 
 
-func take_damage(amount: int, _source: Node) -> void:
+func take_damage(amount: int, source: Node) -> void:
+	if not Elevation.accepts_hit(self, source): return
 	health = maxi(0, health - amount)
 	if health == 0:
 		visible = false

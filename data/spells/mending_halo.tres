@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3 uid="uid://4tvplgh60rbr"]
+
+[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" uid="uid://bcdmpx4lhh8bp" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" uid="uid://ddmgfk6kyykoi" path="res://scripts/resources/aura_delivery.gd" id="delivery"]
+[ext_resource type="Script" uid="uid://7xjgqyt32dlq" path="res://scripts/resources/spell_effect_definition.gd" id="effect"]
+[ext_resource type="Script" uid="uid://chdxh2pko1if2" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Texture2D" uid="uid://0feae4rjr4ol" path="res://assets/icons/spells/mending_halo.svg" id="spell_icon"]
+[ext_resource type="Resource" uid="uid://dk0x0vcl7tyat" path="res://data/vfx_mending_halo.tres" id="vfx"]
+
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+poise_damage = 0.0
+knockback = 0.0
+windup = 0.22
+recovery = 0.25
+
+[sub_resource type="Resource" id="Heal"]
+script = ExtResource("effect")
+id = &"halo_heal"
+health_restore = 15
+
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+radius = 360.0
+attack = SubResource("Attack")
+effects = Array[ExtResource("effect")]([SubResource("Heal")])
+vfx = ExtResource("vfx")
+tick_interval = 0.5
+target_filter = "Friendly"
+
+[resource]
+script = ExtResource("spell")
+id = &"delivery_aura"
+display_name = "Mending Halo"
+description = "Carry a healing sanctuary for 6 seconds, restoring 15 health every half-second to you and nearby allies. Uses replenish at shrines."
+school = "Arcane"
+icon = ExtResource("spell_icon")
+cast = SubResource("Attack")
+delivery_definition = SubResource("Delivery")
+charges = 8
+maximum_charges = 8
+delivery = "Aura"

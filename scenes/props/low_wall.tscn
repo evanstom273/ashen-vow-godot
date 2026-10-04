@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[node name="low_wall" type="StaticBody2D"]
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(4, 0.7)
+height_metres = 1
+solid = true
+flight_blocker = false
+variation = 272

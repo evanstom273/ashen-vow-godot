@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[node name="rock_small" type="StaticBody2D"]
+script = ExtResource("prop")
+kind = "rock"
+footprint = Vector2(0.7, 0.5)
+height_metres = 0.5
+solid = true
+flight_blocker = false
+variation = 50

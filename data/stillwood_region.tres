@@ -1,0 +1,128 @@
+[gd_resource type="Resource" script_class="OverworldDefinition" format=3 uid="uid://dyu4e6dbni4g7"]
+
+[ext_resource type="Script" uid="uid://bqgja6hjtw2i5" path="res://scripts/resources/region_biome_definition.gd" id="biome"]
+[ext_resource type="Script" uid="uid://mkybh83yny60" path="res://scripts/resources/overworld_definition.gd" id="root"]
+[ext_resource type="Script" uid="uid://dusvuygoxjep7" path="res://scripts/resources/region_route_definition.gd" id="route"]
+[ext_resource type="Script" uid="uid://vta0v4id3k11" path="res://scripts/resources/region_scatter_definition.gd" id="scatter"]
+[ext_resource type="Resource" path="res://data/environment/cover_gravewood.tres" id="cover_gravewood"]
+[ext_resource type="Resource" path="res://data/environment/cover_deepwood.tres" id="cover_deepwood"]
+[ext_resource type="Resource" path="res://data/environment/cover_pinewood.tres" id="cover_pinewood"]
+[ext_resource type="Resource" path="res://data/environment/cover_woodland_edge.tres" id="cover_woodland_edge"]
+[ext_resource type="Resource" path="res://data/environment/cover_meadow.tres" id="cover_meadow"]
+[ext_resource type="Resource" path="res://data/environment/cover_heath.tres" id="cover_heath"]
+
+[sub_resource type="Resource" id="Biome0"]
+script = ExtResource("biome")
+ground_cover = ExtResource("cover_gravewood")
+id = &"gravewood"
+center_metres = Vector2(-190, -5)
+extent_metres = Vector2(85, 95)
+soil = Color(0.1255, 0.1765, 0.1686, 1)
+vegetation = Color(0.298, 0.3647, 0.2784, 1)
+tree_density = 0.56
+tree_family = 2
+
+[sub_resource type="Resource" id="Biome1"]
+script = ExtResource("biome")
+ground_cover = ExtResource("cover_deepwood")
+id = &"deepwood"
+center_metres = Vector2(-40, 5)
+extent_metres = Vector2(100, 110)
+soil = Color(0.1137, 0.1882, 0.149, 1)
+vegetation = Color(0.2824, 0.4, 0.2549, 1)
+tree_density = 0.62
+
+[sub_resource type="Resource" id="Biome2"]
+script = ExtResource("biome")
+ground_cover = ExtResource("cover_pinewood")
+id = &"pinewood"
+center_metres = Vector2(75, -15)
+extent_metres = Vector2(95, 105)
+soil = Color(0.149, 0.2314, 0.1765, 1)
+vegetation = Color(0.3255, 0.4549, 0.302, 1)
+tree_density = 0.6
+tree_family = 1
+
+[sub_resource type="Resource" id="Biome3"]
+script = ExtResource("biome")
+ground_cover = ExtResource("cover_woodland_edge")
+id = &"woodland_edge"
+center_metres = Vector2(175, 15)
+extent_metres = Vector2(80, 100)
+soil = Color(0.2235, 0.2863, 0.2118, 1)
+vegetation = Color(0.4196, 0.4824, 0.3137, 1)
+tree_density = 0.29
+
+[sub_resource type="Resource" id="Biome4"]
+script = ExtResource("biome")
+ground_cover = ExtResource("cover_meadow")
+id = &"greywatch_meadow"
+center_metres = Vector2(285, 10)
+extent_metres = Vector2(105, 120)
+soil = Color(0.2941, 0.3137, 0.2235, 1)
+vegetation = Color(0.5294, 0.5098, 0.3373, 1)
+tree_density = 0.1
+
+[sub_resource type="Resource" id="Biome5"]
+script = ExtResource("biome")
+ground_cover = ExtResource("cover_heath")
+id = &"fort_heath"
+center_metres = Vector2(425, -5)
+extent_metres = Vector2(95, 120)
+soil = Color(0.2863, 0.298, 0.2353, 1)
+vegetation = Color(0.4784, 0.4667, 0.3451, 1)
+tree_density = 0.055
+tree_family = 2
+
+[sub_resource type="Resource" id="Route0"]
+script = ExtResource("route")
+id = &"camp_to_greywatch"
+points_metres = PackedVector2Array(0, 0, 12, 0, 19, -3, 32, -3, 55, 20, 75, 25, 100, -10, 120, -35, 150, -20, 170, 20, 176, 15, 185, 15, 194, 15, 218, 35, 250, 18, 275, -15, 305, -30, 335, 0, 365, 20, 395, -10, 425, 8, 450, 0)
+width_metres = 3.5
+principal = true
+
+[sub_resource type="Resource" id="Route1"]
+script = ExtResource("route")
+id = &"chapel_road"
+points_metres = PackedVector2Array(0, 0, -17, 3, -32, 3, -55, -2, -82, 15, -115, 8, -142, -8, -165, 0, -180, -15, -192, -19, -200, -23, -200, -27)
+width_metres = 2.4
+
+[sub_resource type="Resource" id="Route2"]
+script = ExtResource("route")
+id = &"widows_loop"
+points_metres = PackedVector2Array(0, 3, -1, 10, -4, 16, -2, 24, -30, 35, -60, 47, -76, 67, -97, 75, -115, 62, -145, 40, -165, 0)
+width_metres = 1.8
+
+[sub_resource type="Resource" id="Route3"]
+script = ExtResource("route")
+id = &"waystone_loop"
+points_metres = PackedVector2Array(-32, 3, -44, -22, -65, -48, -78, -48, -98, -53, -133, -30, -142, -8)
+width_metres = 1.8
+
+[sub_resource type="Resource" id="Route4"]
+script = ExtResource("route")
+id = &"watchtower_loop"
+points_metres = PackedVector2Array(150, -20, 180, -58, 211, -75, 231, -58, 245, -57, 268, -55, 305, -30)
+width_metres = 2.0
+
+[sub_resource type="Resource" id="Route5"]
+script = ExtResource("route")
+id = &"pilgrims_loop"
+points_metres = PackedVector2Array(218, 35, 246, 63, 283, 76, 330, 63, 346, 60, 363, 46, 395, -10)
+width_metres = 2.2
+
+[sub_resource type="Resource" id="Route6"]
+script = ExtResource("route")
+id = &"quarry_loop"
+points_metres = PackedVector2Array(305, -30, 323, -61, 365, -70, 392, -48, 425, 8)
+width_metres = 2.0
+
+[sub_resource type="Resource" id="Scatter"]
+script = ExtResource("scatter")
+
+[resource]
+script = ExtResource("root")
+boundary = PackedVector2Array(-260, -30, -225, -100, -150, -105, -60, -95, 30, -100, 100, -120, 190, -105, 270, -120, 360, -105, 465, -90, 515, -35, 510, 60, 450, 105, 340, 110, 250, 95, 160, 115, 80, 105, 0, 85, -95, 105, -200, 90, -250, 40)
+routes = Array[ExtResource("route")]([SubResource("Route0"), SubResource("Route1"), SubResource("Route2"), SubResource("Route3"), SubResource("Route4"), SubResource("Route5"), SubResource("Route6")])
+biomes = Array[ExtResource("biome")]([SubResource("Biome0"), SubResource("Biome1"), SubResource("Biome2"), SubResource("Biome3"), SubResource("Biome4"), SubResource("Biome5")])
+scatter = SubResource("Scatter")

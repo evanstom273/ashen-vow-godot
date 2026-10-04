@@ -1,0 +1,52 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/region_landmark.gd" id="landmark"]
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[ext_resource type="Resource" path="res://data/environment/cover_gravewood.tres" id="ground_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_waystone.tscn" id="approach"]
+
+[node name="waystone" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("landmark")
+ground_cover = ExtResource("ground_cover")
+cover_bounds_metres = Rect2(-6, -7, 12, 15)
+landmark_id = &"broken_waystone"
+display_name = "The Broken Waystone"
+map_kind = "ruin"
+discovery_metres = 10.0
+known_initially = false
+reservations_metres = Array[Rect2]([Rect2(-3, -4, 6, 8)])
+floors_metres = Array[Rect2]([])
+
+[node name="StandingStone" type="StaticBody2D" parent="."]
+position = Vector2(-256, -128)
+script = ExtResource("prop")
+kind = "waystone"
+footprint = Vector2(1.8, 1.2)
+height_metres = 3
+flight_blocker = false
+solid = true
+variation = 13
+
+[node name="BrokenCrown" type="StaticBody2D" parent="."]
+position = Vector2(256, 128)
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(2, 1.1)
+height_metres = 0.5
+flight_blocker = false
+solid = true
+variation = 50
+
+[node name="OfferingSlab" type="StaticBody2D" parent="."]
+position = Vector2(0, 256)
+script = ExtResource("prop")
+kind = "slab"
+footprint = Vector2(1.5, 1)
+height_metres = 0.2
+flight_blocker = false
+solid = true
+variation = 87
+
+[node name="ApproachDressing" parent="." instance=ExtResource("approach")]

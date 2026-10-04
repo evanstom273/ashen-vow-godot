@@ -18,6 +18,7 @@ extends Resource
 @export_range(0, 1000, 0.1) var poise_regeneration: float = 15.0
 @export_range(0, 20, 0.01) var poise_regeneration_delay: float = 1.5
 @export_range(0.01, 10, 0.01) var stagger_duration: float = 0.22
+## Authored units/second squared; scaled with recoil by the receiver, not locomotion.
 @export_range(0, 5000, 1) var knockback_deceleration: float = 700.0
 @export_range(0, 5, 0.01) var damage_invulnerability: float = 0.65
 @export var defence: DefenceProfile

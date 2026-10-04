@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[node name="bush" type="StaticBody2D"]
+script = ExtResource("prop")
+kind = "bush"
+footprint = Vector2(1.2, 0.9)
+height_metres = 0.8
+solid = false
+flight_blocker = false
+variation = 679

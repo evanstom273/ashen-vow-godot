@@ -22,27 +22,32 @@ func _ready() -> void:
 	light.energy = definition.light_energy
 	light.position.y = -15
 	add_child(light)
-	var motes: GPUParticles2D = Feedback.ambient_emitter()
-	motes.position.y = -12
-	add_child(motes)
+	Elevation.register_visual(light, self)
+	Feedback.physical_effect(to_global(Vector2(0, -12)), definition.idle_vfx, &"idle", Vector2.UP, 1, self, true)
 func can_interact(player: Node) -> bool:
+	if not Elevation.compatible(self, player): return false
 	if pulse > 0.3: return false
 	if global_position.distance_to(player.global_position) > definition.interaction_radius: return false
 	for enemy: Node in get_tree().get_nodes_in_group("sentinel"):
-		if definition.block_during_combat and enemy.in_combat(): return false
+		if definition.block_during_combat and Elevation.compatible(self, enemy) and enemy.in_combat(): return false
 	return true
 func get_display_name() -> String: return definition.display_name
 func get_interaction_prompt() -> String: return definition.interaction_prompt
 func interact(player: Node) -> void:
 	if not can_interact(player): return
 	player.restore(definition.restore_health, definition.restore_stamina)
+	Feedback.clear_blood()
+	if is_instance_valid(Feedback.presentation): Feedback.presentation.clear()
+	Feedback.clear_damage_numbers()
+	Feedback.clear_physical_effects()
+	Feedback.clear_spell_visuals()
 	player.show_message(definition.rest_message)
 	for group: String in ["sentinel", "resettable"]:
 		if group == "sentinel" and not definition.reset_enemies: continue
 		if group == "resettable" and not definition.reset_dummies: continue
 		for target: Node in get_tree().get_nodes_in_group(group): target.reset_encounter()
 	pulse = definition.pulse_duration
-	Feedback.burst(global_position, "shrine")
+	Feedback.physical_effect(global_position, definition.rest_vfx, &"rest", Vector2.UP, 1, null, false, false, get_instance_id())
 	Feedback.play("shrine", global_position, 3)
 	if player.has_method("request_shrine_menu"): player.request_shrine_menu()
 func _process(delta: float) -> void:
@@ -50,6 +55,7 @@ func _process(delta: float) -> void:
 	pulse = maxf(0, pulse - delta)
 	light.energy = definition.light_energy + sin(clock * 1.7) * 0.1 + pulse
 	rune_material.set_shader_parameter("strength", 0.7 + pulse * 0.3)
+	rune_material.set_shader_parameter("elapsed", clock)
 	$Glow.scale = Vector2.ONE * (1.0 + sin(clock * 2) * 0.08)
 	queue_redraw()
 func _draw() -> void:
@@ -57,5 +63,3 @@ func _draw() -> void:
 	for i in 8:
 		var p := Vector2.RIGHT.rotated(i * TAU / 8) * 31
 		draw_line(p, p * 1.13, Color(0.6,0.8,0.7,0.4), 2, true)
-	if pulse > 0:
-		draw_arc(Vector2.ZERO, (definition.pulse_duration-pulse) * 100 + 15, 0, TAU, 64, Color(0.6,0.95,0.85,minf(1.0,pulse*0.35)), 2, true)

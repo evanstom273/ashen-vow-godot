@@ -1,0 +1,203 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/region_landmark.gd" id="landmark"]
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/greywatch_warden.tscn" id="placed_enemy"]
+
+[ext_resource type="Resource" path="res://data/environment/cover_fort.tres" id="ground_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_fort.tscn" id="approach"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_inner_hall.tscn" id="hall_approach"]
+
+[node name="fort" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("landmark")
+ground_cover = ExtResource("ground_cover")
+cover_bounds_metres = Rect2(-32, -30, 64, 60)
+landmark_id = &"greywatch"
+display_name = "Fort Greywatch"
+map_kind = "fort"
+discovery_metres = 35.0
+known_initially = true
+reservations_metres = Array[Rect2]([Rect2(-30, -29, 59, 58), Rect2(-39, 1, 12, 14)])
+floors_metres = Array[Rect2]([Rect2(-24, -24, 48, 48)])
+
+[node name="NorthCurtain" type="StaticBody2D" parent="."]
+position = Vector2(0, -3072)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(48, 2)
+height_metres = 6
+flight_blocker = true
+solid = true
+variation = 13
+
+[node name="SouthCurtain" type="StaticBody2D" parent="."]
+position = Vector2(0, 3072)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(48, 2)
+height_metres = 6
+flight_blocker = true
+solid = true
+variation = 50
+
+[node name="EastCurtain" type="StaticBody2D" parent="."]
+position = Vector2(3072, 0)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(2, 48)
+height_metres = 6
+flight_blocker = true
+solid = true
+variation = 87
+
+[node name="WestUpper" type="StaticBody2D" parent="."]
+position = Vector2(-3072, -1920)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(2, 18)
+height_metres = 6
+flight_blocker = true
+solid = true
+variation = 124
+
+[node name="WestLower" type="StaticBody2D" parent="."]
+position = Vector2(-3072, 2432)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(2, 10)
+height_metres = 6
+flight_blocker = true
+solid = true
+variation = 161
+
+[node name="Corner-24_-24" type="StaticBody2D" parent="."]
+position = Vector2(-3072, -3072)
+script = ExtResource("prop")
+kind = "tower"
+footprint = Vector2(6, 6)
+height_metres = 9
+flight_blocker = true
+solid = true
+variation = 198
+
+[node name="Corner-24_24" type="StaticBody2D" parent="."]
+position = Vector2(-3072, 3072)
+script = ExtResource("prop")
+kind = "tower"
+footprint = Vector2(6, 6)
+height_metres = 9
+flight_blocker = true
+solid = true
+variation = 235
+
+[node name="Corner24_-24" type="StaticBody2D" parent="."]
+position = Vector2(3072, -3072)
+script = ExtResource("prop")
+kind = "tower"
+footprint = Vector2(6, 6)
+height_metres = 9
+flight_blocker = true
+solid = true
+variation = 272
+
+[node name="Corner24_24" type="StaticBody2D" parent="."]
+position = Vector2(3072, 3072)
+script = ExtResource("prop")
+kind = "tower"
+footprint = Vector2(6, 6)
+height_metres = 9
+flight_blocker = true
+solid = true
+variation = 309
+
+[node name="GateNorth" type="StaticBody2D" parent="."]
+position = Vector2(-3200, -384)
+script = ExtResource("prop")
+kind = "tower"
+footprint = Vector2(5, 5)
+height_metres = 7
+flight_blocker = true
+solid = true
+variation = 346
+
+[node name="GateSouth" type="StaticBody2D" parent="."]
+position = Vector2(-3200, 2048)
+script = ExtResource("prop")
+kind = "tower"
+footprint = Vector2(5, 5)
+height_metres = 7
+flight_blocker = true
+solid = true
+variation = 383
+
+[node name="GateArch" type="StaticBody2D" parent="."]
+position = Vector2(-3200, 832)
+script = ExtResource("prop")
+kind = "arch"
+footprint = Vector2(3, 14)
+height_metres = 8
+flight_blocker = false
+solid = false
+variation = 420
+
+[node name="HallNorth" type="StaticBody2D" parent="."]
+position = Vector2(1280, -1920)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(20, 1.5)
+height_metres = 4
+flight_blocker = true
+solid = true
+variation = 457
+
+[node name="HallEast" type="StaticBody2D" parent="."]
+position = Vector2(2432, -896)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(1.5, 16)
+height_metres = 4
+flight_blocker = true
+solid = true
+variation = 494
+
+[node name="HallWest" type="StaticBody2D" parent="."]
+position = Vector2(128, -1280)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(1.5, 10)
+height_metres = 3.5
+flight_blocker = true
+solid = true
+variation = 531
+
+[node name="HallSteps" type="StaticBody2D" parent="."]
+position = Vector2(1280, 384)
+script = ExtResource("prop")
+kind = "stairs"
+footprint = Vector2(7, 4)
+height_metres = 0.5
+flight_blocker = false
+solid = false
+variation = 568
+
+[node name="Well" type="StaticBody2D" parent="."]
+position = Vector2(-1024, -1024)
+script = ExtResource("prop")
+kind = "tower"
+footprint = Vector2(2, 2)
+height_metres = 1.2
+flight_blocker = false
+solid = true
+variation = 605
+
+[node name="greywatch_warden1" parent="." instance=ExtResource("placed_enemy")]
+position = Vector2(-1280, 1024)
+
+[node name="greywatch_warden2" parent="." instance=ExtResource("placed_enemy")]
+position = Vector2(1280, -512)
+
+[node name="ApproachDressing" parent="." instance=ExtResource("approach")]
+
+[node name="HallApproachDressing" parent="." instance=ExtResource("hall_approach")]

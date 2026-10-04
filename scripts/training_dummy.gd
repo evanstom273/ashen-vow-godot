@@ -41,19 +41,28 @@ func _process(delta: float) -> void:
 		if reset_timer <= 0 and definition.auto_restore_delay > 0: reset_encounter()
 func get_display_name() -> String: return definition.display_name
 func receive_hit(incoming: AttackDefinition, attacker_stats: AttributeStats, source: Node) -> void:
-	take_damage(incoming.health_damage(attacker_stats, vitals.defence), source)
-func take_damage(amount: int, _source: Node) -> void:
+	_apply_hit(incoming.health_damage(attacker_stats, SpellEffects.defence(self, vitals.defence)), source, incoming, attacker_stats)
+func take_damage(amount: int, source: Node) -> void:
+	_apply_hit(amount, source)
+func _apply_hit(amount: int, source: Node, incoming: AttackDefinition = null, attacker_stats: AttributeStats = null) -> void:
+	if not Elevation.accepts_hit(self, source, incoming): return
 	if health <= 0: return
+	if health > amount: SpellEffects.apply_attack(self, incoming, attacker_stats, source)
+	if amount == 0 and incoming != null and incoming.max_health_drain != null: return
+	Feedback.damage_number(self, mini(amount, health))
+	if amount > 0: Feedback.hit_effect(global_position, source, definition.hit_surface, incoming, amount, self)
 	health = maxi(0, health - amount)
-	wobble = 0.7
-	timer = 0
-	Feedback.play(String(definition.hit_sound), global_position)
+	if incoming == null or not incoming.periodic_damage:
+		wobble = 0.7
+		timer = 0
+		Feedback.play(String(definition.hit_sound), global_position)
 	if health == 0:
 		reset_timer = definition.auto_restore_delay
 		locked = false
-		Feedback.burst(global_position, "dust")
+		Feedback.burst(global_position, "death", Vector2.UP, null, get_instance_id())
 func set_lock_on(value: bool) -> void: locked = value
 func reset_encounter() -> void:
+	SpellEffects.of(self).clear()
 	health = max_health
 	visual.rotation = 0
 	visual.modulate = Color.WHITE

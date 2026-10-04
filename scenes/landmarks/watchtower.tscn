@@ -1,0 +1,107 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/region_landmark.gd" id="landmark"]
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/greywatch_warden.tscn" id="placed_enemy"]
+
+[ext_resource type="Resource" path="res://data/environment/cover_ruins.tres" id="ground_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_watchtower.tscn" id="approach"]
+
+[node name="watchtower" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("landmark")
+ground_cover = ExtResource("ground_cover")
+cover_bounds_metres = Rect2(-12, -13, 24, 27)
+landmark_id = &"old_watchtower"
+display_name = "Old Watchtower"
+map_kind = "tower"
+discovery_metres = 16.0
+known_initially = false
+reservations_metres = Array[Rect2]([Rect2(-9, -10, 18, 18)])
+floors_metres = Array[Rect2]([Rect2(-7, 1, 14, 5)])
+
+[node name="Tower" type="StaticBody2D" parent="."]
+position = Vector2(0, -512)
+script = ExtResource("prop")
+kind = "tower"
+footprint = Vector2(7, 7)
+height_metres = 7
+flight_blocker = true
+solid = true
+variation = 13
+
+[node name="StairFoot" type="StaticBody2D" parent="."]
+position = Vector2(0, 128)
+script = ExtResource("prop")
+kind = "stairs"
+footprint = Vector2(5, 4)
+height_metres = 0
+flight_blocker = false
+solid = false
+variation = 50
+
+[node name="OuterWall" type="StaticBody2D" parent="."]
+position = Vector2(-768, 0)
+script = ExtResource("prop")
+kind = "wall"
+footprint = Vector2(1, 6)
+height_metres = 1.5
+flight_blocker = false
+solid = true
+variation = 87
+
+[node name="Masonry0" type="StaticBody2D" parent="."]
+position = Vector2(768, -512)
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(1.5, 1.2)
+height_metres = 0.6
+flight_blocker = false
+solid = true
+variation = 124
+
+[node name="Masonry1" type="StaticBody2D" parent="."]
+position = Vector2(983.4165721108216, -384)
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(1.5, 1.2)
+height_metres = 0.6
+flight_blocker = false
+solid = true
+variation = 161
+
+[node name="Masonry2" type="StaticBody2D" parent="."]
+position = Vector2(1000.7801412673746, -256)
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(1.5, 1.2)
+height_metres = 0.6
+flight_blocker = false
+solid = true
+variation = 198
+
+[node name="Masonry3" type="StaticBody2D" parent="."]
+position = Vector2(804.126722063326, -128)
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(1.5, 1.2)
+height_metres = 0.6
+flight_blocker = false
+solid = true
+variation = 235
+
+[node name="Masonry4" type="StaticBody2D" parent="."]
+position = Vector2(574.2585612011703, 0)
+script = ExtResource("prop")
+kind = "rubble"
+footprint = Vector2(1.5, 1.2)
+height_metres = 0.6
+flight_blocker = false
+solid = true
+variation = 272
+
+[node name="greywatch_warden1" parent="." instance=ExtResource("placed_enemy")]
+position = Vector2(512, 640)
+
+[node name="ApproachDressing" parent="." instance=ExtResource("approach")]

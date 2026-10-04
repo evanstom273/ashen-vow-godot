@@ -1,0 +1,864 @@
+[gd_scene format=3 uid="uid://dg2tnjeelley8"]
+
+[ext_resource type="Resource" path="res://data/vfx/shrine_idle.tres" id="5_40to6"]
+[ext_resource type="Resource" path="res://data/vfx/shrine_rest.tres" id="6_esami"]
+[ext_resource type="Script" uid="uid://2dw1v62xnjbh" path="res://scripts/resources/elevation_definition.gd" id="11_h3yu7"]
+[ext_resource type="Script" uid="uid://bwja6nh1m6ixy" path="res://scripts/forest_camp.gd" id="camp"]
+[ext_resource type="PackedScene" path="res://scenes/props/campfire.tscn" id="fire"]
+[ext_resource type="PackedScene" uid="uid://bds1djokffvoc" path="res://scenes/landmarks/chapel.tscn" id="landmark_0"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/graveyard.tscn" id="landmark_1"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/widows_pool.tscn" id="landmark_2"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/waystone.tscn" id="landmark_3"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/split_oak.tscn" id="landmark_4"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/crossing.tscn" id="landmark_5"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/watchtower.tscn" id="landmark_6"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/pilgrims_rest.tscn" id="landmark_7"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/quarry.tscn" id="landmark_8"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/fort.tscn" id="landmark_9"]
+[ext_resource type="Script" uid="uid://ca2p1h81en0et" path="res://scripts/spell_navigation.gd" id="navigation"]
+[ext_resource type="PackedScene" uid="uid://cq6gog7pup1bc" path="res://scenes/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="shrine"]
+[ext_resource type="Script" uid="uid://b5yurs51e4wqx" path="res://scripts/resources/shrine_definition.gd" id="shrine_definition"]
+[ext_resource type="Script" uid="uid://c6vnfwdi2r8qs" path="res://scripts/forest_tree.gd" id="tree"]
+
+[ext_resource type="Script" path="res://scripts/region_cover_zone.gd" id="cover_zone"]
+[ext_resource type="Resource" path="res://data/environment/cover_camp.tres" id="camp_cover"]
+[ext_resource type="PackedScene" path="res://scenes/props/approach_camp.tscn" id="camp_approach"]
+
+[sub_resource type="Resource" id="CampShrineDefinition"]
+script = ExtResource("shrine_definition")
+display_name = "Stillwood Shrine"
+
+[sub_resource type="Resource" id="ground"]
+script = ExtResource("11_h3yu7")
+
+[node name="ForestCamp" type="Node2D" unique_id=1565712138]
+z_index = -20
+script = ExtResource("camp")
+preview_center_metres = Vector2(-240, 0)
+preview_half_extent_metres = 64.0
+
+[node name="ForestLight" type="CanvasModulate" parent="." unique_id=1645037956]
+color = Color(0.72, 0.81, 0.77, 1)
+
+[node name="SpellNavigation" type="Node" parent="." unique_id=288194900]
+script = ExtResource("navigation")
+bounds = Rect2(-4096, -3072, 8192, 6144)
+cell_size = 64.0
+agent_radius = 40.0
+
+[node name="Actors" type="Node2D" parent="." unique_id=1718061585]
+z_index = 20
+y_sort_enabled = true
+
+[node name="Player" parent="Actors" unique_id=64153391 instance=ExtResource("player")]
+z_index = 0
+position = Vector2(-256, 192)
+
+[node name="CampShrine" parent="Actors" unique_id=2064698264 instance=ExtResource("shrine")]
+position = Vector2(-256, -256)
+collision_layer = 1
+definition = SubResource("CampShrineDefinition")
+
+[node name="Campfire" parent="Actors" unique_id=1882055898 instance=ExtResource("fire")]
+position = Vector2(358.4, 64)
+
+[node name="Grove1Tree1" type="StaticBody2D" parent="Actors" unique_id=352688515]
+position = Vector2(-2446.97, -2064.92)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 13
+tree_scale = 5.109
+trunk_collision_radius = 49.86
+
+[node name="Grove1Tree2" type="StaticBody2D" parent="Actors" unique_id=34545919]
+position = Vector2(-3782.91, -1268.07)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 26
+tree_scale = 6.031
+trunk_collision_radius = 45.02
+
+[node name="Grove1Tree3" type="StaticBody2D" parent="Actors" unique_id=1577201867]
+position = Vector2(-3696.12, -2399.82)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 39
+tree_scale = 5.431
+trunk_collision_radius = 37.95
+
+[node name="Grove1Tree4" type="StaticBody2D" parent="Actors" unique_id=716921546]
+position = Vector2(-2978.87, -1815.78)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 52
+tree_scale = 5.529
+trunk_collision_radius = 41.51
+
+[node name="Grove1Tree5" type="StaticBody2D" parent="Actors" unique_id=682898956]
+position = Vector2(-2584.05, -1634.03)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 65
+tree_scale = 5.513
+trunk_collision_radius = 48.24
+
+[node name="Grove1Tree6" type="StaticBody2D" parent="Actors" unique_id=913074795]
+position = Vector2(-3365.85, -1534.71)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 78
+tree_scale = 6.067
+trunk_collision_radius = 45.78
+
+[node name="Grove1Tree7" type="StaticBody2D" parent="Actors" unique_id=1881322811]
+position = Vector2(-2511.92, -2378)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 91
+tree_scale = 6.86
+trunk_collision_radius = 53.08
+
+[node name="Grove1Tree8" type="StaticBody2D" parent="Actors" unique_id=2021466791]
+position = Vector2(-3319.1, -2359.32)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 104
+tree_scale = 5.414
+trunk_collision_radius = 38.73
+
+[node name="Grove2Tree9" type="StaticBody2D" parent="Actors" unique_id=1350377967]
+position = Vector2(-2019.61, -2135.08)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 117
+tree_scale = 5.52
+trunk_collision_radius = 39.72
+
+[node name="Grove2Tree10" type="StaticBody2D" parent="Actors" unique_id=1426357721]
+position = Vector2(-1553.49, -1380.37)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 130
+tree_scale = 5.624
+trunk_collision_radius = 49.84
+
+[node name="Grove2Tree11" type="StaticBody2D" parent="Actors" unique_id=2089028283]
+position = Vector2(-919.63, -1609.1)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 143
+tree_scale = 5.098
+trunk_collision_radius = 45.37
+
+[node name="Grove2Tree12" type="StaticBody2D" parent="Actors" unique_id=1642366695]
+position = Vector2(-1979.33, -1582.93)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 156
+tree_scale = 5.607
+trunk_collision_radius = 41.15
+
+[node name="Grove2Tree13" type="StaticBody2D" parent="Actors" unique_id=329742865]
+position = Vector2(-2104.31, -1288.95)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 169
+tree_scale = 6.919
+trunk_collision_radius = 39.84
+
+[node name="Grove2Tree14" type="StaticBody2D" parent="Actors" unique_id=1273113674]
+position = Vector2(-2117.23, -962.1)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 182
+tree_scale = 5.858
+trunk_collision_radius = 42.03
+
+[node name="Grove2Tree15" type="StaticBody2D" parent="Actors" unique_id=397760738]
+position = Vector2(-1213.87, -1586.05)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 195
+tree_scale = 5.458
+trunk_collision_radius = 54.51
+
+[node name="Grove3Tree16" type="StaticBody2D" parent="Actors" unique_id=1888214282]
+position = Vector2(574.87, -2357.84)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 208
+tree_scale = 5.101
+trunk_collision_radius = 39.79
+
+[node name="Grove3Tree17" type="StaticBody2D" parent="Actors" unique_id=397958081]
+position = Vector2(-93.73, -2371.09)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 221
+tree_scale = 6.558
+trunk_collision_radius = 52.3
+
+[node name="Grove3Tree18" type="StaticBody2D" parent="Actors" unique_id=1876094277]
+position = Vector2(517.51, -1568.76)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 234
+tree_scale = 5.792
+trunk_collision_radius = 48.06
+
+[node name="Grove3Tree19" type="StaticBody2D" parent="Actors" unique_id=608701429]
+position = Vector2(1062.67, -1822.78)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 247
+tree_scale = 5.414
+trunk_collision_radius = 42.85
+
+[node name="Grove3Tree20" type="StaticBody2D" parent="Actors" unique_id=1270465582]
+position = Vector2(753.86, -1878.39)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 260
+tree_scale = 5.971
+trunk_collision_radius = 37.68
+
+[node name="Grove3Tree21" type="StaticBody2D" parent="Actors" unique_id=1634665102]
+position = Vector2(-181.54, -1430.37)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 273
+tree_scale = 6.672
+trunk_collision_radius = 39.78
+
+[node name="Grove4Tree22" type="StaticBody2D" parent="Actors" unique_id=1412097694]
+position = Vector2(2766.26, -2361.08)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 286
+tree_scale = 5.762
+trunk_collision_radius = 39.47
+
+[node name="Grove4Tree23" type="StaticBody2D" parent="Actors" unique_id=747291725]
+position = Vector2(1744.1, -1528.39)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 299
+tree_scale = 6.075
+trunk_collision_radius = 50.35
+
+[node name="Grove4Tree24" type="StaticBody2D" parent="Actors" unique_id=1707246239]
+position = Vector2(2824.31, -1486.34)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 312
+tree_scale = 6.943
+trunk_collision_radius = 47.66
+
+[node name="Grove4Tree25" type="StaticBody2D" parent="Actors" unique_id=1273387910]
+position = Vector2(2531.58, -1797.08)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 325
+tree_scale = 5.974
+trunk_collision_radius = 49.23
+
+[node name="Grove4Tree26" type="StaticBody2D" parent="Actors" unique_id=2012583833]
+position = Vector2(2987.36, -2555.26)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 338
+tree_scale = 6.683
+trunk_collision_radius = 42.58
+
+[node name="Grove4Tree27" type="StaticBody2D" parent="Actors" unique_id=636952735]
+position = Vector2(2422.85, -2474.48)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 351
+tree_scale = 5.281
+trunk_collision_radius = 52.09
+
+[node name="Grove4Tree28" type="StaticBody2D" parent="Actors" unique_id=54945651]
+position = Vector2(2506.28, -1406.4)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 364
+tree_scale = 5.022
+trunk_collision_radius = 43.26
+
+[node name="Grove5Tree29" type="StaticBody2D" parent="Actors" unique_id=2046202637]
+position = Vector2(3673.08, 1333.56)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 377
+tree_scale = 6.103
+trunk_collision_radius = 42.65
+
+[node name="Grove5Tree30" type="StaticBody2D" parent="Actors" unique_id=1613800439]
+position = Vector2(3540.38, 332.52)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 390
+tree_scale = 5.223
+trunk_collision_radius = 42.16
+
+[node name="Grove5Tree31" type="StaticBody2D" parent="Actors" unique_id=909354854]
+position = Vector2(3246.65, 518.05)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 403
+tree_scale = 5.1
+trunk_collision_radius = 47.25
+
+[node name="Grove5Tree32" type="StaticBody2D" parent="Actors" unique_id=1098138100]
+position = Vector2(2792.85, 762.05)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 416
+tree_scale = 5.5
+trunk_collision_radius = 51.97
+
+[node name="Grove5Tree33" type="StaticBody2D" parent="Actors" unique_id=1189278694]
+position = Vector2(3346.59, 814.82)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 429
+tree_scale = 6.703
+trunk_collision_radius = 36.15
+
+[node name="Grove5Tree34" type="StaticBody2D" parent="Actors" unique_id=682918972]
+position = Vector2(3048.03, 958.99)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 442
+tree_scale = 6.717
+trunk_collision_radius = 53.39
+
+[node name="Grove6Tree35" type="StaticBody2D" parent="Actors" unique_id=76702099]
+position = Vector2(1390.52, 1463.51)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 455
+tree_scale = 5.798
+trunk_collision_radius = 48.49
+
+[node name="Grove6Tree36" type="StaticBody2D" parent="Actors" unique_id=2014142798]
+position = Vector2(2525.56, 1260.1)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 468
+tree_scale = 6.812
+trunk_collision_radius = 46.39
+
+[node name="Grove6Tree37" type="StaticBody2D" parent="Actors" unique_id=1933421458]
+position = Vector2(1879.9, 2347.02)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 481
+tree_scale = 6.372
+trunk_collision_radius = 47.31
+
+[node name="Grove6Tree38" type="StaticBody2D" parent="Actors" unique_id=1830281091]
+position = Vector2(2099.76, 2121.41)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 494
+tree_scale = 6.216
+trunk_collision_radius = 46.33
+
+[node name="Grove6Tree39" type="StaticBody2D" parent="Actors" unique_id=1895271911]
+position = Vector2(1888.88, 1545.46)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 507
+tree_scale = 5.914
+trunk_collision_radius = 40.79
+
+[node name="Grove6Tree40" type="StaticBody2D" parent="Actors" unique_id=1400088481]
+position = Vector2(1349.58, 1780.05)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 520
+tree_scale = 6.125
+trunk_collision_radius = 46.96
+
+[node name="Grove6Tree41" type="StaticBody2D" parent="Actors" unique_id=1613434602]
+position = Vector2(2114.63, 1785.73)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 533
+tree_scale = 5.245
+trunk_collision_radius = 47.83
+
+[node name="Grove7Tree42" type="StaticBody2D" parent="Actors" unique_id=1099470834]
+position = Vector2(-2318.96, 1988.13)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 546
+tree_scale = 6.844
+trunk_collision_radius = 40.55
+
+[node name="Grove7Tree43" type="StaticBody2D" parent="Actors" unique_id=1734051452]
+position = Vector2(-1944.32, 2523.59)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 559
+tree_scale = 6.769
+trunk_collision_radius = 46.9
+
+[node name="Grove7Tree44" type="StaticBody2D" parent="Actors" unique_id=461015543]
+position = Vector2(-1732.5, 1523.9)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 572
+tree_scale = 5.666
+trunk_collision_radius = 52.15
+
+[node name="Grove7Tree45" type="StaticBody2D" parent="Actors" unique_id=1160393225]
+position = Vector2(-911.49, 2080.48)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 585
+tree_scale = 6.591
+trunk_collision_radius = 53.62
+
+[node name="Grove7Tree46" type="StaticBody2D" parent="Actors" unique_id=1988439962]
+position = Vector2(-2399.09, 1298.7)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 598
+tree_scale = 5.906
+trunk_collision_radius = 46.1
+
+[node name="Grove7Tree47" type="StaticBody2D" parent="Actors" unique_id=540912373]
+position = Vector2(-1475.32, 1966.44)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 611
+tree_scale = 6.375
+trunk_collision_radius = 46.06
+
+[node name="Grove8Tree48" type="StaticBody2D" parent="Actors" unique_id=1764197698]
+position = Vector2(-3417.91, 2279.22)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 624
+tree_scale = 5.8
+trunk_collision_radius = 47.75
+
+[node name="Grove8Tree49" type="StaticBody2D" parent="Actors" unique_id=365089926]
+position = Vector2(-3241.25, 1878.43)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 637
+tree_scale = 5.716
+trunk_collision_radius = 48.15
+
+[node name="Grove8Tree50" type="StaticBody2D" parent="Actors" unique_id=1206962139]
+position = Vector2(-2705.33, 1708.15)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 650
+tree_scale = 6.965
+trunk_collision_radius = 48.25
+
+[node name="Grove8Tree51" type="StaticBody2D" parent="Actors" unique_id=1088042865]
+position = Vector2(-3837.65, 1994.85)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 663
+tree_scale = 6.687
+trunk_collision_radius = 37.7
+
+[node name="Grove8Tree52" type="StaticBody2D" parent="Actors" unique_id=287462473]
+position = Vector2(-2764.24, 2496.81)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 676
+tree_scale = 5.795
+trunk_collision_radius = 53.05
+
+[node name="Grove8Tree53" type="StaticBody2D" parent="Actors" unique_id=1400959120]
+position = Vector2(-2924.18, 2061.91)
+collision_mask = 0
+script = ExtResource("tree")
+variation = 689
+tree_scale = 5.485
+trunk_collision_radius = 48.16
+
+[node name="Landmarks" type="Node2D" parent="Actors" unique_id=60821431]
+y_sort_enabled = true
+
+[node name="chapel" parent="Actors/Landmarks" unique_id=2037968687 instance=ExtResource("landmark_0")]
+position = Vector2(-25600, -4480)
+
+[node name="GroundFloor" parent="Actors/Landmarks/chapel/Building" parent_id_path=PackedInt32Array(2037968687, 1290790825) index="0" unique_id=1443832023]
+metadata/elevation_definition = SubResource("ground")
+
+[node name="court_sentinel1" parent="Actors/Landmarks/chapel/Building/GroundFloor/Occupants" parent_id_path=PackedInt32Array(2037968687, 246713041) index="0" unique_id=330901185]
+position = Vector2(10, -969)
+
+[node name="graveyard" parent="Actors/Landmarks" unique_id=118522459 instance=ExtResource("landmark_1")]
+position = Vector2(-21120, 0)
+
+[node name="Memorial0" parent="Actors/Landmarks/graveyard" index="0"]
+collision_mask = 0
+
+[node name="Memorial1" parent="Actors/Landmarks/graveyard" index="1"]
+collision_mask = 0
+
+[node name="Memorial2" parent="Actors/Landmarks/graveyard" index="2"]
+collision_mask = 0
+
+[node name="Memorial3" parent="Actors/Landmarks/graveyard" index="3"]
+collision_mask = 0
+
+[node name="Memorial4" parent="Actors/Landmarks/graveyard" index="4"]
+collision_mask = 0
+
+[node name="Memorial5" parent="Actors/Landmarks/graveyard" index="5"]
+collision_mask = 0
+
+[node name="Memorial6" parent="Actors/Landmarks/graveyard" index="6"]
+collision_mask = 0
+
+[node name="Memorial7" parent="Actors/Landmarks/graveyard" index="7"]
+collision_mask = 0
+
+[node name="Memorial10" parent="Actors/Landmarks/graveyard" index="8"]
+collision_mask = 0
+
+[node name="Memorial11" parent="Actors/Landmarks/graveyard" index="9"]
+collision_mask = 0
+
+[node name="Memorial13" parent="Actors/Landmarks/graveyard" index="10"]
+collision_mask = 0
+
+[node name="Memorial17" parent="Actors/Landmarks/graveyard" index="11"]
+collision_mask = 0
+
+[node name="Memorial18" parent="Actors/Landmarks/graveyard" index="12"]
+collision_mask = 0
+
+[node name="Memorial19" parent="Actors/Landmarks/graveyard" index="13"]
+collision_mask = 0
+
+[node name="Memorial22" parent="Actors/Landmarks/graveyard" index="14"]
+collision_mask = 0
+
+[node name="Memorial24" parent="Actors/Landmarks/graveyard" index="15"]
+collision_mask = 0
+
+[node name="Memorial25" parent="Actors/Landmarks/graveyard" index="16"]
+collision_mask = 0
+
+[node name="Memorial27" parent="Actors/Landmarks/graveyard" index="17"]
+collision_mask = 0
+
+[node name="Memorial28" parent="Actors/Landmarks/graveyard" index="18"]
+collision_mask = 0
+
+[node name="Memorial29" parent="Actors/Landmarks/graveyard" index="19"]
+collision_mask = 0
+
+[node name="Memorial30" parent="Actors/Landmarks/graveyard" index="20"]
+collision_mask = 0
+
+[node name="Memorial31" parent="Actors/Landmarks/graveyard" index="21"]
+collision_mask = 0
+
+[node name="BrokenEnclosureWest" parent="Actors/Landmarks/graveyard" index="22"]
+collision_mask = 0
+height_metres = 1.0
+
+[node name="BrokenEnclosureNorth" parent="Actors/Landmarks/graveyard" index="23"]
+collision_mask = 0
+
+[node name="CollapsedTomb" parent="Actors/Landmarks/graveyard" index="24"]
+collision_mask = 0
+
+[node name="grave_warden1" parent="Actors/Landmarks/graveyard" index="25"]
+collision_layer = 2
+motion_mode = 1
+
+[node name="widows_pool" parent="Actors/Landmarks" unique_id=621724934 instance=ExtResource("landmark_2")]
+position = Vector2(-11520, 7680)
+
+[node name="Water" parent="Actors/Landmarks/widows_pool" index="0"]
+collision_mask = 0
+height_metres = 0.0
+
+[node name="ShoreBoulder" parent="Actors/Landmarks/widows_pool" index="1"]
+collision_mask = 0
+
+[node name="OldTrunk" parent="Actors/Landmarks/widows_pool" index="2"]
+collision_mask = 0
+
+[node name="waystone" parent="Actors/Landmarks" unique_id=251539477 instance=ExtResource("landmark_3")]
+position = Vector2(-8320, -7040)
+
+[node name="StandingStone" parent="Actors/Landmarks/waystone" index="0"]
+collision_mask = 0
+height_metres = 3.0
+
+[node name="BrokenCrown" parent="Actors/Landmarks/waystone" index="1"]
+collision_mask = 0
+
+[node name="OfferingSlab" parent="Actors/Landmarks/waystone" index="2"]
+collision_mask = 0
+
+[node name="split_oak" parent="Actors/Landmarks" unique_id=4663571 instance=ExtResource("landmark_4")]
+position = Vector2(9600, 3200)
+
+[node name="FallenHalf" parent="Actors/Landmarks/split_oak" index="0"]
+collision_mask = 0
+height_metres = 1.0
+
+[node name="Roots" parent="Actors/Landmarks/split_oak" index="1"]
+collision_mask = 0
+
+[node name="SplitOak" parent="Actors/Landmarks/split_oak" index="2"]
+collision_mask = 0
+
+[node name="crossing" parent="Actors/Landmarks" unique_id=1152565959 instance=ExtResource("landmark_5")]
+position = Vector2(23680, 1920)
+
+[node name="NorthWater" parent="Actors/Landmarks/crossing" index="0"]
+collision_mask = 0
+height_metres = 0.0
+
+[node name="SouthWater" parent="Actors/Landmarks/crossing" index="1"]
+collision_mask = 0
+height_metres = 0.0
+
+[node name="BridgeDeck" parent="Actors/Landmarks/crossing" index="2"]
+collision_layer = 0
+collision_mask = 0
+height_metres = 0.0
+
+[node name="Pier-6_-4.3" parent="Actors/Landmarks/crossing" index="3"]
+collision_mask = 0
+
+[node name="Pier-6_4.3" parent="Actors/Landmarks/crossing" index="4"]
+collision_mask = 0
+
+[node name="Pier6_-4.3" parent="Actors/Landmarks/crossing" index="5"]
+collision_mask = 0
+
+[node name="Pier6_4.3" parent="Actors/Landmarks/crossing" index="6"]
+collision_mask = 0
+
+[node name="BrokenArch" parent="Actors/Landmarks/crossing" index="7"]
+collision_mask = 0
+height_metres = 1.0
+
+[node name="watchtower" parent="Actors/Landmarks" unique_id=1493393642 instance=ExtResource("landmark_6")]
+position = Vector2(31360, -8320)
+
+[node name="Tower" parent="Actors/Landmarks/watchtower" index="0"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 7.0
+
+[node name="StairFoot" parent="Actors/Landmarks/watchtower" index="1"]
+collision_layer = 0
+collision_mask = 0
+height_metres = 0.0
+
+[node name="OuterWall" parent="Actors/Landmarks/watchtower" index="2"]
+collision_mask = 0
+
+[node name="Masonry0" parent="Actors/Landmarks/watchtower" index="3"]
+collision_mask = 0
+
+[node name="Masonry1" parent="Actors/Landmarks/watchtower" index="4"]
+collision_mask = 0
+
+[node name="Masonry2" parent="Actors/Landmarks/watchtower" index="5"]
+collision_mask = 0
+
+[node name="Masonry3" parent="Actors/Landmarks/watchtower" index="6"]
+collision_mask = 0
+
+[node name="Masonry4" parent="Actors/Landmarks/watchtower" index="7"]
+collision_mask = 0
+
+[node name="greywatch_warden1" parent="Actors/Landmarks/watchtower" index="8"]
+collision_layer = 2
+motion_mode = 1
+
+[node name="pilgrims_rest" parent="Actors/Landmarks" unique_id=1321817934 instance=ExtResource("landmark_7")]
+position = Vector2(42240, 7040)
+
+[node name="NorthWall" parent="Actors/Landmarks/pilgrims_rest" index="0"]
+collision_mask = 0
+height_metres = 2.0
+
+[node name="WestWall" parent="Actors/Landmarks/pilgrims_rest" index="1"]
+collision_mask = 0
+
+[node name="BrokenEast" parent="Actors/Landmarks/pilgrims_rest" index="2"]
+collision_mask = 0
+
+[node name="LeanTo" parent="Actors/Landmarks/pilgrims_rest" index="3"]
+collision_layer = 0
+collision_mask = 0
+
+[node name="EntranceSteps" parent="Actors/Landmarks/pilgrims_rest" index="4"]
+collision_layer = 0
+collision_mask = 0
+height_metres = 0.0
+
+[node name="greywatch_warden1" parent="Actors/Landmarks/pilgrims_rest" index="5"]
+collision_layer = 2
+motion_mode = 1
+
+[node name="quarry" parent="Actors/Landmarks" unique_id=2062851345 instance=ExtResource("landmark_8")]
+position = Vector2(46720, -8960)
+
+[node name="Ledge0" parent="Actors/Landmarks/quarry" index="0"]
+collision_mask = 0
+height_metres = 2.0
+
+[node name="Ledge1" parent="Actors/Landmarks/quarry" index="1"]
+collision_mask = 0
+
+[node name="Ledge2" parent="Actors/Landmarks/quarry" index="2"]
+collision_mask = 0
+height_metres = 3.0
+
+[node name="Ledge3" parent="Actors/Landmarks/quarry" index="3"]
+collision_mask = 0
+height_metres = 2.0
+
+[node name="Ledge4" parent="Actors/Landmarks/quarry" index="4"]
+collision_mask = 0
+
+[node name="Ledge5" parent="Actors/Landmarks/quarry" index="5"]
+collision_mask = 0
+height_metres = 3.0
+
+[node name="Ledge6" parent="Actors/Landmarks/quarry" index="6"]
+collision_mask = 0
+height_metres = 2.0
+
+[node name="Ledge7" parent="Actors/Landmarks/quarry" index="7"]
+collision_mask = 0
+
+[node name="BrokenCrane" parent="Actors/Landmarks/quarry" index="8"]
+collision_mask = 0
+
+[node name="CutBlocks" parent="Actors/Landmarks/quarry" index="9"]
+collision_mask = 0
+
+[node name="fort" parent="Actors/Landmarks" unique_id=23384228 instance=ExtResource("landmark_9")]
+position = Vector2(57600, 0)
+
+[node name="NorthCurtain" parent="Actors/Landmarks/fort" index="0"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 6.0
+
+[node name="SouthCurtain" parent="Actors/Landmarks/fort" index="1"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 6.0
+
+[node name="EastCurtain" parent="Actors/Landmarks/fort" index="2"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 6.0
+
+[node name="WestUpper" parent="Actors/Landmarks/fort" index="3"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 6.0
+
+[node name="WestLower" parent="Actors/Landmarks/fort" index="4"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 6.0
+
+[node name="Corner-24_-24" parent="Actors/Landmarks/fort" index="5"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 9.0
+
+[node name="Corner-24_24" parent="Actors/Landmarks/fort" index="6"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 9.0
+
+[node name="Corner24_-24" parent="Actors/Landmarks/fort" index="7"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 9.0
+
+[node name="Corner24_24" parent="Actors/Landmarks/fort" index="8"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 9.0
+
+[node name="GateNorth" parent="Actors/Landmarks/fort" index="9"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 7.0
+
+[node name="GateSouth" parent="Actors/Landmarks/fort" index="10"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 7.0
+
+[node name="GateArch" parent="Actors/Landmarks/fort" index="11"]
+collision_layer = 0
+collision_mask = 0
+height_metres = 8.0
+
+[node name="HallNorth" parent="Actors/Landmarks/fort" index="12"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 4.0
+
+[node name="HallEast" parent="Actors/Landmarks/fort" index="13"]
+collision_layer = 17
+collision_mask = 0
+height_metres = 4.0
+
+[node name="HallWest" parent="Actors/Landmarks/fort" index="14"]
+collision_layer = 17
+collision_mask = 0
+
+[node name="HallSteps" parent="Actors/Landmarks/fort" index="15"]
+collision_layer = 0
+collision_mask = 0
+
+[node name="Well" parent="Actors/Landmarks/fort" index="16"]
+collision_mask = 0
+
+[node name="greywatch_warden1" parent="Actors/Landmarks/fort" index="17"]
+collision_layer = 2
+motion_mode = 1
+
+[node name="greywatch_warden2" parent="Actors/Landmarks/fort" index="18"]
+collision_layer = 2
+motion_mode = 1
+
+[node name="CampGroundCover" type="Node2D" parent="Actors"]
+script = ExtResource("cover_zone")
+profile = ExtResource("camp_cover")
+bounds_metres = Rect2(-11, -9, 22, 18)
+bare_rects_metres = Array[Rect2]([Rect2(-3.4, -3.3, 2.8, 2.6), Rect2(1.8, -0.5, 2, 2), Rect2(0.8, 2.8, 1.1, 2.2), Rect2(2.8, 3.6, 1.1, 2.2), Rect2(4, 1.6, 1.2, 1)])
+
+[node name="ShrineApproachDressing" parent="Actors" instance=ExtResource("camp_approach")]
+
+[editable path="Actors/Landmarks/chapel"]
+[editable path="Actors/Landmarks/graveyard"]
+[editable path="Actors/Landmarks/widows_pool"]
+[editable path="Actors/Landmarks/waystone"]
+[editable path="Actors/Landmarks/split_oak"]
+[editable path="Actors/Landmarks/crossing"]
+[editable path="Actors/Landmarks/watchtower"]
+[editable path="Actors/Landmarks/pilgrims_rest"]
+[editable path="Actors/Landmarks/quarry"]
+[editable path="Actors/Landmarks/fort"]

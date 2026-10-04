@@ -16,6 +16,7 @@ enum PlayerState { NORMAL, ATTACK_HOLD, CHARGING, ATTACKING, DODGING, HURT, DEAD
 @export var character_class: ClassDefinition = preload("res://data/classes/ashen_wanderer.tres")
 ## Leave empty to use the class starting weapon.
 @export var weapon_override: WeaponDefinition
+var transformation: PlayerTransformation
 var attributes: AttributeStats
 var vitals: VitalStats
 var movement: MovementDefinition
@@ -42,7 +43,7 @@ var _poise_delay: float = 0.0
 var attack: AttackDefinition:
 	get: return _active_attack if _active_attack != null else (equipped_weapon.light_attack if equipped_weapon != null else null)
 var speed: float:
-	get: return movement.walk_speed
+	get: return movement.walk_speed * SpellEffects.movement(self)
 var sprint_multiplier: float:
 	get: return movement.sprint_multiplier
 var dodge_duration: float:
@@ -81,6 +82,7 @@ var shake: float = 0.0
 var _cooldown: float = 0.0
 var _protection: float = 0.0
 var _regen_delay: float = 0.0
+var _combat_time: float = 0.0
 var _right_held: bool = false
 var _hold_time: float = 0.0
 var _left_held: bool = false
@@ -89,10 +91,82 @@ var _active_hand: StringName = &"right"
 var _active_attack: AttackDefinition
 var _active_spell: SpellDefinition
 var _spell_launched: bool = false
+var _spell_delivery_ended_at: float = -1.0
+var _cast_vfx: Node2D
+var _delivery_context: SpellCastContext
+var _delivery_runtime: Node2D
+var _channel_input: StringName = &""
+var _weapon_tokens: Dictionary = {}
+var _next_weapon_token: int = 1
+
+func weapon_token(hand: StringName) -> int:
+	var items: Array[WeaponDefinition] = right_hand_weapons if hand == &"right" else left_hand_weapons
+	if not _weapon_tokens.has(hand):
+		var tokens: Array[int] = []
+		for _item in items:
+			tokens.append(_next_weapon_token)
+			_next_weapon_token += 1
+		_weapon_tokens[hand] = tokens
+	var index: int = right_hand_index if hand == &"right" else left_hand_index
+	return _weapon_tokens[hand][index] if index < _weapon_tokens[hand].size() else 0
+
+func _transfer_weapon_tokens(hand: StringName, replacement: Array[WeaponDefinition]) -> void:
+	weapon_token(hand)
+	var old: Array[WeaponDefinition] = right_hand_weapons if hand == &"right" else left_hand_weapons
+	var used: Dictionary = {}
+	var next_tokens: Array[int] = []
+	for item: WeaponDefinition in replacement:
+		var token: int = 0
+		for i in old.size():
+			if item != null and old[i] == item and not used.has(i):
+				token = _weapon_tokens[hand][i]
+				used[i] = true
+				break
+		if token == 0:
+			token = _next_weapon_token
+			_next_weapon_token += 1
+		next_tokens.append(token)
+	for token: int in _weapon_tokens[hand]:
+		if not next_tokens.has(token): SpellEffects.of(self).imbues.erase(token)
+	_weapon_tokens[hand] = next_tokens
+
+func release_spell_input(input: StringName = &"cast") -> void:
+	if _channel_input == input:
+		cancel_spell_channel()
+
+func cancel_spell_channel() -> void:
+	if _channel_input.is_empty(): return
+	_channel_input = &""
+	if is_instance_valid(_delivery_runtime): _delivery_runtime.call("cancel")
+	_delivery_runtime = null
+	_clear_cast_vfx()
+	if state == PlayerState.CASTING: _finish_action()
+
+func delivery_channel_active(instance: Node) -> bool:
+	return state == PlayerState.CASTING and not _channel_input.is_empty() and _delivery_runtime == instance
+
+func delivery_movement_active(instance: Node) -> bool:
+	return state == PlayerState.CASTING and _delivery_runtime == instance
+
+func command_orbiters() -> void:
+	if not form_allows("spells"): return
+	for instance: Node in get_tree().get_nodes_in_group("spell_delivery"):
+		if instance.get("context").caster == self: instance.call("command")
+
+func delivery_status() -> String:
+	var count: int = 0
+	for instance: Node in get_tree().get_nodes_in_group("spell_delivery"):
+		if instance.get("context").caster == self and instance.get("definition") is OrbitingDelivery:
+			count += int(instance.get("remaining"))
+	var text: String = "Orbiters: %d  [B Command]" % count if count > 0 else ""
+	if not _channel_input.is_empty() and is_instance_valid(_delivery_runtime):
+		text = "Channel: %.1fs  " % maxf(0, float(_delivery_runtime.get("runtime_duration")) - float(_delivery_runtime.get("elapsed"))) + text
+	return text
 var _buffer: String = ""
 var _buffer_time: float = 0.0
 var _hits: Dictionary = {}
 var _camera_bias := Vector2.ZERO
+var _base_camera_zoom := Vector2.ONE
 var _denied_timer: float = 0.0
 var message: String = ""
 var message_time: float = 0.0
@@ -103,12 +177,87 @@ var _utility_cooldown: float = 0.0
 var _mobile_controls_active: bool = false
 var _mobile_movement := Vector2.ZERO
 var _mobile_aim := Vector2.RIGHT
+var gamepad_active: bool = false
+var _gamepad_device: int = -1
+var _stick_aim := Vector2.RIGHT
+var _target_flick_ready: bool = true
+var _attack_hold_time: float = 0.0
+
+func reset_control_holds() -> void:
+	_buffer = ""
+	_right_held = false
+	sprinting = false
+	_hold_time = 0.0
+	_mobile_movement = Vector2.ZERO
+	_cancel_attack_candidate()
+	cancel_spell_channel()
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > 0.25):
+		gamepad_active = true
+		_gamepad_device = event.device
+	elif event is InputEventKey or event is InputEventMouseButton or (event is InputEventMouseMotion and event.relative.length() > 2.0):
+		gamepad_active = false
+
+func _update_gamepad_aim() -> void:
+	if not gamepad_active: return
+	if not Input.get_connected_joypads().has(_gamepad_device):
+		reset_control_holds()
+		gamepad_active = false
+		return
+	var stick := Vector2(Input.get_joy_axis(_gamepad_device, JOY_AXIS_RIGHT_X), Input.get_joy_axis(_gamepad_device, JOY_AXIS_RIGHT_Y))
+	if stick.length() < 0.3: _target_flick_ready = true
+	if valid_target(locked_target):
+		if stick.length() > 0.7 and _target_flick_ready:
+			_target_flick_ready = false
+			var best: Node2D
+			var best_score: float = -INF
+			for target: Node2D in candidates():
+				if target == locked_target: continue
+				var offset: Vector2 = target_point(target) - target_point(locked_target)
+				var alignment: float = stick.normalized().dot(offset.normalized())
+				var score: float = alignment - offset.length() / WorldScale.art_distance(2000.0)
+				if alignment > 0.35 and score > best_score:
+					best = target
+					best_score = score
+			if best != null: set_target(best)
+	elif stick.length() > 0.25:
+		_stick_aim = stick.normalized()
+	elif movement_input().length() > 0.1:
+		_stick_aim = movement_input().normalized()
+
+func request_light_attack(hand: StringName) -> void:
+	if not form_allows("melee") and not form_allows("spells"): return
+	if state != PlayerState.NORMAL:
+		request_action("light_" + String(hand))
+		return
+	var selected: WeaponDefinition = get_selected_weapon(hand)
+	if selected == null or not attributes.meets(selected.requirements): return
+	if selected.is_spell_catalyst: use_selected_spell(hand)
+	else: commit_light_attack(hand)
+
+func _clear_cast_vfx() -> void:
+	if is_instance_valid(_cast_vfx):
+		_cast_vfx.queue_free()
+	_cast_vfx = null
+
+func _exit_tree() -> void:
+	SpellDeliveryService.clear_owned(self)
+	_clear_cast_vfx()
 
 func _ready() -> void:
+	transformation = PlayerTransformation.new()
+	add_child(transformation)
+	if not InputMap.has_action("spell_command"):
+		InputMap.add_action("spell_command")
+		var command_key := InputEventKey.new()
+		command_key.physical_keycode = KEY_B
+		InputMap.action_add_event("spell_command", command_key)
 	add_to_group("player")
 	apply_definitions()
 	collision_layer = 1
-	collision_mask = 3
+	collision_mask = 51
+	Elevation.register_body(self)
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 	z_index = 0
 	$HUD.queue_free()
@@ -117,6 +266,8 @@ func _ready() -> void:
 	visuals.set_script(load("res://scripts/player_visuals.gd"))
 	add_child(visuals)
 	camera.enabled = true
+	$AudioListener2D.make_current()
+	_base_camera_zoom = camera.zoom
 	camera.limit_left = -820
 	camera.limit_right = 820
 	camera.limit_top = -520
@@ -124,6 +275,7 @@ func _ready() -> void:
 
 ## Rebuild derived stats on spawn or after an explicit equipment/attribute change.
 func apply_definitions() -> void:
+	_weapon_tokens.clear()
 	if character_class == null: character_class = load("res://data/classes/ashen_wanderer.tres")
 	attributes = character_class.attributes.duplicate(true) as AttributeStats if character_class.attributes != null else AttributeStats.new()
 	vitals = character_class.vitals if character_class.vitals != null else VitalStats.new()
@@ -179,6 +331,7 @@ func apply_definitions() -> void:
 	max_equip_load = vitals.max_load(attributes)
 	health = max_health
 	stamina = max_stamina
+	_combat_time = 0.0
 	current_currency = character_class.starting_currency
 	poise_remaining = vitals.poise
 
@@ -203,6 +356,7 @@ func unlock_spell_slots(amount: int = 1) -> void:
 	loadout_changed.emit(&"spell", spell_index)
 
 func set_weapon_loadout(hand: StringName, items: Array[WeaponDefinition]) -> void:
+	if state != PlayerState.NORMAL: return
 	if hand != &"right" and hand != &"left": return
 	var capacity: int = get_weapon_slot_capacity(hand)
 	var previous: WeaponDefinition = get_selected_weapon(hand)
@@ -214,6 +368,7 @@ func set_weapon_loadout(hand: StringName, items: Array[WeaponDefinition]) -> voi
 			if hand == &"left" and not item.usable_in_left_hand: item = null
 		next.append(item)
 
+	_transfer_weapon_tokens(hand, next)
 	if hand == &"right":
 		right_hand_weapons = next
 		right_hand_index = next.find(previous) if previous != null and next.has(previous) else _first_filled_weapon_index(next)
@@ -238,6 +393,7 @@ func get_selected_spell() -> SpellDefinition:
 	return spells[spell_index] if not spells.is_empty() and spell_index >= 0 and spell_index < spells.size() else null
 
 func request_shrine_menu() -> void:
+	if not form_allows("interaction"): return
 	if state == PlayerState.DEAD: return
 	_right_held = false
 	_cancel_attack_candidate()
@@ -264,6 +420,7 @@ func get_selected_weapon(hand: StringName) -> WeaponDefinition:
 	return loadout[index] if not loadout.is_empty() and index >= 0 and index < loadout.size() else null
 
 func cycle_weapon(hand: StringName, direction: int = 1) -> void:
+	if not form_allows("cycling"): return
 	if state in [PlayerState.ATTACKING, PlayerState.CASTING, PlayerState.DODGING, PlayerState.HURT, PlayerState.DEAD]: return
 	var loadout: Array[WeaponDefinition] = right_hand_weapons if hand == &"right" else left_hand_weapons
 	if loadout.is_empty(): return
@@ -282,6 +439,7 @@ func cycle_weapon(hand: StringName, direction: int = 1) -> void:
 		return
 
 func cycle_spell(direction: int = 1) -> void:
+	if not form_allows("cycling"): return
 	if spells.is_empty(): return
 	var selected: int = spell_index
 	for _step in spells.size():
@@ -292,6 +450,7 @@ func cycle_spell(direction: int = 1) -> void:
 		return
 
 func cycle_utility(direction: int = 1) -> void:
+	if not form_allows("cycling"): return
 	if not utilities.is_empty():
 		utility_index = posmod(utility_index + direction, utilities.size())
 		loadout_changed.emit(&"utility", utility_index)
@@ -309,23 +468,27 @@ func get_spell_catalyst(spell: SpellDefinition = null) -> WeaponDefinition:
 	return null
 
 func begin_hand_action(hand: StringName) -> void:
+	if not form_allows("melee") and not form_allows("spells"): return
 	if state != PlayerState.NORMAL: return
 	var weapon: WeaponDefinition = get_selected_weapon(hand)
 	if weapon != null and weapon.is_spell_catalyst:
 		use_selected_spell(hand)
 		return
+	if not form_allows("melee"): return
 	if weapon == null or weapon.light_attack == null: return
 	if not attributes.meets(weapon.requirements):
 		show_message("Weapon requirements not met")
 		return
 	_attack_candidate_hand = hand
 	_active_hand = hand
-	_hold_time = 0.0
+	_attack_hold_time = 0.0
 	_active_attack = weapon.light_attack
 	action_time = 0.0
+	sprinting = false
 	state = PlayerState.ATTACK_HOLD
 
 func release_hand_action(hand: StringName) -> void:
+	release_spell_input(hand)
 	if _attack_candidate_hand != hand: return
 	if state == PlayerState.ATTACK_HOLD:
 		commit_light_attack(hand)
@@ -346,7 +509,7 @@ func commit_charged_attack(hand: StringName) -> void:
 func _cancel_attack_candidate() -> void:
 	if state not in [PlayerState.ATTACK_HOLD, PlayerState.CHARGING]: return
 	_attack_candidate_hand = &""
-	_hold_time = 0.0
+	_attack_hold_time = 0.0
 	_active_attack = null
 	if state in [PlayerState.ATTACK_HOLD, PlayerState.CHARGING]: state = PlayerState.NORMAL
 	charge_changed.emit(_active_hand, 0.0)
@@ -355,17 +518,17 @@ func get_charge_progress(hand: StringName) -> float:
 	if hand != _active_hand: return 0.0
 	if state == PlayerState.CHARGING: return 1.0
 	if state != PlayerState.ATTACK_HOLD or _active_attack == null: return 0.0
-	return clampf(_hold_time / maxf(0.01, _active_attack.charge_threshold), 0.0, 1.0)
+	return clampf(_attack_hold_time / maxf(0.01, _active_attack.charge_threshold), 0.0, 1.0)
 
 func _start_attack(hand: StringName, definition: AttackDefinition) -> void:
+	if not form_allows("melee"): return
 	if definition == null: _cancel_attack_candidate(); return
 	if not state in [PlayerState.NORMAL, PlayerState.ATTACK_HOLD, PlayerState.CHARGING]: return
-	if stamina < definition.stamina_cost:
+	if not _can_spend_stamina(definition.stamina_cost):
 		show_message("Catch your breath", 0.7)
 		_cancel_attack_candidate()
 		return
-	stamina -= definition.stamina_cost
-	stamina_changed.emit(stamina)
+	_spend_stamina(definition.stamina_cost, false)
 	_active_hand = hand
 	_active_attack = definition
 	_spell_launched = false
@@ -393,6 +556,8 @@ func set_mobile_movement(value: Vector2) -> void:
 		_mobile_aim = _mobile_movement.normalized()
 
 func begin_dodge_sprint_hold() -> void:
+	if not form_allows("dodge") and (transformation.definition == null or not transformation.definition.allow_sprint): return
+	cancel_spell_channel()
 	if state == PlayerState.DEAD: return
 	_right_held = true
 	_hold_time = 0.0
@@ -405,6 +570,8 @@ func release_dodge_sprint_hold() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		reset_control_holds()
+		cancel_spell_channel()
 		_right_held = false
 		_left_held = false
 		_mobile_movement = Vector2.ZERO
@@ -413,6 +580,9 @@ func _notification(what: int) -> void:
 		_cancel_attack_candidate()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_instance_valid(transformation) and transformation.handle_zoom_input(event):
+		get_viewport().set_input_as_handled()
+		return
 	# Touch can be emulated as mouse input by Android. The dedicated mobile
 	# controls call the player API directly, so ignore those synthetic clicks.
 	if _mobile_controls_active and event is InputEventMouseButton: return
@@ -421,6 +591,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("cycle_spell"): cycle_spell()
 	if event.is_action_pressed("cycle_utility"): cycle_utility()
 	if state == PlayerState.DEAD: return
+	if event.is_action_pressed("light_right"): request_light_attack(&"right")
+	if event.is_action_pressed("light_left"): request_light_attack(&"left")
+	if event.is_action_released("light_right"): release_spell_input(&"right")
+	if event.is_action_released("light_left"): release_spell_input(&"left")
 	if event.is_action_pressed("attack"): begin_hand_action(&"right")
 	if event.is_action_pressed("left_attack"): begin_hand_action(&"left")
 	if event.is_action_released("attack"): release_hand_action(&"right")
@@ -428,6 +602,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("dodge"): begin_dodge_sprint_hold()
 	if event.is_action_released("dodge"): release_dodge_sprint_hold()
 	if event.is_action_pressed("cast_spell"): use_selected_spell()
+	if event.is_action_released("cast_spell"): release_spell_input()
+	if event.is_action_pressed("spell_command"): command_orbiters()
 	if event.is_action_pressed("use_utility"): use_selected_utility()
 	if event.is_action_pressed("lock_on"): toggle_lock()
 	if event.is_action_pressed("target_next"): cycle_target(1)
@@ -440,6 +616,47 @@ func movement_input() -> Vector2:
 		return _mobile_movement
 	return physical
 
+func form_allows(permission: String) -> bool:
+	return not is_instance_valid(transformation) or transformation.allows(permission)
+
+func in_combat() -> bool:
+	if state == PlayerState.DEAD or health <= 0: return false
+	# Lock-on alone is not aggression, and an enemy fighting another actor must not
+	# charge this player's stamina. Enemies expose their engagement explicitly.
+	for enemy: Node in get_tree().get_nodes_in_group("enemy"):
+		if enemy.is_queued_for_deletion(): continue
+		if enemy.has_method("is_engaged_with") and enemy.call("is_engaged_with", self):
+			_combat_time = movement.combat_exit_delay
+			return true
+	return _combat_time > 0.0
+
+func note_combat_damage(opponent: Node) -> void:
+	# Called by receivers only after accepted damage; misses/dummies do not count.
+	if state == PlayerState.DEAD or not is_instance_valid(opponent): return
+	if opponent.is_in_group("enemy"):
+		_combat_time = maxf(_combat_time, movement.combat_exit_delay)
+
+func _can_spend_stamina(cost: float) -> bool:
+	return not in_combat() or stamina >= maxf(0.0, cost)
+
+func _spend_stamina(cost: float, delay_regeneration: bool = true) -> void:
+	if cost <= 0.0 or not in_combat(): return
+	stamina = maxf(0.0, stamina - cost)
+	if delay_regeneration: _regen_delay = vitals.stamina_regeneration_delay
+	stamina_changed.emit(stamina)
+
+func uses_ground_locomotion() -> bool:
+	if state not in [PlayerState.NORMAL, PlayerState.ATTACK_HOLD, PlayerState.CHARGING, PlayerState.ATTACKING, PlayerState.CASTING]: return false
+	# A movement spell owns its displacement; it is not a walking animation.
+	return _active_spell == null or not _active_spell.delivery_definition is DashDelivery
+
+func _move_attack_candidate() -> void:
+	var multiplier: float = _active_attack.movement_multiplier if _active_attack != null else 1.0
+	velocity = movement_input() * speed * multiplier
+	var look: Vector2 = aim_direction()
+	if absf(look.x) > 0.04: facing = signf(look.x)
+	Elevation.slide(self, get_physics_process_delta_time())
+
 func aim_direction() -> Vector2:
 	if valid_target(locked_target):
 		var locked_vector: Vector2 = target_point(locked_target) - global_position
@@ -447,11 +664,15 @@ func aim_direction() -> Vector2:
 	if _mobile_controls_active:
 		if _mobile_aim.length() > 0.12: return _mobile_aim.normalized()
 		return Vector2(facing, 0)
+	if gamepad_active: return _stick_aim
 	var point: Vector2 = get_global_mouse_position()
 	var vector: Vector2 = point - global_position
 	return vector.normalized() if vector.length() > 4.0 else Vector2(facing, 0)
 
 func request_action(action: String) -> void:
+	if action == "dodge" and not form_allows("dodge"): return
+	if action == "dodge":
+		cancel_spell_channel()
 	if state == PlayerState.DEAD: return
 	if state in [PlayerState.ATTACK_HOLD, PlayerState.CHARGING] and action == "dodge":
 		_cancel_attack_candidate()
@@ -461,29 +682,40 @@ func request_action(action: String) -> void:
 			_buffer = action
 			_buffer_time = movement.input_buffer
 		return
+	if action.begins_with("light_"):
+		request_light_attack(StringName(action.trim_prefix("light_")))
+		return
 	if action != "dodge" or _cooldown > 0.0: return
-	if stamina < dodge_cost:
+	if not _can_spend_stamina(dodge_cost):
 		if _denied_timer <= 0.0:
 			show_message("Catch your breath", 0.7)
 			_denied_timer = 0.7
 		return
-	stamina -= dodge_cost
-	stamina_changed.emit(stamina)
-	_regen_delay = vitals.stamina_regeneration_delay
+	_spend_stamina(dodge_cost)
 	action_time = 0.0
 	sprinting = false
 	aim = aim_direction()
 	if absf(aim.x) > 0.05: facing = signf(aim.x)
 	state = PlayerState.DODGING
 	dodge_direction = movement_input()
-	if dodge_direction.is_zero_approx(): dodge_direction = aim
+	if dodge_direction.is_zero_approx(): dodge_direction = -aim if gamepad_active else aim
+	dodge_direction = dodge_direction.normalized()
 	_cooldown = dodge_cooldown
 	_roll_trail_time = 0.0
-	Feedback.burst(global_position + Vector2(0, 10), "dust", -dodge_direction)
+	visuals.movement_effect("dodge", to_global(Vector2(0, 10)), -dodge_direction)
 	Feedback.play("roll", global_position)
 	visuals.begin("roll")
 
 func _physics_process(delta: float) -> void:
+	_combat_time = maxf(0.0, _combat_time - delta)
+	var combat_active: bool = in_combat()
+	if not combat_active: _sprint_exhausted = false
+	transformation.tick(delta)
+	_update_gamepad_aim()
+	if state != PlayerState.CASTING: _clear_cast_vfx()
+	if is_instance_valid(_cast_vfx) and is_instance_valid(visuals):
+		var catalyst_model: Node2D = visuals.get_hand_model(_active_hand)
+		if is_instance_valid(catalyst_model): _cast_vfx.global_position = catalyst_model.global_position
 	_poise_delay = maxf(0, _poise_delay - delta)
 	if _poise_delay <= 0: poise_remaining = minf(vitals.poise, poise_remaining + vitals.poise_regeneration * delta)
 	_cooldown = maxf(0, _cooldown - delta)
@@ -493,8 +725,8 @@ func _physics_process(delta: float) -> void:
 	message_time = maxf(0, message_time - delta)
 	if is_instance_valid(locked_target) and not valid_target(locked_target): set_target(null)
 	if not is_instance_valid(locked_target): locked_target = null
-	if _right_held or not _attack_candidate_hand.is_empty(): _hold_time += delta
-	_update_camera(delta)
+	if _right_held: _hold_time += delta
+	if not _attack_candidate_hand.is_empty(): _attack_hold_time += delta
 	if hit_stop > 0:
 		hit_stop -= delta
 		return
@@ -506,76 +738,96 @@ func _physics_process(delta: float) -> void:
 	match state:
 		PlayerState.NORMAL:
 			var move: Vector2 = movement_input()
-			sprinting = _right_held and _hold_time >= movement.sprint_hold_threshold and not move.is_zero_approx() and not _sprint_exhausted
-			if sprinting:
-				stamina = maxf(0, stamina - movement.sprint_stamina_per_second * delta)
-				_regen_delay = vitals.stamina_regeneration_delay
+			var form: TransformationDefinition = transformation.definition
+			if form != null and not form.preserve_transition_movement and transformation.phase in [PlayerTransformation.Phase.ENTERING, PlayerTransformation.Phase.REVERTING]: move = Vector2.ZERO
+			var locomotion: MovementDefinition = form.movement if form != null else movement
+			sprinting = _right_held and _hold_time >= locomotion.sprint_hold_threshold and not move.is_zero_approx() and not _sprint_exhausted
+			if form != null and not form.allow_sprint: sprinting = false
+			if sprinting and combat_active:
+				_spend_stamina(locomotion.sprint_stamina_per_second * delta)
 				if stamina <= 0:
 					_sprint_exhausted = true
 					sprinting = false
-			velocity = move * speed * (sprint_multiplier if sprinting else 1.0)
+			var target_speed: float = locomotion.walk_speed
+			if sprinting: target_speed = form.sprint_speed if form != null else locomotion.walk_speed * locomotion.sprint_multiplier
+			var desired_velocity: Vector2 = move * target_speed * SpellEffects.movement(self)
+			var braking: bool = desired_velocity.length_squared() < velocity.length_squared() or velocity.dot(desired_velocity) < 0.0
+			var rate: float = locomotion.deceleration if braking else locomotion.acceleration
+			velocity = velocity.move_toward(desired_velocity, rate * delta)
 			var look: Vector2 = aim_direction()
 			if absf(look.x) > 0.04: facing = signf(look.x)
-			move_and_slide()
-			if _regen_delay <= 0 and not sprinting: stamina = minf(max_stamina, stamina + vitals.stamina_regeneration * delta)
+			Elevation.slide(self, get_physics_process_delta_time())
 		PlayerState.ATTACK_HOLD:
-			velocity = Vector2.ZERO
-			if not movement_input().is_zero_approx():
-				_cancel_attack_candidate()
-			elif _active_attack != null and _hold_time >= _active_attack.charge_threshold:
+			_move_attack_candidate()
+			if _active_attack != null and _attack_hold_time >= _active_attack.charge_threshold:
 				state = PlayerState.CHARGING
 				charge_changed.emit(_active_hand, 1.0)
 			elif _active_attack != null:
 				charge_changed.emit(_active_hand, get_charge_progress(_active_hand))
 		PlayerState.CHARGING:
-			velocity = Vector2.ZERO
-			if not movement_input().is_zero_approx(): _cancel_attack_candidate()
-			else: charge_changed.emit(_active_hand, 1.0)
+			_move_attack_candidate()
+			charge_changed.emit(_active_hand, 1.0)
 		PlayerState.ATTACKING:
 			velocity = movement_input() * speed * attack.movement_multiplier
-			move_and_slide()
+			Elevation.slide(self, get_physics_process_delta_time())
 			if action_time >= attack.windup and action_time - delta < attack.active_end(): _attack_hits()
 			if action_time >= attack_duration: _finish_action()
 		PlayerState.CASTING:
-			velocity = movement_input() * speed * _active_attack.movement_multiplier
-			move_and_slide()
+			var delivery: SpellDeliveryDefinition = _active_spell.delivery_definition
+			var multiplier: float = float(delivery.get("movement_multiplier")) if delivery != null and delivery.is_channel() else _active_attack.movement_multiplier
+			velocity = movement_input() * speed * multiplier
+			if not delivery is DashDelivery: Elevation.slide(self, get_physics_process_delta_time())
 			if not _spell_launched and action_time >= _active_attack.windup:
 				_cast_active_spell()
-			if action_time >= _active_attack.duration(): _finish_action()
+			if delivery != null and (delivery.is_channel() or delivery is DashDelivery):
+				if _spell_launched and (not is_instance_valid(_delivery_runtime) or _delivery_runtime.is_queued_for_deletion()):
+					if _spell_delivery_ended_at < 0:
+						_spell_delivery_ended_at = action_time
+						_channel_input = &""
+					if action_time - _spell_delivery_ended_at >= _active_attack.recovery: _finish_action()
+			elif action_time >= _active_attack.duration(): _finish_action()
 		PlayerState.DODGING:
 			var p: float = clampf(action_time / dodge_duration, 0, 1)
 			velocity = dodge_direction * dodge_distance / dodge_duration * (1.45 - 0.9 * p)
-			move_and_slide()
+			Elevation.slide(self, get_physics_process_delta_time())
 			_roll_trail_time += delta
 			if _roll_trail_time >= 0.13 and not Feedback.reduced_effects:
 				_roll_trail_time = 0.0
-				Feedback.burst(global_position + Vector2(0, 10), "footstep", -dodge_direction)
+				visuals.movement_effect("wake", to_global(Vector2(0, 10)), -dodge_direction)
 			if action_time >= dodge_duration:
-				Feedback.burst(global_position + Vector2(0, 10), "dust", -dodge_direction)
+				visuals.movement_effect("settle", to_global(Vector2(0, 10)), -dodge_direction)
 				Feedback.play("step", global_position, -3)
 				_finish_action()
 		PlayerState.HURT:
-			velocity = velocity.move_toward(Vector2.ZERO, delta * vitals.knockback_deceleration)
-			move_and_slide()
+			velocity = velocity.move_toward(Vector2.ZERO, delta * vitals.knockback_deceleration * WorldScale.actor_scale(self))
+			Elevation.slide(self, get_physics_process_delta_time())
 			if action_time >= vitals.stagger_duration: _finish_action()
 		PlayerState.DEAD:
 			velocity = Vector2.ZERO
 	var distance: float = global_position.distance_to(previous)
-	if state == PlayerState.NORMAL:
+	if uses_ground_locomotion() and transformation.phase == PlayerTransformation.Phase.HUMAN:
 		travel += distance
 		_step_distance += distance
-		if _step_distance > (31.0 if sprinting else 25.0):
-			_step_distance = 0
+		var step_spacing: float = visuals.current_step_distance()
+		if _step_distance > step_spacing:
+			_step_distance = fmod(_step_distance, step_spacing)
 			Feedback.play("step", global_position, -8)
-			Feedback.burst(global_position + Vector2(0, 13), "footstep", -velocity.normalized())
+			visuals.movement_effect("sprint" if sprinting else "footstep", to_global(Vector2(0, 13)), -velocity.normalized())
+	# Exploration can regenerate while moving/acting, without resetting the bar or
+	# consuming stamina. Combat retains its normal idle/walking regeneration rules.
+	if state != PlayerState.DEAD and _regen_delay <= 0 and (not in_combat() or (state == PlayerState.NORMAL and not sprinting)):
+		stamina = minf(max_stamina, stamina + vitals.stamina_regeneration * delta)
 	stamina_changed.emit(stamina)
 	var nearby: Node2D = nearby_interactable()
-	interaction_changed.emit("E   " + str(nearby.get_interaction_prompt()) if nearby != null else "")
+	interaction_changed.emit(("Y / Triangle   " if gamepad_active else "E   ") + str(nearby.get_interaction_prompt()) if nearby != null else "")
 
 func _finish_action() -> void:
+	var keep_movement: bool = uses_ground_locomotion()
+	_channel_input = &""
+	_clear_cast_vfx()
 	state = PlayerState.NORMAL
 	action_time = 0.0
-	velocity = Vector2.ZERO
+	if not keep_movement: velocity = Vector2.ZERO
 	_active_attack = null
 	_active_spell = null
 	charge_changed.emit(_active_hand, 0.0)
@@ -589,13 +841,20 @@ func _attack_hits() -> void:
 	if _active_spell != null:
 		_cast_active_spell()
 		return
+	# Melee resources describe a unit-scale actor. Physics queries are world-space
+	# and do not inherit the player's scene scale, unlike its body and equipment.
+	# Convert once here for every weapon, either hand and light/charged attacks.
+	# Basis lengths include parent scale and remain positive when mirrored; the
+	# larger axis keeps the circular query conservative for non-uniform scaling.
+	var spatial_scale: float = WorldScale.actor_scale(self)
+	var world_reach: float = attack.reach * spatial_scale
 	var shape := CircleShape2D.new()
-	shape.radius = minf(attack.hit_radius, attack.reach)
+	shape.radius = minf(attack.hit_radius, attack.reach) * spatial_scale
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = shape
-	query.transform = Transform2D(0, global_position + aim * maxf(0.0, attack.reach - shape.radius))
+	query.transform = Transform2D(0, global_position + aim * maxf(0.0, world_reach - shape.radius))
 	query.collision_mask = 2
-	for result: Dictionary in get_world_2d().direct_space_state.intersect_shape(query):
+	for result: Dictionary in Elevation.shapes(self, query, Elevation.level(self), 32, attack.cross_elevations):
 		var target: Node = result.collider
 		if _hits.has(target.get_instance_id()) or not target.has_method("take_damage") or not target.has_method("is_targetable"): continue
 		if not target.is_targetable(): continue
@@ -603,14 +862,15 @@ func _attack_hits() -> void:
 		if not offset.is_zero_approx() and aim.dot(offset.normalized()) < cos(deg_to_rad(attack.arc_degrees * 0.5)): continue
 		_hits[target.get_instance_id()] = true
 		if target.has_method("receive_hit"):
-			target.receive_hit(attack, attributes, self)
+			target.receive_hit(SpellEffects.of(self).imbue_attack(attack, weapon_token(_active_hand)), attributes, self)
 		else:
 			target.take_damage(attack_damage, self)
-		hit_stop = attack.hit_stop
-		shake = attack.camera_shake
-		Feedback.burst(target.global_position, "impact", aim)
+		if attack.feedback == null:
+			hit_stop = attack.hit_stop
+			shake = attack.camera_shake
 
 func use_selected_spell(hand: StringName = &"") -> void:
+	if not form_allows("spells"): return
 	if state != PlayerState.NORMAL: return
 	if spells.is_empty():
 		show_message("No spells equipped")
@@ -631,24 +891,70 @@ func use_selected_spell(hand: StringName = &"") -> void:
 		return
 	if hand == &"left" and not catalyst.usable_in_left_hand: return
 	if hand == &"right" and not catalyst.usable_in_right_hand: return
-	if spell.delivery == "Projectile" and spell.projectile_scene == null:
-		show_message("Spell has no projectile scene")
+	if spell.delivery_definition == null:
+		show_message("Choose a spell delivery definition")
 		return
 	if not attributes.meets(spell.requirements):
 		show_message("Spell requirements not met")
 		return
-	if stamina < spell.cast.stamina_cost:
+	if not _can_spend_stamina(spell.cast.stamina_cost):
 		show_message("Catch your breath", 0.7)
 		return
+	_delivery_context = null
+	if spell.delivery_definition != null:
+		var error: String = SpellDeliveryService.validate(spell.delivery_definition)
+		if not error.is_empty():
+			show_message(error)
+			return
+		_delivery_context = SpellCastContext.new()
+		_delivery_context.caster = self
+		_delivery_context.elevation = Elevation.level(self)
+		_delivery_context.cross_elevations = spell.delivery_definition.cross_elevations
+		_delivery_context.attribution = self
+		_delivery_context.target = locked_target
+		_delivery_context.direction = aim_direction()
+		_delivery_context.hand = hand if not hand.is_empty() else (&"right" if get_selected_weapon(&"right") == catalyst else &"left")
+		_delivery_context.attributes = attributes.duplicate(true) as AttributeStats
+		_delivery_context.attack = spell.cast
+		_delivery_context.profile = spell.delivery_definition.vfx
+		_delivery_context.ownership = spell.id
+		var delivery: SpellDeliveryDefinition = spell.delivery_definition
+		var desired: Vector2 = get_global_mouse_position() if not (_mobile_controls_active or gamepad_active) else global_position + aim_direction() * delivery.placement_distance
+		if valid_target(locked_target): desired = locked_target.global_position
+		desired = global_position + (desired - global_position).limit_length(delivery.cast_range)
+		_delivery_context.point = SpellDeliveryService.wall_end(_delivery_context, global_position, desired)
+		_delivery_context.point -= (desired - global_position).normalized() * minf(WorldScale.art_distance(14), global_position.distance_to(_delivery_context.point))
+		if delivery is ZoneDelivery or delivery is TrapDelivery or delivery is BarrageDelivery or delivery is SummonDelivery:
+			if not SpellDeliveryService.placement_clear(_delivery_context, _delivery_context.point):
+				show_message("No clear spell placement")
+				return
+		if delivery is TargetDelivery or delivery is ChainDelivery or delivery is TetherDelivery:
+			var needs_sight: bool = bool(delivery.get("require_line_of_sight")) if not delivery is TetherDelivery else true
+			var target_range: float = minf(delivery.cast_range, delivery.break_range) if delivery is TetherDelivery else delivery.cast_range
+			if not valid_target(locked_target) or global_position.distance_to(locked_target.global_position) > target_range or (needs_sight and not SpellDeliveryService.visible(_delivery_context, global_position, locked_target.global_position)):
+				show_message("A visible target in cast range is required")
+				return
+		if delivery is TetherDelivery and delivery.drain_definition() != null:
+			if locked_target.get("max_health") == null or float(locked_target.get("max_health")) <= 0 or not locked_target.has_method("receive_hit"):
+				show_message("Target cannot receive maximum-health damage")
+				return
+		if delivery is ImbueDelivery:
+			var recipient: StringName = StringName(delivery.recipient)
+			if recipient == &"opposite": recipient = &"left" if _delivery_context.hand == &"right" else &"right"
+			var enchanted: WeaponDefinition = get_selected_weapon(recipient)
+			if enchanted == null or enchanted.is_spell_catalyst:
+				show_message("Equip a weapon in the imbue's recipient hand")
+				return
+			_delivery_context.weapon_token = weapon_token(recipient)
+		_channel_input = (hand if not hand.is_empty() else &"cast") if delivery.is_channel() else &""
 	spell_charges[spell_index] -= 1
 	_active_spell = spell
 	_active_attack = spell.cast
 	_active_hand = hand if not hand.is_empty() else (&"right" if get_selected_weapon(&"right") == catalyst else &"left")
 	_spell_launched = false
+	_spell_delivery_ended_at = -1.0
 	_attack_candidate_hand = &""
-	stamina -= spell.cast.stamina_cost
-	_regen_delay = vitals.stamina_regeneration_delay
-	stamina_changed.emit(stamina)
+	_spend_stamina(spell.cast.stamina_cost)
 	loadout_changed.emit(&"spell", spell_index)
 	aim = aim_direction()
 	if absf(aim.x) > 0.05: facing = signf(aim.x)
@@ -656,73 +962,46 @@ func use_selected_spell(hand: StringName = &"") -> void:
 	sprinting = false
 	state = PlayerState.CASTING
 	visuals.begin("RESET")
+	var catalyst_model: Node2D = visuals.get_hand_model(_active_hand)
+	var cast_origin: Vector2 = catalyst_model.global_position if is_instance_valid(catalyst_model) else global_position
+	_cast_vfx = Feedback.spell_effect(cast_origin, spell.delivery_definition.vfx, &"cast", catalyst_model if is_instance_valid(catalyst_model) else self, WorldScale.art_distance(20), spell.cast.windup, get_instance_id())
 	show_message(spell.display_name, spell.cast.duration())
+
+func spell_visual_origin(hand: StringName) -> Vector2:
+	if not is_instance_valid(visuals): return global_position
+	var model: Node2D = visuals.get_hand_model(hand)
+	return model.global_position if is_instance_valid(model) else global_position
 
 func _cast_active_spell() -> void:
 	if _active_spell == null or _spell_launched: return
 	_spell_launched = true
+	_clear_cast_vfx()
+	if _active_spell.delivery_definition == null or _delivery_context == null: return
+	# A windup accepted on a different floor cannot release through its ceiling.
+	if _delivery_context.elevation != Elevation.level(self): return
 	if _active_spell.health_restore > 0:
 		health = mini(max_health, health + _active_spell.health_restore)
 		health_changed.emit(health, max_health)
 	if _active_spell.stamina_restore > 0:
 		stamina = minf(max_stamina, stamina + _active_spell.stamina_restore)
 		stamina_changed.emit(stamina)
-	if _active_spell.delivery == "Self":
-		_spell_burst(global_position, 42.0)
-		return
-	if _active_spell.delivery == "Projectile":
-		var projectile_scene: PackedScene = _active_spell.projectile_scene if _active_spell.projectile_scene != null else load("res://scenes/spell_projectile.tscn")
-		var projectile: SpellProjectile = projectile_scene.instantiate() as SpellProjectile
-		if projectile == null:
-			push_error("Projectile scene must use SpellProjectile: " + _active_spell.display_name)
-			return
-		projectile.direction = aim
-		projectile.speed = _active_spell.projectile_speed
-		projectile.lifetime = _active_spell.lifetime
-		projectile.attack = _active_spell.cast
-		projectile.attacker_stats = attributes
-		projectile.source = self
-		projectile.tint = _active_spell.cast.slash_color
-		projectile.radius = _active_spell.projectile_radius
-		get_tree().current_scene.add_child(projectile)
-		projectile.global_position = global_position
-		Feedback.play(String(_active_spell.cast.swing_sound), global_position)
-		return
-	_spell_area_hit()
-
-func _spell_area_hit() -> void:
-	var radius: float = maxf(24.0, _active_spell.area_radius)
-	var shape := CircleShape2D.new()
-	shape.radius = radius
-	var query := PhysicsShapeQueryParameters2D.new()
-	query.shape = shape
-	var center: Vector2 = global_position
-	if _active_spell.delivery == "Target":
-		center = global_position + aim * _active_attack.reach
-		if valid_target(locked_target): center = target_point(locked_target)
-	query.transform = Transform2D(0, center)
-	query.collision_mask = 2
-	_spell_burst(center, radius)
-	var hit_targets: Dictionary = {}
-	for result: Dictionary in get_world_2d().direct_space_state.intersect_shape(query):
-		var target: Node = result.collider
-		if hit_targets.has(target.get_instance_id()): continue
-		hit_targets[target.get_instance_id()] = true
-		if target.has_method("receive_hit") and target.has_method("is_targetable") and target.is_targetable():
-			target.receive_hit(_active_spell.cast, attributes, self)
-
-func _spell_burst(at: Vector2, radius: float) -> void:
-	var effect := Node2D.new()
-	effect.set_script(preload("res://scripts/spell_burst.gd"))
-	effect.set("radius", radius)
-	effect.set("tint", _active_spell.cast.slash_color)
-	get_tree().current_scene.add_child(effect)
-	effect.global_position = at
-	Feedback.play(String(_active_spell.cast.swing_sound), at)
+	_delivery_context.origin = global_position
+	_delivery_runtime = SpellDeliveryService.launch(_active_spell.delivery_definition, _delivery_context)
+	var profile: VFXDefinition = _active_spell.delivery_definition.vfx
+	if profile != null: Feedback.present(profile.release_feedback, global_position, aim_direction(), self)
+	Feedback.play(String(_active_spell.cast.swing_sound), global_position)
 
 func use_selected_utility() -> void:
+	# Always permit this button to attempt reversion, even if the form forbids items.
+	if transformation.phase != PlayerTransformation.Phase.HUMAN:
+		transformation.toggle(transformation.definition)
+		return
+	if not form_allows("utilities"): return
 	if state != PlayerState.NORMAL or utilities.is_empty() or _utility_cooldown > 0.0: return
 	var utility: UtilityDefinition = utilities[utility_index]
+	if utility != null and utility.transformation != null:
+		transformation.toggle(utility.transformation)
+		return
 	if utility == null or utility_charges[utility_index] <= 0:
 		show_message("No charges remaining")
 		return
@@ -736,50 +1015,89 @@ func use_selected_utility() -> void:
 	Feedback.play(String(utility.sound_key), global_position)
 
 func receive_hit(incoming: AttackDefinition, attacker_stats: AttributeStats, source: Node) -> void:
-	_apply_damage(incoming.health_damage(attacker_stats, vitals.defence), source, incoming.poise_damage, incoming.knockback, incoming.hit_stop, incoming.camera_shake)
+	_apply_damage(incoming.health_damage(attacker_stats, SpellEffects.defence(self, vitals.defence)), source, incoming.poise_damage, incoming.knockback, incoming.hit_stop, incoming.camera_shake, incoming, attacker_stats)
 
 ## Compatibility entry point: direct, unmitigated damage.
 func take_damage(amount: int, source: Node) -> void:
 	_apply_damage(maxi(0, amount), source, vitals.poise, 180.0, 0.04, 5.0)
 
-func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: float, freeze: float, camera_kick: float) -> void:
+func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: float, freeze: float, camera_kick: float, incoming: AttackDefinition = null, attacker_stats: AttributeStats = null) -> void:
+	if not Elevation.accepts_hit(self, source, incoming): return
 	if state == PlayerState.DEAD or _protection > 0: return
+	if is_instance_valid(_delivery_runtime) and not _delivery_runtime.is_queued_for_deletion() and _delivery_runtime.get("definition") is DashDelivery:
+		var dash: DashDelivery = _delivery_runtime.get("definition")
+		var fraction: float = float(_delivery_runtime.get("elapsed")) / dash.duration
+		if dash.invulnerable and fraction >= dash.invulnerability_start and fraction <= dash.invulnerability_end: return
 	if state == PlayerState.DODGING and action_time >= dodge_duration * movement.invulnerability_start and action_time <= dodge_duration * maxf(movement.invulnerability_start, movement.invulnerability_end): return
+	if amount > 0: note_combat_damage(source)
+	if health > amount: SpellEffects.apply_attack(self, incoming, attacker_stats, source)
+	if amount == 0 and incoming != null and incoming.max_health_drain != null: return
+	if incoming != null and incoming.feedback != null and not incoming.recurring_feedback:
+		freeze = incoming.feedback.hit_stop
+		camera_kick = 0.0
+	Feedback.damage_number(self, mini(amount, health))
 	health = maxi(0, health - amount)
 	health_changed.emit(health, max_health)
 	damaged.emit()
-	_protection = vitals.damage_invulnerability
+	if incoming == null or not incoming.periodic_damage: _protection = vitals.damage_invulnerability
 	poise_remaining -= poise_damage
 	_poise_delay = vitals.poise_regeneration_delay
 	var staggered: bool = poise_remaining <= 0.0
 	if staggered: poise_remaining = vitals.poise
 	if state == PlayerState.ATTACKING and action_time >= attack.windup and action_time <= attack.active_end() and attack.uninterruptible_while_active:
 		staggered = false
-	shake = camera_kick
-	hit_stop = freeze
+	if incoming == null or not incoming.periodic_damage:
+		shake = camera_kick
+		hit_stop = freeze
 	if staggered:
 		_buffer = ""
 		action_time = 0
 		var origin: Vector2 = (source as Node2D).global_position if is_instance_valid(source) and source is Node2D else global_position - Vector2.RIGHT
-		velocity = (global_position - origin).normalized() * knockback
-	Feedback.play("hurt", global_position)
-	Feedback.burst(global_position, "impact", velocity.normalized())
-	visuals.flash = 1.0
+		velocity = (global_position - origin).normalized() * knockback * WorldScale.actor_scale(self)
+	if incoming == null or not incoming.periodic_damage: Feedback.play("hurt", global_position)
+	if health == 0: Feedback.clear_physical_effects(get_instance_id())
+	if amount > 0: Feedback.hit_effect(global_position, source, EnemyDefinition.HitSurface.FLESH, incoming, amount, self)
+	if incoming == null or not incoming.periodic_damage: visuals.flash = 1.0
 	if health == 0:
+		_combat_time = 0.0
+		transformation.clear()
+		state = PlayerState.DEAD
+		cancel_spell_channel()
+		if is_instance_valid(Feedback.presentation): Feedback.presentation.clear()
+		SpellDeliveryService.clear_owned(self)
+		SpellEffects.of(self).clear()
+		_clear_cast_vfx()
 		state = PlayerState.DEAD
 		_spawn_currency_drop()
 		set_target(null)
 		visuals.begin("death")
-		Feedback.burst(global_position + Vector2(0, 10), "dust")
+		visuals.movement_effect("death", to_global(Vector2(0, 10)), Vector2.UP)
 		Feedback.play("death", global_position)
 		died.emit()
 	elif staggered:
 		state = PlayerState.HURT
+		cancel_spell_channel()
+		_clear_cast_vfx()
+		state = PlayerState.HURT
 		visuals.begin("hurt")
 
 func restore(restore_health: bool = true, restore_stamina: bool = true, _unused: bool = true) -> void:
+	if transformation.phase != PlayerTransformation.Phase.HUMAN:
+		if not transformation.can_land():
+			show_message("Find clear ground before resting")
+			return
+		transformation.clear()
+	Feedback.clear_physical_effects(get_instance_id())
+	cancel_spell_channel()
+	SpellDeliveryService.clear_owned(self)
+	for actor: Node in get_tree().get_nodes_in_group("targetable"):
+		var effects := actor.get_node_or_null("SpellEffects") as SpellEffects
+		if effects != null: effects.clear()
+	SpellEffects.of(self).clear()
 	if restore_health: health = max_health
 	if restore_stamina: stamina = max_stamina
+	_combat_time = 0.0
+	_sprint_exhausted = false
 	for i in utilities.size(): utility_charges[i] = utilities[i].maximum_charges
 	for i in spells.size():
 		spell_charges[i] = spells[i].maximum_charges if spells[i] != null else 0
@@ -798,29 +1116,48 @@ func _spawn_currency_drop() -> void:
 	if current_currency <= 0 or not character_class.lose_currency_on_death: return
 	for old: Node in get_tree().get_nodes_in_group("currency_drop"): old.queue_free()
 	var drop: Node2D = load("res://scenes/currency_drop.tscn").instantiate()
-	drop.position = global_position
 	drop.amount = current_currency
 	drop.definition = character_class.death_drop.duplicate(true) as CurrencyDropDefinition if character_class.death_drop != null else CurrencyDropDefinition.new()
 	drop.definition.delivery_mode = CurrencyDropDefinition.DeliveryMode.PICKUP
 	drop.definition.fixed_amount = current_currency
 	drop.definition.display_name = currency_definition.display_name if currency_definition != null else "Embers"
 	drop.definition.color = currency_definition.color if currency_definition != null else Color("e6b968")
-	get_parent().add_child(drop)
+	drop.set_meta(&"elevation_level", Elevation.level(self))
+	WorldScale.attach_art(drop, get_parent(), global_position, 1.0)
 	current_currency = 0
 	currency_changed.emit(current_currency)
+
+func clear_camera_feedback() -> void:
+	shake = 0.0
+	if is_instance_valid(camera):
+		camera.zoom = _base_camera_zoom * (transformation.zoom_factor if is_instance_valid(transformation) else 1.0)
+		camera.offset = _camera_bias
+
+func _process(delta: float) -> void:
+	if not is_instance_valid(transformation): return
+	transformation.update_camera_zoom(delta)
+	_update_camera(delta)
 
 func _update_camera(delta: float) -> void:
 	var desired: Vector2 = aim_direction() * 16.0 + velocity * 0.025
 	if valid_target(locked_target): desired = (target_point(locked_target) - global_position).limit_length(65) * 0.45
+	if transformation.definition != null:
+		desired = velocity * transformation.definition.camera_lead * (transformation.definition.sprint_camera_lead_multiplier if sprinting else 1.0)
 	_camera_bias = _camera_bias.lerp(desired, 1.0 - exp(-delta * 4))
 	shake = move_toward(shake, 0, delta * 24)
-	camera.offset = _camera_bias + Vector2(sin(Time.get_ticks_msec() * 0.09), cos(Time.get_ticks_msec() * 0.12)) * shake * Feedback.shake_strength
+	var legacy_strength: float = shake * Feedback.shake_strength * (0.2 if Feedback.reduced_effects else 1.0)
+	camera.offset = _camera_bias + Vector2(sin(Feedback.effect_clock * 90), cos(Feedback.effect_clock * 120)) * legacy_strength
+	camera.zoom = _base_camera_zoom * transformation.zoom_factor
+	if is_instance_valid(Feedback.presentation):
+		camera.offset += Feedback.presentation.offset
+		camera.zoom *= Feedback.presentation.zoom_factor
 
 func target_point(target: Node2D) -> Vector2:
 	return target.get_target_point() if target.has_method("get_target_point") else target.global_position
 
 func valid_target(target: Node2D) -> bool:
 	if not is_instance_valid(target) or not target.is_inside_tree(): return false
+	if not Elevation.compatible(self, target): return false
 	return target.is_in_group("enemy") and target.has_method("is_targetable") and target.is_targetable()
 
 func candidates() -> Array[Node2D]:
@@ -840,12 +1177,16 @@ func set_target(target: Node2D) -> void:
 	target_changed.emit(target)
 
 func toggle_lock() -> void:
+	if state == PlayerState.DEAD: return
 	if valid_target(locked_target):
 		set_target(null)
 		return
 	var options: Array[Node2D] = candidates()
+	if options.is_empty():
+		show_message("No enemy within lock-on range", 1.0)
+		return
 	options.sort_custom(func(a: Node2D, b: Node2D) -> bool: return global_position.distance_squared_to(target_point(a)) < global_position.distance_squared_to(target_point(b)))
-	if not options.is_empty(): set_target(options[0])
+	set_target(options[0])
 
 func cycle_target(step: int) -> void:
 	if state == PlayerState.DEAD: return
@@ -856,6 +1197,7 @@ func cycle_target(step: int) -> void:
 	set_target(options[posmod(options.find(locked_target) + step, options.size())])
 
 func nearby_interactable() -> Node2D:
+	if not form_allows("interaction"): return null
 	if state == PlayerState.DEAD:
 		for target: Node in get_tree().get_nodes_in_group("currency_drop"):
 			if target is Node2D and _eligible(target) and global_position.distance_to(target_point(target)) <= interaction_radius: return target
@@ -872,9 +1214,19 @@ func nearby_interactable() -> Node2D:
 	return nearest
 
 func _eligible(target: Node2D) -> bool:
-	return target.is_in_group("interactable") and global_position.distance_to(target_point(target)) <= interaction_radius and target.has_method("can_interact") and target.can_interact(self)
+	return Elevation.compatible(self, target) and target.is_in_group("interactable") and global_position.distance_to(target_point(target)) <= interaction_radius and target.has_method("can_interact") and target.can_interact(self)
+
+func has_traversal_tag(tag: StringName) -> bool:
+	return is_instance_valid(transformation) and transformation.definition != null and transformation.definition.traversal_tags.has(tag)
+
+func on_elevation_changed(_previous: int, _current: int) -> void:
+	if not valid_target(locked_target): set_target(null)
+	if state == PlayerState.CASTING:
+		cancel_spell_channel()
+		if state == PlayerState.CASTING: _finish_action()
 
 func interact_nearby() -> void:
+	if not form_allows("interaction"): return
 	var target: Node2D = nearby_interactable()
 	if state != PlayerState.NORMAL and not (state == PlayerState.DEAD and target != null and target.is_in_group("currency_drop")): return
 	if target != null: target.interact(self)

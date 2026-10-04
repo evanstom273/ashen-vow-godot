@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MovementVFXDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/movement_vfx_definition.gd" id="script"]
+[ext_resource type="Resource" path="res://data/vfx/footstep.tres" id="footstep"]
+[ext_resource type="Resource" path="res://data/vfx/sprint.tres" id="sprint"]
+[ext_resource type="Resource" path="res://data/vfx/dodge_takeoff.tres" id="dodge_takeoff"]
+[ext_resource type="Resource" path="res://data/vfx/dodge_wake.tres" id="dodge_wake"]
+[ext_resource type="Resource" path="res://data/vfx/settle.tres" id="settle"]
+[ext_resource type="Resource" path="res://data/vfx/death_dust.tres" id="death_dust"]
+
+[resource]
+script = ExtResource("script")
+footstep = ExtResource("footstep")
+sprint = ExtResource("sprint")
+dodge_takeoff = ExtResource("dodge_takeoff")
+dodge_wake = ExtResource("dodge_wake")
+settle = ExtResource("settle")
+death = ExtResource("death_dust")

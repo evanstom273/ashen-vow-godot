@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[node name="tower" type="StaticBody2D"]
+script = ExtResource("prop")
+kind = "tower"
+footprint = Vector2(5, 5)
+height_metres = 7
+solid = true
+flight_blocker = true
+variation = 568

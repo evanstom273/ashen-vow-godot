@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld_prop.gd" id="prop"]
+
+[node name="grass_clump" type="StaticBody2D"]
+script = ExtResource("prop")
+kind = "grass"
+footprint = Vector2(0.7, 0.5)
+height_metres = 0.45
+solid = false
+flight_blocker = false
+variation = 753
