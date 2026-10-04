@@ -1,19 +1,28 @@
 [gd_resource type="Resource" script_class="AttackDefinition" format=3]
 
-[ext_resource type="Resource" uid="uid://d06ja8wc7qdf3" path="res://data/damage/sword_damage.tres" id="damage"]
+[ext_resource type="Script" path="res://scripts/resources/attack_definition.gd" id="script"]
+[ext_resource type="Script" path="res://scripts/resources/damage_profile.gd" id="damage_script"]
 [ext_resource type="Resource" path="res://data/scaling/sword_scaling.tres" id="scaling"]
-[ext_resource type="Script" uid="uid://83gesiu8iao0" path="res://scripts/resources/attack_definition.gd" id="script"]
-
 [ext_resource type="Resource" path="res://data/vfx/melee_dagger_charged.tres" id="melee_profile"]
-
 [ext_resource type="Resource" path="res://data/vfx/feedback_heavy.tres" id="screen_feedback"]
+
+[sub_resource type="Resource" id="damage"]
+script = ExtResource("damage_script")
+physical = 115.0
 
 [resource]
 script = ExtResource("script")
-feedback = ExtResource("screen_feedback")
-display_name = "Wanderer slash"
-damage = ExtResource("damage")
+display_name = "Pilgrim wand strike"
+damage = SubResource("damage")
 scaling = ExtResource("scaling")
-charge_threshold = null
-charged_action_name = null
+stamina_cost = 20.0
+poise_damage = 25.0
+windup = 0.14
+active = 0.1
+recovery = 0.24
+reach = 36.0
+hit_radius = 16.0
+arc_degrees = 75.0
+charged_action_name = &"charged"
 melee_vfx = ExtResource("melee_profile")
+feedback = ExtResource("screen_feedback")

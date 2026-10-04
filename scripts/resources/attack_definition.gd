@@ -5,6 +5,7 @@ extends Resource
 @export_group("Power")
 @export var damage: DamageProfile
 @export var scaling: AttributeScaling
+@export var statuses: Array[StatusApplication] = []
 ## Optional on-hit percentage burn. May be shared by spells and weapon attacks.
 @export var max_health_drain: MaxHealthDrainDefinition
 ## Deliberate cross-floor payloads only; ordinary attacks remain on their origin floor.
@@ -40,10 +41,14 @@ extends Resource
 @export var feedback: CombatFeedbackDefinition
 ## Per-hit runtime bonus: deliberately excluded from attribute scaling.
 var unscaled_bonus_damage: DamageProfile
+var upgrade_multiplier: float = 1.0
 ## Runtime-only exact damage for percentage drains; receivers still gate invulnerability.
 var resolved_health_damage: int = -1
 ## A burn tick must not grant a fresh hit-protection window against later ticks.
 var periodic_damage: bool = false
+## Synchronous status proc belonging to an already-accepted contact. Bypasses
+## only the new hit-protection timer, never dodge, death or elevation eligibility.
+var accepted_contact_child: bool = false
 var recurring_feedback: bool = false
 var has_hit_elevation: bool = false
 var hit_elevation: int = 0
@@ -54,5 +59,15 @@ func health_damage(stats: AttributeStats, defence: DefenceProfile = null) -> int
     if resolved_health_damage >= 0: return resolved_health_damage
     var power: float = damage.mitigated(defence) if damage != null else 0.0
     if scaling != null: power *= scaling.multiplier(stats)
+    power *= upgrade_multiplier
     if unscaled_bonus_damage != null: power += unscaled_bonus_damage.mitigated(defence)
     return maxi(0, roundi(power))
+
+func explain_damage(stats: AttributeStats, defence: DefenceProfile = null) -> Dictionary:
+    var base: float = damage.total() if damage != null else 0.0
+    var mitigated: float = damage.mitigated(defence) if damage != null else 0.0
+    var attribute_multiplier: float = scaling.multiplier(stats) if scaling != null else 1.0
+    var bonus: float = unscaled_bonus_damage.mitigated(defence) if unscaled_bonus_damage != null else 0.0
+    return {"attack": display_name, "base": base, "after_defence": mitigated,
+        "attribute_multiplier": attribute_multiplier, "upgrade_multiplier": upgrade_multiplier, "unscaled_bonus": bonus,
+        "exact_override": resolved_health_damage, "final": health_damage(stats, defence)}

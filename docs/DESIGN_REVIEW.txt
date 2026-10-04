@@ -1,0 +1,6 @@
+disposition: recapture
+
+recapture
+- No current PC gameplay/menu capture set exists in .impeccable/review/. A valid set must show the rebuilt actors/environment/equipment HUD, title/settings, shrine services and map at the user's normal and smaller window/UI-scale settings.
+- Earlier attached screenshots predate this rebuild; they cannot certify the new artwork, layering, typography or contrast.
+- Capture requires the user's permission to run/import the game. Do not produce screenshots or a scored visual verdict under the current no-runtime instruction.

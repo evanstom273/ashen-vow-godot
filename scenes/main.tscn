@@ -28,10 +28,12 @@ position = Vector2(-420, 130)
 scale = Vector2(1, 1)
 
 [node name="AshenShrine" parent="Actors" unique_id=856659894 instance=ExtResource("4")]
+checkpoint_id = &"courtyard_shrine"
 position = Vector2(-200, 260)
 scale = Vector2(1, 1)
 
 [node name="CourtSentinel" parent="Actors" unique_id=1527484995 instance=ExtResource("5")]
+encounter_id = &"courtyard_sentinel"
 position = Vector2(240, -95)
 scale = Vector2(1, 1)
 collision_layer = 2

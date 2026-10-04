@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://scenes/sentinel.tscn" id="enemy"]
+[ext_resource type="Resource" path="res://data/enemies/ash_cantor.tres" id="definition"]
+[node name="ash_cantor" instance=ExtResource("enemy")]
+use_world_navigation = true
+definition = ExtResource("definition")
+

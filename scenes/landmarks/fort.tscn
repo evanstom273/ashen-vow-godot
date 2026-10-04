@@ -9,6 +9,11 @@
 [ext_resource type="PackedScene" path="res://scenes/props/approach_fort.tscn" id="approach"]
 [ext_resource type="PackedScene" path="res://scenes/props/approach_inner_hall.tscn" id="hall_approach"]
 
+[ext_resource type="PackedScene" path="res://scenes/props/authored_reward.tscn" id="discovery_scene"]
+[ext_resource type="Resource" path="res://data/progression/reward_fort.tres" id="discovery_reward"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="checkpoint_scene"]
+[ext_resource type="Resource" path="res://data/progression/shrine_fort.tres" id="checkpoint_definition"]
+
 [node name="fort" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("landmark")
@@ -193,11 +198,24 @@ solid = true
 variation = 605
 
 [node name="greywatch_warden1" parent="." instance=ExtResource("placed_enemy")]
+encounter_id = &"greywatch_outer_warden"
 position = Vector2(-1280, 1024)
 
 [node name="greywatch_warden2" parent="." instance=ExtResource("placed_enemy")]
+encounter_id = &"greywatch_inner_warden"
 position = Vector2(1280, -512)
 
 [node name="ApproachDressing" parent="." instance=ExtResource("approach")]
 
 [node name="HallApproachDressing" parent="." instance=ExtResource("hall_approach")]
+
+
+[node name="AuthoredDiscovery" parent="." instance=ExtResource("discovery_scene")]
+position = Vector2(0, 896)
+reward_id = &"fort_reliquary"
+definition = ExtResource("discovery_reward")
+
+[node name="ApproachShrine" parent="." instance=ExtResource("checkpoint_scene")]
+position = Vector2(-4608, 768)
+checkpoint_id = &"fort_approach"
+definition = ExtResource("checkpoint_definition")

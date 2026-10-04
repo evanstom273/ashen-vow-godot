@@ -55,13 +55,20 @@
 [ext_resource type="Script" uid="uid://dqmsswnow4cjr" path="res://scripts/resources/weapon_loadout_definition.gd" id="weapon_loadout_type"]
 [ext_resource type="Script" uid="uid://df06q837twfw2" path="res://scripts/resources/weapon_definition.gd" id="weapon_type"]
 
+[ext_resource type="Resource" path="res://data/spells/glimmer.tres" id="basic_glimmer"]
+[ext_resource type="Resource" path="res://data/spells/votive_spark.tres" id="basic_votive"]
+
+[ext_resource type="Resource" path="res://data/enemies/grave_warden.tres" id="grave_warden"]
+[ext_resource type="Resource" path="res://data/enemies/greywatch_warden.tres" id="greywatch_warden"]
+[ext_resource type="Resource" path="res://data/enemies/thorn_stalker.tres" id="thorn_stalker"]
+[ext_resource type="Resource" path="res://data/enemies/ash_cantor.tres" id="ash_cantor"]
 [resource]
 resource_name = "Ashen Vow - Game Data"
 script = ExtResource("script")
 classes = Array[ExtResource("class_type")]([ExtResource("class")])
 weapons = Array[ExtResource("weapon_type")]([ExtResource("sword"), ExtResource("blade"), ExtResource("dagger"), ExtResource("shield"), ExtResource("mace"), ExtResource("spear"), ExtResource("greatblade"), ExtResource("staff"), ExtResource("seal"), ExtResource("wand")])
-enemies = Array[ExtResource("enemy_type")]([ExtResource("sentinel"), ExtResource("dummy")])
-spells = Array[ExtResource("spell_type")]([ExtResource("spell_ember"), ExtResource("spell_cinder"), ExtResource("spell_mending"), ExtResource("spell_star"), ExtResource("spell_vow"), ExtResource("delivery_beam"), ExtResource("delivery_imbue"), ExtResource("delivery_cone"), ExtResource("delivery_wave"), ExtResource("delivery_zone"), ExtResource("delivery_chain"), ExtResource("delivery_orbiting"), ExtResource("delivery_trap"), ExtResource("delivery_barrage"), ExtResource("delivery_summon"), ExtResource("delivery_aura"), ExtResource("delivery_dash"), ExtResource("delivery_tether"), ExtResource("blackflame_bond"), ExtResource("34_v7yij")])
+enemies = Array[ExtResource("enemy_type")]([ExtResource("sentinel"), ExtResource("dummy"), ExtResource("grave_warden"), ExtResource("greywatch_warden"), ExtResource("thorn_stalker"), ExtResource("ash_cantor")])
+spells = Array[ExtResource("spell_type")]([ExtResource("spell_ember"), ExtResource("spell_cinder"), ExtResource("spell_mending"), ExtResource("spell_star"), ExtResource("spell_vow"), ExtResource("delivery_beam"), ExtResource("delivery_imbue"), ExtResource("delivery_cone"), ExtResource("delivery_wave"), ExtResource("delivery_zone"), ExtResource("delivery_chain"), ExtResource("delivery_orbiting"), ExtResource("delivery_trap"), ExtResource("delivery_barrage"), ExtResource("delivery_summon"), ExtResource("delivery_aura"), ExtResource("delivery_dash"), ExtResource("delivery_tether"), ExtResource("blackflame_bond"), ExtResource("34_v7yij"), ExtResource("basic_glimmer"), ExtResource("basic_votive")])
 utilities = Array[ExtResource("utility_type")]([ExtResource("flask"), ExtResource("tonic"), ExtResource("raven_utility")])
 weapon_loadouts = Array[ExtResource("weapon_loadout_type")]([ExtResource("left_loadout"), ExtResource("right_loadout")])
 spell_loadouts = Array[ExtResource("spell_loadout_type")]([ExtResource("spell_loadout")])

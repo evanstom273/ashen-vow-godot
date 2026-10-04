@@ -1,0 +1,192 @@
+ASHEN VOW — LIVE RESOURCE TUNING
+2026-10-04 | Source inspection only; NOT playtested balance.
+
+Basis: literal saved assignments + declared script defaults. See LIVE_TUNING.json
+for all nested offensive payloads, requirements, scaling and child deliveries.
+Computed constructor/enum expressions are retained as source strings, not evaluated.
+
+UNITS
+128u = 1 metre. Human 512/768u/s (4/6m/s); Raven 1024/1536u/s (8/12m/s).
+Melee reach/radius/lunge/recoil are authored actor units, converted once by the
+receiver/controller using actor scale (current region actor scale 4). Do not apply
+that multiplier to delivery geometry: all delivery lengths/speeds below are world
+units. Art textures, sockets, shadow bounds and VFX extents never define damage.
+
+PLAYER WEAPONS (10, including retained Sentinel Blade template)
+
+Ashen Dagger [ashen_dagger] — Dagger
+  light: 110 physical; stamina 12; windup/active/recovery 0.06/0.07/0.12s; reach/radius 34/15 actor units; arc 70deg; move x0.15; poise 30; recoil 180; charge threshold 0.3s.
+  charged: 145 physical; stamina 24; windup/active/recovery 0.12/0.1/0.24s; reach/radius 36/14 actor units; arc 70deg; move x0.15; poise 28; recoil 180; charge threshold 0.45s.
+
+Ashen Seal [ashen_seal] — Seal; catalyst
+  light: 110 physical; stamina 18; windup/active/recovery 0.1/0.1/0.18s; reach/radius 38/26 actor units; arc 112deg; move x0.15; poise 48; recoil 240; charge threshold 0.45s.
+  charged: 110 physical; stamina 34; windup/active/recovery 0.24/0.14/0.34s; reach/radius 44/30 actor units; arc 112deg; move x0.15; poise 90; recoil 420; charge threshold 0.45s.
+  Basic: Votive Spark; virtual, no memory, unlimited uses.
+
+Court Shield Bash [court_shield_bash] — Shield
+  light: 110 physical; stamina 18; windup/active/recovery 0.1/0.1/0.18s; reach/radius 38/26 actor units; arc 112deg; move x0.15; poise 48; recoil 240; charge threshold 0.45s.
+  charged: 110 physical; stamina 34; windup/active/recovery 0.24/0.14/0.34s; reach/radius 44/30 actor units; arc 112deg; move x0.15; poise 90; recoil 420; charge threshold 0.45s.
+
+Court Staff [court_staff] — Staff; catalyst
+  light: 110 physical; stamina 20; windup/active/recovery 0.1/0.1/0.18s; reach/radius 58/18 actor units; arc 68deg; move x0.15; poise 30; recoil 180; charge threshold 0.45s.
+  charged: 155 physical; stamina 28; windup/active/recovery 0.24/0.14/0.35s; reach/radius 64/20 actor units; arc 65deg; move x0.15; poise 40; recoil 180; charge threshold 0.45s.
+  Basic: Glimmer; virtual, no memory, unlimited uses.
+
+Heavy Iron Mace [heavy_iron_mace] — Hammer
+  light: 110 physical; stamina 27; windup/active/recovery 0.2/0.1/0.3s; reach/radius 48/27 actor units; arc 112deg; move x0.15; poise 58; recoil 180; charge threshold 0.45s.
+  charged: 210 physical; stamina 40; windup/active/recovery 0.32/0.16/0.48s; reach/radius 52/29 actor units; arc 105deg; move x0.15; poise 85; recoil 180; charge threshold 0.45s.
+
+Pilgrim Spear [pilgrim_spear] — Spear
+  light: 110 physical; stamina 20; windup/active/recovery 0.1/0.1/0.18s; reach/radius 58/18 actor units; arc 68deg; move x0.15; poise 30; recoil 180; charge threshold 0.45s.
+  charged: 195 physical; stamina 30; windup/active/recovery 0.24/0.14/0.35s; reach/radius 70/18 actor units; arc 55deg; move x0.15; poise 45; recoil 180; charge threshold 0.45s.
+
+Pilgrim Wand [pilgrim_wand] — Wand; catalyst
+  light: 110 physical; stamina 12; windup/active/recovery 0.06/0.07/0.12s; reach/radius 34/15 actor units; arc 70deg; move x0.15; poise 30; recoil 180; charge threshold 0.3s.
+  charged: 115 physical; stamina 20; windup/active/recovery 0.14/0.1/0.24s; reach/radius 36/16 actor units; arc 75deg; move x0.15; poise 25; recoil 180; charge threshold 0.45s.
+  Basic: Glimmer; virtual, no memory, unlimited uses.
+
+Sentinel Blade [sentinel_blade] — Greatsword
+  light: 145 physical; stamina 32; windup/active/recovery 0.65/0.12/0.85s; reach/radius 78/25 actor units; arc 112deg; move x0.15; poise 45; recoil 180; charge threshold 0.45s.
+  charged: 235 physical; stamina 42; windup/active/recovery 0.4/0.16/0.55s; reach/radius 78/25 actor units; arc 112deg; move x0.15; poise 65; recoil 180; charge threshold 0.45s.
+
+Sentinel Greatblade [sentinel_greatblade] — Greatsword
+  light: 110 physical; stamina 32; windup/active/recovery 0.2/0.1/0.36s; reach/radius 62/32 actor units; arc 112deg; move x0.15; poise 52; recoil 180; charge threshold 0.45s.
+  charged: 240 physical; stamina 44; windup/active/recovery 0.38/0.18/0.55s; reach/radius 70/34 actor units; arc 138deg; move x0.15; poise 75; recoil 180; charge threshold 0.45s.
+
+Wanderer Sword [wanderer_sword] — Straight sword
+  light: 110 physical; stamina 22; windup/active/recovery 0.1/0.1/0.18s; reach/radius 42/22 actor units; arc 112deg; move x0.15; poise 30; recoil 180; charge threshold 0.45s.
+  charged: 185 physical; stamina 32; windup/active/recovery 0.24/0.16/0.38s; reach/radius 48/24 actor units; arc 112deg; move x0.15; poise 45; recoil 180; charge threshold 0.45s.
+
+SPELLS (22: 20 retained named spells + two catalyst basics)
+Uses are current authored starting/max charges. One channel commits one use.
+Basic policy ignores stored charge/memory numbers: runtime uses -1, memory zero.
+Damage is per contact/tick, BEFORE attributes/defence/upgrades. Duration is a
+Resource default on instantaneous deliveries, not a claim they persist 6 seconds.
+
+Astral Edge [delivery_imbue] — imbue
+  Uses 10/10; stamina 18; W/A/R 0.4/0.1/0.3s.
+  payload 35 magic; cast_range 1600u (12.50m); duration=15; tick_interval=0.3.
+
+Blackflame Bond [blackflame_bond] — tether
+  Uses 10/10; stamina 20; W/A/R 0.3/0.1/0.3s.
+  payload 120 fire; break_range 1280u (10.00m); cast_range 1280u (10.00m); duration=2; tick_interval=0.05.
+
+Blackflame Shard [blackflame_shard] — projectile
+  Uses 10/10; stamina 20; W/A/R 0.3/0.1/0.3s.
+  payload 120 fire; radius 24u (0.19m); speed 2080u (16.25m/s); cast_range 1600u (12.50m); duration=2; tick_interval=0.3; homing=false; pierce_count=0.
+
+Cinder Field [delivery_zone] — zone
+  Uses 10/10; stamina 22; W/A/R 0.4/0.1/0.3s.
+  payload 30 fire; radius 360u (2.81m); cast_range 1600u (12.50m); duration=6; tick_interval=0.5; initial_delay=0.3.
+
+Cinder Lance [cinder_lance] — projectile
+  Uses 16/16; stamina 16; W/A/R 0.22/0.1/0.25s.
+  payload 180 fire; radius 24u (0.19m); speed 1760u (13.75m/s); cast_range 1600u (12.50m); duration=2; tick_interval=0.3; homing=false; pierce_count=0.
+
+Comet Step [delivery_dash] — dash
+  Uses 14/14; stamina 16; W/A/R 0.12/0.1/0.25s.
+  payload 120 magic; distance 840u (6.56m); cast_range 1600u (12.50m); duration=0.3; tick_interval=0.3.
+
+Ember Wave [ember_wave] — area
+  Uses 10/10; stamina 22; W/A/R 0.22/0.1/0.25s.
+  payload 160 fire; radius 420u (3.28m); cast_range 1600u (12.50m); duration=6; tick_interval=0.3.
+
+Falling Stars [delivery_barrage] — barrage
+  Uses 8/8; stamina 28; W/A/R 0.4/0.1/0.3s.
+  payload 110 magic; scatter_radius 400u (3.13m); impact_radius 140u (1.09m); cast_range 1600u (12.50m); duration=6; tick_interval=0.3; count=6.
+
+Furnace Breath [delivery_cone] — cone
+  Uses 12/12; stamina 24; W/A/R 0.3/0.1/0.3s.
+  payload 45 fire; radius 640u (5.00m); cast_range 1600u (12.50m); duration=2; tick_interval=0.25; angle_degrees=70.
+
+Glimmer [glimmer] — projectile
+  Uses unlimited; stamina 8; W/A/R 0.18/0.08/0.24s.
+  payload 50 magic; radius 14u (0.11m); speed 1840u (14.38m/s); cast_range 1600u (12.50m); duration=1.1; tick_interval=0.3; homing=false; pierce_count=0.
+
+Mending Halo [delivery_aura] — aura
+  Uses 8/8; stamina 22; W/A/R 0.22/0.1/0.25s.
+  payload none; radius 360u (2.81m); cast_range 1600u (12.50m); duration=6; tick_interval=0.5.
+
+Mending Light [mending_light] — self
+  Uses 8/8; stamina 18; W/A/R 0.55/0.1/0.25s.
+  payload none; cast_range 1600u (12.50m); duration=6; tick_interval=0.3; health_restore=180.
+
+Moon Arc [delivery_wave] — wave
+  Uses 14/14; stamina 18; W/A/R 0.22/0.1/0.25s.
+  payload 170 magic; width 480u (3.75m); distance 1680u (13.13m); speed 1120u (8.75m/s); thickness 64u (0.50m); cast_range 1600u (12.50m); duration=6; tick_interval=0.3.
+
+Prismatic Ray [delivery_beam] — beam
+  Uses 12/12; stamina 22; W/A/R 0.3/0.1/0.3s.
+  payload 50 magic; length 1520u (11.88m); width 72u (0.56m); cast_range 1600u (12.50m); duration=2; tick_interval=0.25.
+
+Rune Mine [delivery_trap] — trap
+  Uses 10/10; stamina 18; W/A/R 0.4/0.1/0.3s.
+  payload 220 magic; trigger_radius 180u (1.41m); cast_range 1600u (12.50m); duration=15; tick_interval=0.3; arming_delay=0.6.
+
+Soul Thread [delivery_tether] — tether
+  Uses 10/10; stamina 20; W/A/R 0.3/0.1/0.3s.
+  payload 35 magic; break_range 1280u (10.00m); cast_range 1600u (12.50m); duration=2; tick_interval=0.25.
+
+Star Shard [star_shard] — projectile
+  Uses 20/20; stamina 12; W/A/R 0.22/0.1/0.25s.
+  payload 145 magic; radius 20u (0.16m); speed 2080u (16.25m/s); cast_range 1600u (12.50m); duration=2; tick_interval=0.3; homing=false; pierce_count=0.
+
+Storm Link [delivery_chain] — chain
+  Uses 12/12; stamina 20; W/A/R 0.22/0.1/0.25s.
+  payload 160 lightning; jump_radius 720u (5.63m); cast_range 1600u (12.50m); duration=6; tick_interval=0.3; target_count=4; jump_delay=0.12; damage_falloff=0.8.
+
+Votive Spark [votive_spark] — projectile
+  Uses unlimited; stamina 8; W/A/R 0.18/0.08/0.24s.
+  payload 48 holy; radius 14u (0.11m); speed 1840u (14.38m/s); cast_range 1600u (12.50m); duration=1.1; tick_interval=0.3; homing=false; pierce_count=0.
+
+Vow Spear [vow_spear] — projectile
+  Uses 10/10; stamina 22; W/A/R 0.22/0.1/0.25s.
+  payload 240 holy; radius 40u (0.31m); speed 1520u (11.88m/s); cast_range 1600u (12.50m); duration=2; tick_interval=0.3; homing=false; pierce_count=1.
+
+Vowed Wisp [delivery_summon] — summon
+  Uses 8/8; stamina 26; W/A/R 0.4/0.1/0.3s.
+  payload 55 holy; cast_range 1600u (12.50m); duration=12; tick_interval=0.3; count=1.
+
+Watchful Shards [delivery_orbiting] — orbiting
+  Uses 12/12; stamina 20; W/A/R 0.22/0.1/0.25s.
+  payload 80 magic; cast_range 1600u (12.50m); duration=12; tick_interval=0.3; count=4; automatic=false.
+
+SPECIAL CASES
+Blackflame normal fire=120 on accepted application; percentage burn remains
+2% max HP at Arcane10 to 5% at60, 0.75–1.25s, diminishing returns, capped60.
+Exact percentage packets and fixed healing/imbue amounts do not gain upgrades.
+Astral Edge adds35 magic/hit for15s to its per-weapon instance.
+Mending Light heals180. Mending Halo restores15/tick every0.5s for6s.
+Soul Thread has140 magic completion payload in addition to its periodic35.
+Vowed Wisp: child holy55;Watchful Shards:4 projectiles,80 magic per shard.
+Inspect child resources in JSON for scheduling/geometry beyond the top-level table.
+
+ENEMIES
+
+Ash Cantor [ash_cantor]: base HP 300; poise 25; body approach 78 actor units/s.
+  ash_cantor_strike: 65 fire; range 2–12m; windup/active/recovery 0.8/0.2/0.9; cooldown 1s.
+
+Court Sentinel [court_sentinel]: base HP 560; poise 60; body approach 100 actor units/s.
+  Retained weapon/receiver contract; no new move-set override.
+
+Grave Warden [grave_warden]: base HP 430; poise 45; body approach 85 actor units/s.
+  grave_warden_strike: 100 physical; range 0–2.34375m; windup/active/recovery 0.55/0.2/0.75; cooldown 1s.
+
+Greywatch Warden [greywatch_warden]: base HP 380; poise 45; body approach 100 actor units/s.
+  greywatch_warden_strike: 85 physical; range 0–3.125m; windup/active/recovery 0.45/0.2/0.55; cooldown 1s.
+
+Thorn Stalker [thorn_stalker]: base HP 260; poise 25; body approach 145 actor units/s.
+  thorn_stalker_strike: 55 physical; range 0–1.5m; windup/active/recovery 0.25/0.2/0.42; cooldown 0.25s.
+
+Training Effigy [training_effigy]: base HP 1000; poise 1; body approach 0 actor units/s.
+  Retained weapon/receiver contract; no new move-set override.
+
+STATUSES / PROGRESSION
+Poison:100 default threshold,10s periodic12 physical/s. Bleed:100 instant physical
+proc. Frost:6s movement x0.7, physical/magic defence -10. Definitions include
+resistance multipliers/immunity, decay, retrigger delay, tags and icon/VFX assets.
+Level cost:180 +45*(level-1) +8*(level-1)^2. Upgrade cap+10; ordinary damage
++8%/rank; next-rank Embers120*1.55^(rank-1); shard cost1+floor((rank-1)/3).
+Free respec redistributes earned points, class floors retained; no Ember refund.
+These are initial content values, not measured balance claims.
+

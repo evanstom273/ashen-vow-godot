@@ -15,6 +15,7 @@ func _ready() -> void:
 	# Above ground actors/architecture, below the existing airborne presentation (6).
 	z_as_relative = false
 	z_index = 5
+	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 
 func _polygon(points: PackedVector2Array, tint: Color) -> void:
 	if points.size() >= 3 and not Geometry2D.triangulate_polygon(points).is_empty():
@@ -29,6 +30,10 @@ func _draw() -> void:
 	for index in definition.panels_metres.size():
 		var tint: Color = definition.panel_colors[index] if index < definition.panel_colors.size() else definition.slate_color
 		_polygon(definition.panels_metres[index], tint)
+	if definition.slate_texture != null and not Geometry2D.triangulate_polygon(outline).is_empty():
+		var coordinates := PackedVector2Array()
+		for point: Vector2 in outline: coordinates.append(point / maxf(0.25, definition.texture_metres))
+		draw_polygon(outline, PackedColorArray([Color(1, 1, 1, 0.32)]), coordinates, definition.slate_texture)
 	var bounds := Rect2(outline[0], Vector2.ZERO)
 	for point: Vector2 in outline: bounds = bounds.expand(point)
 	# Clip horizontal slate courses against the authored silhouette; handles concavity.

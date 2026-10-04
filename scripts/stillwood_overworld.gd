@@ -25,6 +25,7 @@ var blocked_area_estimate: float = 0.0
 const DETAIL_CHUNKS_PER_FRAME: int = 2
 const DETAIL_BUDGET_USEC: int = 2500
 var _detail_queue: Array[Node2D] = []
+var _detail_cache: Array[Node2D] = []
 var _preview_dressing: Array[Dictionary] = []
 var _overview: Node2D
 var _detail_builds: int = 0
@@ -47,6 +48,9 @@ func _process(_delta: float) -> void:
 		var chunk: Node2D = pending
 		if chunk.is_queued_for_deletion() or not chunk.is_inside_tree(): continue
 		if not bool(chunk.get("detail_wanted")): continue
+		if not _reserve_detail(chunk):
+			_detail_queue.append(chunk)
+			break # Low-detail ground stays visible if the view exceeds the budget.
 		var complete: bool = bool(chunk.call("prepare_mesh"))
 		if not complete: _detail_queue.append(chunk)
 		else: _detail_builds += 1
@@ -63,6 +67,23 @@ func _process(_delta: float) -> void:
 		if not preview and not _first_detail_batch_reported and _detail_builds>0:
 			_first_detail_batch_reported = true
 			print("[Stillwood] Initial nearby terrain meshes: ",_detail_builds,"; preparation CPU time: ",_detail_build_usec/1000.0," ms (spread across frames)")
+
+func _reserve_detail(chunk: Node2D) -> bool:
+	if _detail_cache.has(chunk): return true
+	for index in range(_detail_cache.size() - 1, -1, -1):
+		if not is_instance_valid(_detail_cache[index]): _detail_cache.remove_at(index)
+	var capacity: int = maxi(16, definition.scatter.detail_cache_chunks)
+	if _detail_cache.size() >= capacity:
+		var victim: int = -1
+		for index in _detail_cache.size():
+			if not bool(_detail_cache[index].get("detail_wanted")):
+				victim = index
+				break
+		if victim < 0: return false
+		_detail_cache[victim].call("discard_detail")
+		_detail_cache.remove_at(victim)
+	_detail_cache.append(chunk)
+	return true
 
 func build(camp: Node2D) -> void:
 	preview = Engine.is_editor_hint()
@@ -100,6 +121,7 @@ func build(camp: Node2D) -> void:
 
 func clear_generated() -> void:
 	_detail_queue.clear()
+	_detail_cache.clear()
 	_preview_dressing.clear()
 	set_process(false)
 	if is_instance_valid(generated_actors):
@@ -109,6 +131,7 @@ func clear_generated() -> void:
 
 func _exit_tree() -> void:
 	_detail_queue.clear()
+	_detail_cache.clear()
 	_preview_dressing.clear()
 	if is_instance_valid(generated_actors): generated_actors.queue_free()
 

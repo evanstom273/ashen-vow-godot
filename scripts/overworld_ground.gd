@@ -71,10 +71,24 @@ func prepare_mesh() -> bool:
 		cover_art.visible = detail_wanted
 		add_child(cover_art)
 	_cover_builder = null
-	cover_contexts.clear()
-	nearby_trees.clear()
+	# Keep the small indexed authoring inputs so a discarded cosmetic mesh can
+	# regenerate identically. Neither this cache nor eviction owns world collision.
 	_detail_complete = true
 	return true
+
+func discard_detail() -> void:
+	if detail_wanted: return
+	if is_instance_valid(cover_art):
+		remove_child(cover_art)
+		cover_art.queue_free()
+	cover_art = null
+	detail_mesh = null
+	_cover_builder = null
+	_detail_complete = false
+	_vertices = PackedVector2Array()
+	_colors = PackedColorArray()
+	_indices = PackedInt32Array()
+	queue_redraw()
 
 func _prepare_base() -> void:
 	# Called by the region's bounded work queue, never from _draw().

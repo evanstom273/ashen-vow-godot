@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="StatusDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/status_definition.gd" id="status"]
+[ext_resource type="Script" path="res://scripts/resources/spell_effect_definition.gd" id="effect"]
+[ext_resource type="Script" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" path="res://scripts/resources/defence_profile.gd" id="defence"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/status_bleed.svg" id="icon"]
+[ext_resource type="Resource" path="res://data/statuses/bleed_vfx.tres" id="vfx"]
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 100.0
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+poise_damage = 0.0
+knockback = 0.0
+hit_stop = 0.0
+camera_shake = 0.0
+[sub_resource type="Resource" id="Defence"]
+script = ExtResource("defence")
+physical = 0.0
+magic = 0.0
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("effect")
+id = &"bleed"
+tags = Array[StringName]([&"bleed"])
+negative = true
+duration = 0.0
+interval = 1.0
+movement_multiplier = 1
+
+
+[resource]
+script = ExtResource("status")
+vfx = ExtResource("vfx")
+icon = ExtResource("icon")
+id = &"bleed"
+display_name = "Blood Loss"
+color = Color(0.6823529411764706, 0.2196078431372549, 0.27058823529411763, 1)
+threshold = 100.0
+retrigger_delay = 2.0
+tags = Array[StringName]([&"bleed"])
+triggered_attack = SubResource("Attack")
+

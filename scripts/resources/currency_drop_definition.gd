@@ -15,9 +15,12 @@ enum DeliveryMode { IMMEDIATE, PICKUP }
 @export var icon: Texture2D
 @export var color: Color = Color("e6b968")
 @export var recovery_message: String = "Embers recovered"
+@export_group("Legacy metadata (data only)")
+## Session recovery always replaces the player's previous drop. World/enemy rewards
+## are independent; this retained serialization field no longer controls ownership.
 @export var replace_previous_drop: bool = true
 
 func roll_amount() -> int:
     var upper: int = maximum_amount if maximum_amount > 0 else minimum_amount
-    var amount: int = fixed_amount if upper <= minimum_amount else randi_range(minimum_amount, upper)
+    var amount: int = randi_range(minimum_amount, maxi(minimum_amount, upper)) if upper > 0 else fixed_amount
     return maxi(0, roundi(amount * amount_multiplier))

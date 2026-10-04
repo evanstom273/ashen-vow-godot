@@ -62,15 +62,16 @@ func request(profile: CombatFeedbackDefinition, at: Vector2, direction: Vector2,
 	if events.size() >= 8: events.pop_front()
 	events.append({"profile": profile, "age": 0.0, "scale": scale, "direction": direction.normalized(), "recurring": recurring})
 	if not recurring:
-		if not profile.sound_key.is_empty(): Feedback.play(String(profile.sound_key), at, profile.sound_volume_db)
-		if not profile.rumble_key.is_empty(): Feedback.play(String(profile.rumble_key), at, profile.sound_volume_db)
+		if not profile.sound_key.is_empty(): Feedback.play(String(profile.sound_key), at, profile.sound_volume_db, origin, elevation)
+		if not profile.rumble_key.is_empty(): Feedback.play(String(profile.rumble_key), at, profile.sound_volume_db, origin, elevation)
 		if is_instance_valid(source) and source.get("hit_stop") != null:
 			source.set("hit_stop", maxf(float(source.get("hit_stop")), profile.hit_stop))
 		if is_instance_valid(receiver) and receiver.is_in_group("player"):
 			hud_strength = maxf(hud_strength, profile.hud_response * (0.3 if Feedback.reduced_effects else 1.0))
 		var reduction: float = 0.3 if Feedback.reduced_effects else 1.0
 		for device: int in Input.get_connected_joypads():
-			Input.start_joy_vibration(device, profile.vibration_low * reduction, profile.vibration_high * reduction, profile.vibration_duration)
+			if bool(GameSettings.values.vibration):
+				Input.start_joy_vibration(device, profile.vibration_low * reduction, profile.vibration_high * reduction, profile.vibration_duration)
 
 func _process(delta: float) -> void:
 	var current: Node = get_tree().current_scene

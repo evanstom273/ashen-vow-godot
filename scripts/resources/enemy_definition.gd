@@ -1,6 +1,7 @@
 @tool
 class_name EnemyDefinition
 extends Resource
+@export var first_defeat_reward: RewardDefinition
 enum HitSurface { FLESH, METAL, ARMORED_FLESH, WOOD, STONE }
 @export var hit_surface: HitSurface = HitSurface.ARMORED_FLESH
 @export var id: StringName = &"enemy"
@@ -9,6 +10,10 @@ enum HitSurface { FLESH, METAL, ARMORED_FLESH, WOOD, STONE }
 @export var attributes: AttributeStats
 @export var vitals: VitalStats
 @export var weapon: WeaponDefinition
+@export var illustrated_atlas: Texture2D = preload("res://assets/illustrated/sentinel_rig.svg")
+@export var perception: EnemyPerception
+@export var moves: Array[EnemyMove] = []
+@export var preferred_distance_metres: float = 0.0
 @export_group("AI (authored actor units)")
 ## Distances and speeds are converted once by the actor's world scale.
 ## Standard actors are 4x; do not pre-multiply these values for the forest scene.

@@ -3,6 +3,9 @@ extends InteractableEntity
 
 @export var definition: CurrencyDropDefinition
 @export var amount: int = 0
+## Separate ownership: enemy/world rewards must never be replaced by player death.
+var is_player_recovery: bool = false
+@export var reward_id: String = ""
 var pulse: float = 0.0
 
 func _ready() -> void:
@@ -15,16 +18,21 @@ func _ready() -> void:
     add_child(artwork)
     artwork.global_scale = Vector2.ONE * WorldScale.ART_SCALE
     artwork.draw.connect(_draw_art.bind(artwork))
+    if not is_player_recovery: GameSession.call_deferred("register_currency_pickup", self)
 
 func can_interact(player: Node) -> bool:
-    return amount > 0 and Elevation.compatible(self, player) and global_position.distance_to(player.global_position) <= definition.pickup_radius
+    return amount > 0 and super.can_interact(player) and global_position.distance_to(player.global_position) <= definition.pickup_radius
 
 func get_interaction_prompt() -> String:
     return "Recover " + str(amount) + " " + definition.display_name
 
 func interact(player: Node) -> void:
     if not can_interact(player): return
+    if is_player_recovery:
+        GameSession.recover(self)
+        return
     player.add_currency(amount, definition.recovery_message)
+    GameSession.collect_currency_pickup(reward_id)
     amount = 0
     queue_free()
 

@@ -10,6 +10,7 @@ extends Node2D
 @export_group("Environmental dressing")
 @export var ground_cover: GroundCoverProfile
 @export var cover_bounds_metres := Rect2(-10, -10, 20, 20)
+@export var floor_texture: Texture2D = preload("res://assets/illustrated/masonry_floor.svg")
 @export_group("Footprints")
 @export var reservations_metres: Array[Rect2] = []
 @export var floors_metres: Array[Rect2] = []:
@@ -39,6 +40,7 @@ func _ready() -> void:
 	floor_art = Node2D.new()
 	floor_art.name = "GeneratedFloorArt"
 	floor_art.z_index = -15
+	floor_art.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	floor_art.draw.connect(_draw_floor)
 	add_child(floor_art)
 
@@ -50,6 +52,12 @@ func _draw_floor() -> void:
 	for floor_rect: Rect2 in floors_metres:
 		floor_art.draw_rect(floor_rect.grow(0.3),Color("29352e"))
 		floor_art.draw_rect(floor_rect,Color("515548"))
+		if floor_texture != null:
+			var polygon: PackedVector2Array = RegionGeometry.rect_polygon(floor_rect)
+			var coordinates := PackedVector2Array()
+			for point: Vector2 in polygon: coordinates.append(point / 2.0)
+			floor_art.draw_polygon(polygon, PackedColorArray([Color.WHITE]), coordinates, floor_texture)
+			continue
 		for y in range(ceili(floor_rect.position.y),floori(floor_rect.end.y)):
 			for x in range(ceili(floor_rect.position.x),floori(floor_rect.end.x)):
 				var tint := Color("5e6353") if posmod(x*7+y*13,5) == 0 else Color("444d41")

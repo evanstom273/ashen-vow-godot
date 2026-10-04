@@ -72,16 +72,13 @@ func _collide() -> bool:
         var target: Node = result.collider
         if target == source: continue
         if target.has_method("is_targetable") and not target.is_targetable(): continue
-        var previous_health: Variant = target.get("health")
+        var receiver: bool = target.has_method("receive_hit")
+        var outcome: HitResult = HitResult.reject(&"world_geometry")
         if target.has_method("receive_hit"):
-            target.receive_hit(attack, attacker_stats, source)
-        else:
-            if target.has_method("take_damage"):
-                target.take_damage(attack.health_damage(attacker_stats), source)
-        var damaged: bool = previous_health != null and target.get("health") < previous_health
-        if previous_health == null:
+            outcome = HitRequest.deliver(target as Node2D, attack, attacker_stats, source)
+        if not receiver:
             Feedback.hit_effect(global_position, source, EnemyDefinition.HitSurface.STONE, attack)
-        _finish(damaged or previous_health == null)
+        _finish(outcome.accepted or not receiver)
         return true
     return false
 

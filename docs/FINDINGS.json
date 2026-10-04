@@ -1,0 +1,390 @@
+{
+  "document": "Ashen Vow rebuild findings register",
+  "date": "2026-10-04",
+  "baseline": "d151e70b49f7304281378dc3c3373fed013d141e",
+  "status_language": {
+    "implemented": "Connected source/resources/scenes, statically inspected; no runtime claim.",
+    "verification_pending": "Needs explicit permission and actual runtime/render/profiler evidence."
+  },
+  "verification": "Source/resource/reference/diff inspection only. No Godot imports, game launches, automated tests or runtime tests executed.",
+  "findings": [
+    {
+      "id": "P0-01",
+      "priority": "P0",
+      "finding": "Death-menu scene reload recreated class defaults and destroyed recovery state.",
+      "status": "implemented",
+      "change": "GameSession owns CharacterState; last-shrine respawn restores character records, validates landing and refills resources without resetting currency/equipment.",
+      "evidence": [
+        "scripts/game_session.gd",
+        "scripts/character_state.gd",
+        "scripts/court_hud.gd"
+      ],
+      "unverified": "Respawn/reload/failure paths and cross-scene restoration."
+    },
+    {
+      "id": "P0-02",
+      "priority": "P0",
+      "finding": "Player death deleted unrelated currency pickups and did not replace recovery on zero-currency death.",
+      "status": "implemented",
+      "change": "Player recovery has separate ownership; zero-currency death clears only prior recovery. Enemy/world rewards have independent persistent records.",
+      "evidence": [
+        "scripts/game_session.gd",
+        "scripts/currency_drop.gd"
+      ],
+      "unverified": "Two deaths, zero-Embers replacement, collection/save ordering."
+    },
+    {
+      "id": "P0-03",
+      "priority": "P0",
+      "finding": "Dead-player interaction could recover currency.",
+      "status": "implemented",
+      "change": "Shared can_world_interact gate rejects dead/unready/paused/committed-action/transformed actors; shrine, currency and authored rewards enforce it even through direct interact calls.",
+      "evidence": [
+        "scripts/player.gd",
+        "scripts/shrine.gd",
+        "scripts/currency_drop.gd",
+        "scripts/interactable.gd",
+        "scripts/authored_reward.gd"
+      ],
+      "unverified": "Direct and input-driven interactions during death/restore."
+    },
+    {
+      "id": "P0-04",
+      "priority": "P0",
+      "finding": "Invalid typed light fields and copied Sentinel charged configurations.",
+      "status": "implemented",
+      "change": "Repaired typed nulls and eight copied charged action resources individually. Added explicit sword damage to preserve existing behavior when new DamageProfiles default to zero.",
+      "evidence": [
+        "data/attacks/presentation/",
+        "data/attacks/sword_light.tres",
+        "data/damage/sword_damage.tres",
+        "scripts/resources/damage_profile.gd",
+        "docs/LIVE_TUNING.json"
+      ],
+      "unverified": "Parsing and actual weapon feel/balance. Existing light values are inventoried, not fully rebalanced."
+    },
+    {
+      "id": "P1-01",
+      "priority": "P1",
+      "finding": "Utility restoration ignored use time.",
+      "status": "implemented",
+      "change": "USING_UTILITY commits charge, releases restoration/VFX/audio at use_time, then recovery. Stagger/death cancels unreleased restoration without refund.",
+      "evidence": [
+        "scripts/player.gd",
+        "scripts/resources/utility_definition.gd"
+      ],
+      "unverified": "Movement, interruption boundaries and visual ownership."
+    },
+    {
+      "id": "P1-02",
+      "priority": "P1",
+      "finding": "Receiver acceptance was inferred inconsistently and effect-only contacts bypassed protection.",
+      "status": "implemented",
+      "change": "HitRequest/HitResult now connects receiver eligibility, damage and actor-owned status application, with explicit rejected/effect-only outcomes; accepted proc children bypass only their own fresh protection timer.",
+      "evidence": [
+        "scripts/combat/hit_request.gd",
+        "scripts/actor_statuses.gd",
+        "scripts/spell_effects.gd"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified."
+    },
+    {
+      "id": "P1-03",
+      "priority": "P1",
+      "finding": "Melee did not consistently check intervening geometry.",
+      "status": "implemented",
+      "change": "Player and Sentinel contacts use elevation-aware obstruction query before receiver application; artwork never supplies reach.",
+      "evidence": [
+        "scripts/combat/hit_request.gd",
+        "scripts/player.gd",
+        "scripts/sentinel.gd"
+      ],
+      "unverified": "Corners, walls, floors and both hands."
+    },
+    {
+      "id": "P1-04",
+      "priority": "P1",
+      "finding": "Spell memory counted entries and re-preparation could reset remaining uses.",
+      "status": "implemented",
+      "change": "Summed memory cost at class/application/menu/save boundaries; retained finite-use pool across preparation and saves.",
+      "evidence": [
+        "scripts/player.gd",
+        "scripts/shrine_loadout_menu.gd",
+        "scripts/game_session.gd"
+      ],
+      "unverified": "Unequal memory costs, empty slots, remove/re-add and reload."
+    },
+    {
+      "id": "P1-05",
+      "priority": "P1",
+      "finding": "Enemy name-only variants and permanent damage provocation lack planned pursuit/search behavior.",
+      "status": "implemented",
+      "evidence": [
+        "scripts/enemy_mind.gd",
+        "scripts/resources/enemy_move.gd",
+        "data/enemies/",
+        "scenes/enemies/"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified.",
+      "change": "Distinct grave/greywatch/stalker/cantor definitions and scenes share EnemyMind perception, local alerts, last-known search/return, authored moves and bounded windup tracking."
+    },
+    {
+      "id": "P1-06",
+      "priority": "P1",
+      "finding": "Global scans, path requests and navigation invalidation may cause avoidable work.",
+      "status": "implemented",
+      "change": "ActorRegistry spatial queries, bounded floor-aware elevation bookkeeping, route/stair graph, eight floor/clearance grid windows with 256-probe scheduling and a configurable 128-chunk cosmetic terrain cache are connected.",
+      "evidence": [
+        "scripts/actor_registry.gd",
+        "scripts/elevation.gd",
+        "scripts/navigation_routes.gd",
+        "scripts/spell_navigation.gd",
+        "scripts/stillwood_overworld.gd",
+        "scripts/overworld_ground.gd"
+      ],
+      "unverified": "Source risk reductions only; cold-load, fullscreen, memory growth, stair reachability and 60 FPS require profiling."
+    },
+    {
+      "id": "P1-07",
+      "priority": "P1",
+      "finding": "No persistent session/settings, ownership or acquisition.",
+      "status": "implemented",
+      "change": "Session/backup/settings/ownership now includes authored acquisition, levels/free earned-point respec/upgrades/materials, owned-loadout search, utilities, development catalogue isolation and magic-ready starter.",
+      "evidence": [
+        "scripts/game_session.gd",
+        "scripts/character_progression.gd",
+        "scripts/shrine_services.gd",
+        "scripts/authored_reward.gd",
+        "data/progression/"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified."
+    },
+    {
+      "id": "P1-08",
+      "priority": "P1",
+      "finding": "Raven entry was possible during combat.",
+      "status": "implemented",
+      "change": "Entry uses existing player combat predicate; combat does not force airborne reversion; landing/collision rules preserved.",
+      "evidence": [
+        "scripts/player_transformation.gd"
+      ],
+      "unverified": "Combat transitions, safe reversion, death/rest/reload."
+    },
+    {
+      "id": "P1-09",
+      "priority": "P1",
+      "finding": "Catalyst-provided unlimited basics and status buildup framework are not present.",
+      "status": "implemented",
+      "change": "Catalyst-owned unlimited virtual basics share the existing delivery system. Poison, bleed and frost implement buildup/resistance/decay/cleansing/icon feedback; existing finite spells and Blackflame are retained.",
+      "evidence": [
+        "scripts/player_spellbook.gd",
+        "scripts/actor_statuses.gd",
+        "data/spells/glimmer.tres",
+        "data/spells/votive_spark.tres",
+        "data/statuses/"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified."
+    },
+    {
+      "id": "P2-01",
+      "priority": "P2",
+      "finding": "UI modal ownership, persistent settings and controller map parity are incomplete.",
+      "status": "implemented",
+      "change": "Shared editable theme/settings scene, title/slots, controller floor-aware map, bindings/device prompts/UI scale, responsive scrollable owned-loadout/services and modal pause ownership are connected.",
+      "evidence": [
+        "data/ashen_theme.tres",
+        "scenes/settings_panel.tscn",
+        "scripts/ui/settings_panel.gd",
+        "scripts/ui_flow.gd",
+        "scripts/world_navigation_ui.gd",
+        "scripts/shrine_loadout_menu.gd"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified."
+    },
+    {
+      "id": "P2-02",
+      "priority": "P2",
+      "finding": "Acceptance source described obsolete courtyard behavior.",
+      "status": "implemented",
+      "change": "Obsolete acceptance script replaced with opt-in current data/contract checks; disposable current-scale combat lab and full manual matrix authored. NO tests/imports executed.",
+      "evidence": [
+        "tests/acceptance.gd",
+        "scenes/combat_lab.tscn",
+        "docs/VERIFICATION.txt"
+      ],
+      "unverified": "All authored checks and gameplay/manual/visual/performance acceptance remain unrun. Data checks are not full gameplay automation."
+    },
+    {
+      "id": "P2-03",
+      "priority": "P2",
+      "finding": "CI engine did not match the reported editor.",
+      "status": "implemented",
+      "change": "Pinned existing CI download/import configuration to Godot 4.7.1. Workflow not dispatched.",
+      "evidence": [
+        ".github/workflows/godot-validation.yml"
+      ],
+      "unverified": "Download/export/import success."
+    },
+    {
+      "id": "A-BASELINE",
+      "priority": "P0",
+      "finding": "Audit warned newer work was untracked.",
+      "status": "implemented",
+      "change": "Starting inspection found a clean 610-file baseline already committed at d151e70. No new snapshot commit was needed or created."
+    },
+    {
+      "id": "G-ART",
+      "priority": "Roadmap",
+      "finding": "Approved full illustrated SVG visual rebuild.",
+      "status": "implemented",
+      "change": "SVG eight-view/six-part actor rigs; ten socketed weapon scenes; illustrated trees/props/roofs/masonry/cliffs/shrine/fire/Raven/effigy/status art; layered shader compatibility and editor visuals connected.",
+      "evidence": [
+        "assets/illustrated/",
+        "scripts/illustrated_rig.gd",
+        "scripts/player_visuals.gd",
+        "scripts/forest_tree.gd",
+        "scripts/overworld_prop.gd",
+        "scripts/building_roof.gd",
+        "shaders/actor_surface.gdshader"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified."
+    },
+    {
+      "id": "H-AUDIO",
+      "priority": "Roadmap",
+      "finding": "Procedural audio/music expansion.",
+      "status": "implemented",
+      "change": "Inspector procedural sound/music definitions, cached synthesis, 18 prioritized effect voices and six music voices, exploration/combat blend, surface/context audio, floor attenuation and persisted volume.",
+      "evidence": [
+        "scripts/resources/procedural_sound_definition.gd",
+        "scripts/feedback.gd",
+        "scripts/procedural_music.gd",
+        "data/environment/audio_library.tres",
+        "data/environment/stillwood_music.tres"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified."
+    },
+    {
+      "id": "I-WORLD",
+      "priority": "Roadmap",
+      "finding": "World/interiors/navigation/climate integration.",
+      "status": "implemented",
+      "change": "Existing geography and manual transforms retained with illustrated presentation, discoveries, floor-aware coarse/local navigation and bounded cosmetic cache; pausable 24-minute day/clear/overcast/rain/interior shelter.",
+      "evidence": [
+        "scripts/navigation_routes.gd",
+        "scripts/world_climate.gd",
+        "scripts/stillwood_overworld.gd",
+        "scenes/landmarks/",
+        "data/environment/climate.tres"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified."
+    },
+    {
+      "id": "J-TRAVEL",
+      "priority": "Roadmap",
+      "finding": "Checkpoints, map floors, controller map and fast travel.",
+      "status": "implemented",
+      "change": "Four total checkpoint shrines, attunement and saved validated travel; controller map, floor selection/placement, persistence, arrival fades and beacons connected.",
+      "evidence": [
+        "scripts/game_session.gd",
+        "scripts/shrine_services.gd",
+        "scripts/world_navigation_ui.gd",
+        "data/progression/shrine_chapel.tres",
+        "data/progression/shrine_crossing.tres",
+        "data/progression/shrine_fort.tres"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified."
+    },
+    {
+      "id": "L-TOOLS",
+      "priority": "Roadmap",
+      "finding": "Maintained authoring validation and tooling.",
+      "status": "implemented",
+      "change": "Editor resource/stable-ID audit, asset shelf with UndoRedo scene placement, collision/landing/encounter/spell/navigation-floor overlays, disposable combat lab, full tuning/architecture/migration guides.",
+      "evidence": [
+        "addons/world_authoring/plugin.gd",
+        "addons/world_authoring/overlays.gd",
+        "scripts/content_audit.gd",
+        "scenes/combat_lab.tscn",
+        "docs/AUTHORING_GUIDE.txt"
+      ],
+      "unverified": "Parser/runtime correctness and rendered quality have not been verified."
+    },
+    {
+      "id": "REVIEW-UTILITY-POOL",
+      "priority": "P1",
+      "status": "implemented",
+      "finding": "Unequipping a utility could refill it on re-preparation.",
+      "change": "Owned utility pool persists separately; prepared counts seed old schema1 records; shrine rest refills all owned utilities.",
+      "evidence": [
+        "scripts/character_state.gd",
+        "scripts/game_session.gd",
+        "scripts/player.gd"
+      ],
+      "unverified": "Equip/remove/reload/rest charge sequences."
+    },
+    {
+      "id": "REVIEW-LAB",
+      "priority": "P1",
+      "status": "implemented",
+      "finding": "A validation scene must not overwrite real character slots.",
+      "change": "Development sandbox temporarily preserves active character, disables slot writes, grants disposable catalogue and restores on scene exit; load/create guarded until leaving.",
+      "evidence": [
+        "scripts/combat_lab.gd",
+        "scripts/game_session.gd"
+      ],
+      "unverified": "F6 lab/respawn/title/close/load ordering."
+    },
+    {
+      "id": "FINAL-01",
+      "priority": "P1",
+      "finding": "Malformed timed-effect intervals could reach a non-terminating tick loop outside the normal spell validation path.",
+      "status": "implemented",
+      "change": "SpellEffectDefinition validates positive finite intervals/duration/restoration. Delivery, authoring audit and actor application use the same guard; malformed hot-edited entries are removed.",
+      "evidence": [
+        "scripts/resources/spell_effect_definition.gd",
+        "scripts/spell_effects.gd",
+        "scripts/spell_delivery_service.gd",
+        "scripts/content_audit.gd"
+      ],
+      "unverified": "Runtime invalid-resource rejection and periodic scheduling. Opt-in regression source authored only."
+    },
+    {
+      "id": "FINAL-02",
+      "priority": "P1",
+      "finding": "New perception could reacquire targets while an enemy was dead, and legacy reset cleanup did not clear EnemyMind.",
+      "status": "implemented",
+      "change": "Dead actors no longer update perception. Death/reset clears shared pursuit/search/cooldowns. Shrine restoration also clears standalone status buildup components.",
+      "evidence": [
+        "scripts/sentinel.gd",
+        "scripts/player.gd"
+      ],
+      "unverified": "Death near encounters, rest/reset after pursuit, corpse alert suppression."
+    },
+    {
+      "id": "FINAL-03",
+      "priority": "P2",
+      "finding": "Duplicate pause settings could drift from the shared settings panel; nested settings needed focus/ownership restoration.",
+      "status": "implemented",
+      "change": "Pause uses only the shared settings panel. Title settings owns its modal and restores focus; gameplay settings returns to its still-paused parent menu.",
+      "evidence": [
+        "scripts/court_hud.gd",
+        "scripts/title_screen.gd",
+        "scenes/settings_panel.tscn"
+      ],
+      "unverified": "Controller/keyboard cancel and settings focus across title/pause/scene exit."
+    },
+    {
+      "id": "VERIFY-ALL",
+      "priority": "Gate",
+      "status": "verification_pending",
+      "finding": "No current capture or runtime evidence for the rebuild.",
+      "remaining": "Godot parse/import, visual/animation/occlusion review, full gameplay/controller/save acceptance, audio assessment and performance profiling.",
+      "evidence": [
+        "docs/VERIFICATION.txt"
+      ],
+      "disposition": "recapture"
+    }
+  ],
+  "phase7": "Not runtime-verified; permission gate remains open."
+}

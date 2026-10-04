@@ -1,6 +1,9 @@
 @tool
 class_name VitalStats
 extends Resource
+## Threshold multipliers keyed by StatusDefinition.id; 1.0 is normal resistance.
+@export var status_resistances: Dictionary[StringName, float] = {}
+@export var status_immunities: Array[StringName] = []
 @export_group("Base pools at reference attributes")
 @export_range(1, 100000, 1) var health: int = 650
 @export_range(1, 10000, 1) var stamina: float = 120.0

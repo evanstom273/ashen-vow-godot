@@ -1,7 +1,9 @@
 [gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/sentinel.tscn" id="enemy"]
+[ext_resource type="Resource" path="res://data/enemies/greywatch_warden.tres" id="definition"]
 
 [node name="greywatch_warden" instance=ExtResource("enemy")]
 use_world_navigation = true
+definition = ExtResource("definition")
 display_name_override = "Greywatch Warden"

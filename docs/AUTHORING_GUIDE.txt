@@ -1,0 +1,193 @@
+ASHEN VOW — ARCHITECTURE AND AUTHORING GUIDE
+2026-10-04 | Source-connected, runtime-unverified
+Read REBUILD_ROADMAP.txt for status; LIVE_TUNING.json for live assignments.
+
+1. ENTRY POINTS / OWNERSHIP
+project.godot launches scenes/title_screen.tscn. New/Continue loads the retained
+forest_camp scene. Running the forest scene directly attaches the active local
+character; use combat_lab.tscn for disposable experimentation instead.
+GameSession owns CharacterState (not the Player scene). Definitions are immutable;
+duplicate attributes and per-hit attacks before runtime modification.
+EquipmentInstance.id identifies an owned copy. The .tres resource identifies its
+kind. Never use resource identity to represent inventory or an imbued copy.
+UIFlow owns one paused modal. A child service/settings view stays under that owner.
+
+Main boundaries:
+- PlayerController: locomotion, authoritative action phase, input compatibility.
+- PlayerSpellbook: prepared/virtual spell entries and finite-use pool.
+- CharacterProgression: ownership/levels/upgrades/respec and per-hit multiplier.
+- HitRequest/HitResult: explicit eligible/accepted/rejected hit contract.
+- SpellDeliveryService/Runtime/Context: geometry, scheduling and attribution.
+- SpellEffects/ActorStatuses: actor-owned direct effects, imbues, burns, buildup.
+- EnemyMind: perception/last-known/search/return/move selection.
+- ActorRegistry/Elevation/SpellNavigation/NavigationRoutes: spatial/floor paths.
+- Feedback/PresentationVisual/CombatPresentation: bounded cosmetic effects/audio.
+- WorldClimate/EnvironmentWind/ProceduralMusic: pausable presentation state.
+
+2. COORDINATE CONTRACTS
+World, route, placement, discovery and navigation use128u/m.
+Region Resources ending _metres store metres; scene transforms store world units.
+AttackDefinition melee reach/radius/recoil/lunge are authored actor units.
+Actor/controller converts ONCE using actor scale; current region actors use4x.
+SpellDeliveryDefinition geometry already uses world units. Do not scale it again.
+SVG atlas cells/weapon sockets are visual-local units. Artwork never changes
+collision, reach, floor eligibility or navigation clearance.
+Keep player speed/acceleration/camera values separate from actor sprite scaling.
+
+3. ATTACKS / DAMAGE
+Create DamageProfile and AttributeScaling under an AttackDefinition. Zero channels
+mean zero damage; there is no implicit physical110 on every new DamageProfile.
+Scaling adds per point above reference10; ordinary upgrade multiplier is applied
+only on a per-hit duplicated attack. Bonus imbue damage is unscaled.
+HitRequest.deliver handles pre-gates and calls receive_hit; new receivers must
+implement hit_rejection and return HitResult. Never infer acceptance from health.
+Use periodic_damage for genuine ticks; recurring_feedback suppresses full feedback.
+accepted_contact_child is INTERNAL only, for a synchronous proc attached to an
+accepted hit. It does not bypass dodge/death/elevation. Do not set it on resources.
+Debug builds: Project Settings debug/combat/trace_hits=true prints explanations.
+No diagnostic should change damage, emit fake successful hit effects or bypass LOS.
+
+4. SPELL AUTHORING
+Spell -> Delivery Definition -> VFX is the presentation authority. Pick the delivery
+type; its typed Resource contains only the geometry/timing relevant to that type.
+Use AttackDefinition for payload, not copied damage multipliers on delivery data.
+Child deliveries inherit context/presentation unless explicitly overridden.
+Keep active-instance limits, valid positive intervals and non-cyclic child trees.
+Editor Content Audit checks configuration without instantiating gameplay scenes.
+
+Seventeen kinds: Projectile, Area, Self, Target, Beam, Weapon Imbue, Cone, Wave/Arc,
+Ground Zone, Chain, Orbiting, Trap/Mine, Barrage/Rain, Summon, Aura, Dash, Tether.
+Retained current20 spells keep their tuning and all have typed delivery definitions.
+The starting project already rejected null definitions before spending a use; this
+rebuild preserves that rule rather than restoring obsolete duplicate delivery fields.
+
+Finite prepared spells consume memory_slots and an accepted use. The pool keyed
+by spellID survives remove/re-add; rest refills owned finite spells.
+Basic spells use CATALYST_BASIC and belong to WeaponDefinition.basic_spell. They
+are virtual entries, no memory, runtime charges=-1. Selected compatible catalysts
+in either hand supply them; identical IDs deduplicate. Do not add them to prepared
+loadouts or ownership rewards. Existing wand/staff supply Glimmer;seal Votive Spark.
+F chooses RH then LH; hand input uses that hand's eligible catalyst.
+A channel belongs to the input that began it; releasing another input is irrelevant.
+Cost on acceptance; no refund after interruption. Child/summon casts spend no uses.
+
+5. STATUSES / BLACKFLAME
+AttackDefinition.statuses is Array[StatusApplication]. Each application points at
+a StatusDefinition and a buildup amount. Define threshold/decay/delay/retrigger,
+negative tags, icon and proc attack/effect. VitalStats.status_resistances is keyed
+by statusID (1=normal threshold); status_immunities explicitly blocks IDs.
+Legacy DefenceProfile status thresholds are retained DATA ONLY and labelled.
+Poison, bleed and frost examples live in data/statuses. Frost is intentionally a
+reusable authoring definition without adding a new player spell in this pass.
+Direct SpellEffectDefinition uses id-based refresh, negative/tags/cleanse_tags,
+periodic restore/damage and temporary movement/defence. Different movement effects
+multiply (clamped0.1–2); defence additions clamp in the existing defence contract.
+Blackflame remains MaxHealthDrainDefinition, not poison/frost tuning. Total fraction
+2–5%,log diminishing returnsArcane10–60,0.75–1.25s; normal fire separate.
+Exact percent packets, fixed healing and imbue bonus must not inherit upgrade scale.
+Every accepted hit keeps confirmation; tick audio/flash/hit-stop stays throttled.
+
+6. OWNERSHIP / PROGRESSION / REWARDS
+data/progression/wanderer_progression.tres controls attribute cap,cost curves,
+upgrade ranks,ordinary damage bonus and material ID/cost.
+Shrine services allow levels,earned-point respec,per-copy upgrade,utilities,travel.
+A respec redistributes level-starting_level points above class minima for free.
+No refunds or randomized affixes. Spell/catalyst requirements remain respected.
+Owned weapon IDs cannot occupy two hand slots simultaneously; two separately owned
+copies can. Utility remove/re-add preserves its remaining pool until rest.
+AuthoredReward scenes need a UNIQUE reward_id and RewardDefinition. Reward assets
+can grant explicit weapons/spells/utilities/materials/Embers/memory. First defeat
+rewards use encounter stable IDs; ordinary defeats reset on rest.
+Use debug/content/catalogue_mode explicitly in debug builds, or the isolated lab.
+Do not expose all catalogue definitions as equip-ready in ordinary play.
+
+7. ENEMIES / ENCOUNTERS
+Drag scenes/enemies/*.tscn into Actors; give each placed instance a UNIQUE
+encounter_id. Existing chapel/region instances remain directly editable.
+EnemyDefinition selects stats,visual atlas,weapon,EnemyPerception,Array[EnemyMove].
+Move parameters: min/max metres,cooldown,priority,tracking fraction,AttackDefinition,
+optional delivery for ranged payload. All roles use shared execution/navigation.
+Place patrol_points in the actor parent's coordinates; positions are editor-visible.
+Accepted distant hits call provoke independently of passive sight radius. Local
+alerts don't recurse across the map. Sight loss goes to last-known/search/return.
+Court Sentinel retains its elite weapon action. New roles are templates with
+deliberate timings, not a boss or a large moveset roster.
+
+8. WORLD / FLOORS / NAVIGATION
+Landmark transforms are placement authority. Don't duplicate their map positions.
+Preserve generated node ownership tags and manual scene ownership. Explicit editor
+rebuild replaces generated detail only. The preview/runtime use same authored data.
+BuildingFloor/ElevationDefinition declare floor support and level; roof/facade art
+must stay separate from solid footprints. Multi-storey attacks/targets share floor
+eligibility. Flight blockers use authored layer17; low geometry stays flyable.
+Raven reversion tests humanoid support/collision; never teleport as a failed landing.
+SpellNavigation incrementally builds floor/clearance windows with256 probes/frame.
+NavigationRoutes adds authored route intersections and stair portals. Local grid
+still validates actual motion. Pending/failed paths wait/retry; no through-wall
+teleports. Rebuild world -> invalidate local windows/coarse revision.
+Cosmetic terrain cache is RegionScatterDefinition.detail_cache_chunks (128default).
+Low-detail soil remains when budgeted detail is pending. Collision never evicts.
+
+9. SVG / ANIMATION / PRESENTATION
+assets/illustrated contains all rebuild art as editable SVG source in the project.
+IllustratedRig atlases are512x384:8columns of64px,6rows Body,Head,LeftArm,RightArm,
+LeftLeg,RightLeg. Direction index round(angle/(PI/4)),0east,2south,4west,6north.
+Each view is authored; don't simply mirror a front view into a back view.
+Joint placement is visual-local. Actual locomotion drives stride; committed action
+phases drive swings/casts/hurt/death. Don't speed steps independently of displacement.
+Equipment scenes expose Sockets/Grip,Tip,Cast with Node2D-local coordinates. New art
+uses original visual bounds. Weapon remains over its hand but inside actor sorting.
+EnvironmentArtDefinition maps families to textures; custom geometry/reveal/wind
+remains on the owning scene. Roof courses/cliff strata/floors tile clipped to the
+authored surface. Water and ground remain procedural, not new collision surfaces.
+Actor surface shader combines dissolve and damage flash. Foreground reveal and
+building visibility compose outside it. Never blindly replace all materials.
+PresentationVisual.setup/update_visual/stop is cosmetic only. Stop emissions, let
+existing particles fade, guard exiting scene before attaching any detached tail.
+Gameplay cannot be dropped because budgets are full.
+
+10. CLIMATE / AUDIO
+data/environment/climate.tres:day_seconds1440,startinghour9,clear/overcast/rain.
+Time/weather save but do not advance while paused or offline. Sheltered floor
+regions disable visible rain. Weather has no damage/movement/spawn effect.
+ProceduralSoundDefinition:envelope,noise/tones,filter,variation,priority,distance,bus.
+ProceduralAudioLibrary supplies event keys. Samples cache on startup. Feedback.play
+accepts optional emitter/floor context. Logical combat requests sound keys only.
+MusicDefinition uses authored semitone/rest patterns and cached instrument samples.
+Exploration/combat tempo/mix blend. Audio quality and clipping require later review.
+
+11. MAP / SHRINES / UI
+Map derives terrain/routes/footprints from world. Markers store floor; upper-floor
+placement requires a mapped floor. Ground markers aren't a pathfinding guarantee.
+Keyboard M/Esc,mouse click/drag/right-remove,wheelzoom,middlepan,PageUp/Downfloor.
+Controller map: A place/select,X remove,Y centre,LB/RB floor,rightstickpan,
+leftstickcursor,triggerszoom,B/Back close. Preserve beacon/arrival-fade lifecycle.
+Checkpoint_id must be stable and unique. Additional shrines are chapel approach,
+Ruined Crossing and Greywatch approach. Fort knowledge alone doesn't attune travel.
+Travel validates human/action/combat/attunement/destination and saves first.
+Theme: data/ashen_theme.tres. GameTheme is a compatibility accessor; don't mutate
+the shared Theme at runtime. Use local overrides for contextual states.
+Settings reusable scene: scenes/settings_panel.tscn; keyboard/controller rebinding
+and immediate prompt refresh. UIscale affects Control presentation, not world.
+Descriptions/services use scroll containers and controller focus chains.
+Pause/map/shrine acquire UIFlow; nested screens must not acquire a competing owner.
+
+12. EDITOR TOOLS / COMBAT LAB
+World Authoring toolbar: preview rebuild,roof cutaway,asset shelf,content audit,
+collision/landing,encounter,spell geometry and navigation/floor overlays.
+Select an Attack/Spell/Delivery in Inspector for geometry overlay. It only draws.
+Asset-shelf placement uses scene instances + Undo/Redo,never generated ownership.
+Run audits only deliberately. Godot must parse first; audit isn't a parser.
+scenes/combat_lab.tscn:current128u/m space,Player/shrine/effigies/Sentinel/obstruction.
+Its development_sandbox metadata creates disposable state and disables slot writes.
+Leave via Title before load/create character; exiting restores the preserved session.
+Do NOT run the lab/imports/tests until the user explicitly permits verification.
+tests/acceptance.gd is opt-in (--rebuild-tests,oldflagaliasretained),authored UNRUN.
+Runtime acceptance matrix in VERIFICATION.txt is broader than these data checks.
+
+KNOWN AUTHORING/DATA-ONLY FIELDS
+Weapon heavy_attack/skill and unimplemented boss phases remain labelled data-only.
+Legacy DefenceProfile status fields remain data-only; use VitalStats instead.
+Existing class compatibility starting_spells is fallback,not a separate inventory.
+SVGs are source artwork rasterized by Godot import; they are not infinite-resolution
+runtime vector geometry. Texture resolution/atlas quality require rendered review.

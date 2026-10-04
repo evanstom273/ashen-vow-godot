@@ -11,6 +11,7 @@ var _elevation_revision: int = -1
 @export var local_windows: bool = true
 var window_grids: Dictionary = {}
 var pending_windows: Array[Dictionary] = []
+var coarse := NavigationRoutes.new()
 @export_range(1, 256, 1) var probes_per_frame: int = 256
 
 static func of(actor: Node) -> SpellNavigation:
@@ -23,48 +24,32 @@ static func of(actor: Node) -> SpellNavigation:
 	return result
 
 func build(actor: Node2D) -> void:
-	if not bounds.has_area(): return
-	grid.region = Rect2i(Vector2i.ZERO, Vector2i(ceili(bounds.size.x / cell_size), ceili(bounds.size.y / cell_size)))
-	grid.cell_size = Vector2.ONE * cell_size
-	grid.offset = bounds.position + Vector2.ONE * cell_size * 0.5
-	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
-	grid.update()
-	var shape := CircleShape2D.new()
-	shape.radius = agent_radius
-	var query := PhysicsShapeQueryParameters2D.new()
-	query.shape = shape
-	query.collision_mask = 1
-	var excluded: Array[RID] = []
-	for player: Node in actor.get_tree().get_nodes_in_group("player"):
-		if player is CollisionObject2D: excluded.append(player.get_rid())
-	query.exclude = excluded
-	for y in grid.region.size.y:
-		for x in grid.region.size.x:
-			var cell := Vector2i(x, y)
-			query.transform = Transform2D(0, grid.get_point_position(cell))
-			if not actor.get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty(): grid.set_point_solid(cell)
-	initialized = true
+	# Compatibility entry point: all builds use the bounded window scheduler.
+	prewarm(actor)
 
 ## Partial pursuit advances through local windows toward a distant attacker.
 ## Default callers still require a complete path (e.g. summon target selection).
-func path(actor: Node2D, destination: Vector2, allow_partial: bool = false) -> PackedVector2Array:
+func path(actor: Node2D, destination: Vector2, allow_partial: bool = false, destination_level: int = -999) -> PackedVector2Array:
 	_refresh_elevation(actor)
-	if local_windows or Elevation.level(actor) != 0: return _window_path(actor, destination, allow_partial)
-	if not initialized: build(actor)
-	if not initialized: return PackedVector2Array()
-	var start := Vector2i((actor.global_position - bounds.position) / cell_size)
-	var end := Vector2i((destination - bounds.position) / cell_size)
-	if not grid.region.has_point(start) or not grid.region.has_point(end) or grid.is_point_solid(start) or grid.is_point_solid(end): return PackedVector2Array()
-	return grid.get_point_path(start, end)
+	var floor_level: int = Elevation.level(actor)
+	if destination_level == -999: destination_level = floor_level
+	var goal: Vector2 = destination
+	if destination_level != floor_level or actor.global_position.distance_to(destination) > cell_size * 24.0:
+		if coarse.signature != _elevation_revision: coarse.rebuild(get_tree().current_scene, Elevation.of(actor))
+		goal = coarse.waypoint(actor.global_position, floor_level, destination, destination_level)
+		if not goal.is_finite(): return PackedVector2Array()
+		allow_partial = true
+	return _window_path(actor, goal, allow_partial)
 
 func invalidate_windows() -> void:
 	window_grids.clear()
 	pending_windows.clear()
 	initialized = false
+	coarse.signature = -1
 
 func prewarm(actor: Node2D) -> void:
 	_refresh_elevation(actor)
-	if local_windows or Elevation.level(actor) != 0: _request_window(actor,_sector(actor.global_position))
+	_request_window(actor,_sector(actor.global_position))
 
 func _refresh_elevation(actor: Node2D) -> void:
 	var current: int = Elevation.of(actor).revision
@@ -73,7 +58,11 @@ func _refresh_elevation(actor: Node2D) -> void:
 		_elevation_revision = current
 
 func _key(actor: Node2D, sector: Vector2i) -> String:
-	return str(sector.x) + ":" + str(sector.y) + ":" + str(Elevation.level(actor))
+	return str(sector.x) + ":" + str(sector.y) + ":" + str(Elevation.level(actor)) + ":" + str(_clearance(actor))
+
+func _clearance(actor: Node2D) -> float:
+	var radius: float = Elevation.body_radius(actor) if actor is CollisionObject2D else agent_radius
+	return ceilf(maxf(16.0, radius) / 16.0) * 16.0
 
 func _sector(at: Vector2) -> Vector2i:
 	return Vector2i((at/(cell_size*32)).floor())
@@ -91,7 +80,7 @@ func _request_window(actor: Node2D, sector: Vector2i) -> void:
 	local_grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	local_grid.update()
 	var shape := CircleShape2D.new()
-	shape.radius = agent_radius
+	shape.radius = _clearance(actor)
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = shape
 	query.collision_mask = Elevation.mask_for(1, Elevation.level(actor))
@@ -100,12 +89,12 @@ func _request_window(actor: Node2D, sector: Vector2i) -> void:
 		if player is CollisionObject2D: excluded.append(player.get_rid())
 	# Pre-exclude other registered storeys so each grid cell costs exactly ONE
 	# collision probe even with many overlapping floors (256/frame budget retained).
-	for reference: WeakRef in Elevation.of(actor).members.values():
-		var candidate: Variant = reference.get_ref()
+	var window := Rect2(local_grid.offset - Vector2.ONE * cell_size, Vector2.ONE * cell_size * 66)
+	for candidate: CollisionObject2D in Elevation.of(actor).nearby_raised(window):
 		if is_instance_valid(candidate) and not Elevation.occupies(candidate, Elevation.level(actor)):
 			excluded.append(candidate.get_rid())
 	query.exclude = excluded
-	pending_windows.append({"key":key,"level":Elevation.level(actor),"grid":local_grid,"query":query,"cursor":0,"actor":weakref(actor)})
+	pending_windows.append({"key":key,"level":Elevation.level(actor),"grid":local_grid,"query":query,"radius":shape.radius,"cursor":0,"actor":weakref(actor)})
 
 func _physics_process(_delta: float) -> void:
 	var budget: int = mini(256,probes_per_frame)
@@ -124,7 +113,7 @@ func _physics_process(_delta: float) -> void:
 		var cursor: int = job.cursor
 		var cell := Vector2i(cursor%64,floori(float(cursor)/64.0))
 		query.transform = Transform2D(0,local_grid.get_point_position(cell))
-		if (bounds.has_area() and not bounds.has_point(query.transform.origin)) or not Elevation.of(actor).support_at(query.transform.origin, int(job.level), agent_radius) or not actor.get_world_2d().direct_space_state.intersect_shape(query,1).is_empty(): local_grid.set_point_solid(cell)
+		if (bounds.has_area() and not bounds.has_point(query.transform.origin)) or not Elevation.of(actor).support_at(query.transform.origin, int(job.level), float(job.radius)) or not actor.get_world_2d().direct_space_state.intersect_shape(query,1).is_empty(): local_grid.set_point_solid(cell)
 		budget -= 1
 		job.cursor = cursor+1
 		if int(job.cursor) >= 4096:

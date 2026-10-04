@@ -14,6 +14,7 @@ extends Resource
 @export_group("Spell catalyst")
 @export var is_spell_catalyst: bool = false
 @export var catalyst_schools: Array[String] = []
+@export var basic_spell: SpellDefinition
 @export var light_attack: AttackDefinition
 @export var charged_attack: AttackDefinition
 @export_group("Presentation")

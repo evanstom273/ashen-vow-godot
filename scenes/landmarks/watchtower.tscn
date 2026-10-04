@@ -8,6 +8,10 @@
 [ext_resource type="Resource" path="res://data/environment/cover_ruins.tres" id="ground_cover"]
 [ext_resource type="PackedScene" path="res://scenes/props/approach_watchtower.tscn" id="approach"]
 
+[ext_resource type="PackedScene" path="res://scenes/props/authored_reward.tscn" id="discovery_scene"]
+[ext_resource type="Resource" path="res://data/progression/reward_watchtower.tres" id="discovery_reward"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/ash_cantor.tscn" id="role_enemy"]
+
 [node name="watchtower" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("landmark")
@@ -105,3 +109,13 @@ variation = 272
 position = Vector2(512, 640)
 
 [node name="ApproachDressing" parent="." instance=ExtResource("approach")]
+
+
+[node name="AuthoredDiscovery" parent="." instance=ExtResource("discovery_scene")]
+position = Vector2(768, 900)
+reward_id = &"watchtower_reliquary"
+definition = ExtResource("discovery_reward")
+
+[node name="Encounter_ash_cantor" parent="." instance=ExtResource("role_enemy")]
+position = Vector2(512, 512)
+encounter_id = &"watchtower_ash_cantor"

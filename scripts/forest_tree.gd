@@ -1,8 +1,10 @@
 @tool
+class_name ForestTree
 extends StaticBody2D
 @export var variation: int = 0
 @export_enum("Broadleaf", "Conifer", "Dead") var tree_family: int = 0
 @export var tree_scale: float = 1.0
+@export var illustrated_art: EnvironmentArtDefinition = preload("res://data/environment/illustrated_art.tres")
 ## Optional world-unit trunk footprint, independent of the overhanging crown.
 @export var trunk_collision_radius: float = -1.0
 @export var wind_profile: FoliageWindDefinition = preload("res://data/environment/wind_canopy.tres")
@@ -85,6 +87,13 @@ func _update_canopy_material() -> void:
 func _draw() -> void:
 	if not _art_built: return
 	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE * tree_scale)
+	if illustrated_art != null and illustrated_art.texture(&"trunk") != null:
+		draw_set_transform(Vector2(28, -18), 0.3, Vector2(1.2, 0.35) * tree_scale)
+		draw_circle(Vector2.ZERO, 60, Color(0.015,0.027,0.025,0.24))
+		draw_set_transform(Vector2.ZERO, 0, Vector2.ONE * tree_scale)
+		draw_texture_rect(illustrated_art.texture(&"trunk"), Rect2(-42, -120, 84, 132), false)
+		draw_set_transform(Vector2.ZERO)
+		return
 	draw_colored_polygon(PackedVector2Array([Vector2(-22, 7), Vector2(4, 17), Vector2(93, -35), Vector2(72, -56), Vector2(17, -19)]), Color(0.015, 0.027, 0.025, 0.32))
 	draw_colored_polygon(PackedVector2Array([Vector2(-29, 10), Vector2(-17, -2), Vector2(-12, -86), Vector2(8, -98), Vector2(17, -6), Vector2(32, 10), Vector2(11, 4), Vector2(0, 11), Vector2(-8, 3)]), Color("302e27"))
 	draw_colored_polygon(PackedVector2Array([Vector2(-12, -82), Vector2(-2, -91), Vector2(1, 5), Vector2(-9, -5)]), Color("64604a"))
@@ -103,6 +112,11 @@ func _draw() -> void:
 
 func _draw_canopy() -> void:
 	if not _art_built: return
+	if illustrated_art != null:
+		var texture: Texture2D = illustrated_art.texture(StringName("tree_%d_%d" % [tree_family, posmod(variation, 3)]))
+		if texture != null:
+			canopy_art.draw_texture_rect(texture, Rect2(-90, -172, 180, 140), false)
+			return
 	var random := RandomNumberGenerator.new()
 	random.seed = variation + 991
 	canopy_art.draw_set_transform(Vector2.ZERO)

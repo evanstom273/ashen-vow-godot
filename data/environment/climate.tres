@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ClimateDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/climate_definition.gd" id="climate"]
+[ext_resource type="Script" path="res://scripts/resources/weather_definition.gd" id="weather"]
+[sub_resource type="Resource" id="Clear"]
+script = ExtResource("weather")
+id = &"clear"
+display_name = "Clear"
+[sub_resource type="Resource" id="Overcast"]
+script = ExtResource("weather")
+id = &"overcast"
+display_name = "Overcast"
+tint = Color(0.83, 0.86, 0.92, 1)
+wind_multiplier = 1.35
+[sub_resource type="Resource" id="Rain"]
+script = ExtResource("weather")
+id = &"rain"
+display_name = "Rain"
+tint = Color(0.75, 0.82, 0.9, 1)
+rain = 1.0
+wind_multiplier = 1.7
+[resource]
+script = ExtResource("climate")
+weather = Array[ExtResource("weather")]([SubResource("Clear"), SubResource("Overcast"), SubResource("Rain")])

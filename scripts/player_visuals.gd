@@ -43,6 +43,7 @@ func _ready() -> void:
 	# Local sibling order keeps arms above the body without escaping world Y-sort.
 	for arm_name: String in ["LeftArm", "RightArm"]:
 		root.move_child(root.get_node(arm_name), -1)
+	if root is IllustratedRig: root.facing_index = -1
 	for node: Node in root.find_children("*", "Polygon2D", true, false):
 		var mat := ShaderMaterial.new()
 		mat.shader = load("res://shaders/flash.gdshader")
@@ -131,16 +132,7 @@ func _update_imbue_visual(hand: StringName, model: Node2D, effects: SpellEffects
 	var entry: Dictionary = effects.imbues[token]
 	var profile: VFXDefinition = entry.get("profile") as VFXDefinition
 	if profile == null: return
-	var tip: Vector2 = model.to_global(Vector2(32, 0))
-	var longest: float = 0.0
-	for node: Node in model.find_children("*", "Polygon2D", true, false):
-		var polygon := node as Polygon2D
-		for point: Vector2 in polygon.polygon:
-			var world: Vector2 = polygon.to_global(point)
-			var local: Vector2 = model.to_local(world)
-			if local.x > longest:
-				longest = local.x
-				tip = world
+	var tip: Vector2 = socket_position(model, &"Tip")
 	var snapshot: Dictionary = {"kind": &"imbue", "origin": model.global_position, "tip": tip, "direction": (tip - model.global_position).normalized(), "owner_id": actor.get_instance_id()}
 	var stored: Variant = imbue_visuals.get(hand)
 	var effect: Node2D = stored as Node2D if is_instance_valid(stored) else null
@@ -169,16 +161,8 @@ func _clear_melee(hand: StringName) -> void:
 	melee_active[hand] = false
 
 func _update_melee(hand: StringName, model: Node2D) -> void:
-	var grip: Vector2 = model.global_position
-	var tip: Vector2 = model.to_global(Vector2(30, 0))
-	var longest: float = 0.0
-	for node: Node in model.find_children("*", "Polygon2D", true, false):
-		var polygon := node as Polygon2D
-		for point: Vector2 in polygon.polygon:
-			var at: Vector2 = polygon.to_global(point)
-			if model.to_local(at).x > longest:
-				longest = model.to_local(at).x
-				tip = at
+	var grip: Vector2 = socket_position(model, &"Grip")
+	var tip: Vector2 = socket_position(model, &"Tip")
 	var selected: VFXDefinition = actor.attack.melee_vfx
 	var active: bool = actor.state == PlayerController.PlayerState.ATTACKING and actor._active_hand == hand and actor.action_time >= actor.attack.windup and actor.action_time < actor.attack.active_end()
 	if actor.state == PlayerController.PlayerState.DEAD:
@@ -223,6 +207,10 @@ func _animation(length_seconds: float, tracks: Dictionary) -> Animation:
 func begin(action: String) -> void:
 	if action == "attack":
 		trail.color = actor.attack.slash_color
+		var strike: AttackDefinition = actor.attack
+		var library: AnimationLibrary = animator.get_animation_library("")
+		library.remove_animation("attack")
+		library.add_animation("attack", _animation(strike.duration(), {"swing": [[0,0], [strike.windup*0.9,-0.9], [strike.windup+strike.active*0.4,0.25], [strike.active_end(),1.1], [strike.duration(),0]]}))
 	animator.play(action)
 	animator.advance(0)
 
@@ -260,7 +248,10 @@ func _process(delta: float) -> void:
 	previous_velocity = actor.velocity
 	scarf_velocity += (-scarf_motion * 95 - scarf_velocity * 15 + acceleration.x * 0.08) * delta
 	scarf_motion = clampf(scarf_motion + scarf_velocity * delta, -0.28, 0.28)
-	actor.rig.scale = Vector2(actor.facing, 1.0)
+	actor.rig.scale = Vector2.ONE
+	if root is IllustratedRig:
+		root.face(actor.aim if actor.state != PlayerController.PlayerState.NORMAL or actor.velocity.length_squared() < 1 else actor.velocity.normalized())
+		root.flash(flash)
 	actor.rig.rotation = 0
 	actor.rig.position = Vector2(0, -absf(stride) * lerpf(1.4, 2.7, locomotion_sprint_blend()) + sin(timer * 2.1) * 0.35 * (1.0 - fall))
 	roll_pivot.rotation = 0
@@ -269,7 +260,7 @@ func _process(delta: float) -> void:
 		var p: float = clampf(actor.action_time / actor.dodge_duration, 0, 1)
 		var screen_sign: float = signf(actor.dodge_direction.x) if absf(actor.dodge_direction.x) > 0.1 else signf(actor.dodge_direction.y)
 		# Parent is mirrored: compensate once to preserve screen-space spin.
-		roll_pivot.rotation = TAU * smoothstep(0.04, 0.94, p) * screen_sign * actor.facing
+		roll_pivot.rotation = TAU * smoothstep(0.04, 0.94, p) * screen_sign
 		actor.rig.position.y -= sin(p * PI) * 3
 	roll_pivot.rotation += fall * 1.45 + recoil
 	actor.rig.position.y += fall * 12
@@ -332,3 +323,12 @@ func _process(delta: float) -> void:
 	var shadow: Node2D = actor.get_node("Shadow")
 	shadow.scale = Vector2(1 + tuck * 0.15, 1 - tuck * 0.2)
 	shadow.modulate.a = 1 - tuck * 0.25
+
+
+func socket_position(model: Node2D, socket: StringName) -> Vector2:
+	if not is_instance_valid(model): return actor.global_position
+	var marker := model.get_node_or_null("Sockets/" + String(socket)) as Node2D
+	return marker.global_position if marker != null else model.global_position
+
+func cast_socket(hand: StringName) -> Vector2:
+	return socket_position(get_hand_model(hand), &"Cast")

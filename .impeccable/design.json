@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T00:00:00Z",
+  "title": "Design System: Ashen Vow",
+  "extensions": {
+    "colorMeta": {
+      "amber-focus": {
+        "role": "primary",
+        "displayName": "Amber Focus",
+        "tonalRamp": [
+          "oklch(15.0% 0.0940 86.89)",
+          "oklch(26.4% 0.0940 86.89)",
+          "oklch(37.9% 0.0940 86.89)",
+          "oklch(49.3% 0.0940 86.89)",
+          "oklch(60.7% 0.0940 86.89)",
+          "oklch(72.1% 0.0940 86.89)",
+          "oklch(83.6% 0.0940 86.89)",
+          "oklch(95.0% 0.0940 86.89)"
+        ]
+      },
+      "parchment-text": {
+        "role": "neutral",
+        "displayName": "Parchment Text",
+        "tonalRamp": [
+          "oklch(15.0% 0.0306 90.34)",
+          "oklch(26.4% 0.0306 90.34)",
+          "oklch(37.9% 0.0306 90.34)",
+          "oklch(49.3% 0.0306 90.34)",
+          "oklch(60.7% 0.0306 90.34)",
+          "oklch(72.1% 0.0306 90.34)",
+          "oklch(83.6% 0.0306 90.34)",
+          "oklch(95.0% 0.0306 90.34)"
+        ]
+      },
+      "muted-text": {
+        "role": "neutral",
+        "displayName": "Muted Text",
+        "tonalRamp": [
+          "oklch(15.0% 0.0095 128.63)",
+          "oklch(26.4% 0.0095 128.63)",
+          "oklch(37.9% 0.0095 128.63)",
+          "oklch(49.3% 0.0095 128.63)",
+          "oklch(60.7% 0.0095 128.63)",
+          "oklch(72.1% 0.0095 128.63)",
+          "oklch(83.6% 0.0095 128.63)",
+          "oklch(95.0% 0.0095 128.63)"
+        ]
+      },
+      "forest-ink": {
+        "role": "neutral",
+        "displayName": "Forest Ink",
+        "tonalRamp": [
+          "oklch(15.0% 0.0136 187.44)",
+          "oklch(26.4% 0.0136 187.44)",
+          "oklch(37.9% 0.0136 187.44)",
+          "oklch(49.3% 0.0136 187.44)",
+          "oklch(60.7% 0.0136 187.44)",
+          "oklch(72.1% 0.0136 187.44)",
+          "oklch(83.6% 0.0136 187.44)",
+          "oklch(95.0% 0.0136 187.44)"
+        ]
+      },
+      "lifted-forest": {
+        "role": "neutral",
+        "displayName": "Lifted Forest",
+        "tonalRamp": [
+          "oklch(15.0% 0.0177 177.68)",
+          "oklch(26.4% 0.0177 177.68)",
+          "oklch(37.9% 0.0177 177.68)",
+          "oklch(49.3% 0.0177 177.68)",
+          "oklch(60.7% 0.0177 177.68)",
+          "oklch(72.1% 0.0177 177.68)",
+          "oklch(83.6% 0.0177 177.68)",
+          "oklch(95.0% 0.0177 177.68)"
+        ]
+      },
+      "panel-ink": {
+        "role": "neutral",
+        "displayName": "Panel Ink",
+        "tonalRamp": [
+          "oklch(15.0% 0.0109 185.43)",
+          "oklch(26.4% 0.0109 185.43)",
+          "oklch(37.9% 0.0109 185.43)",
+          "oklch(49.3% 0.0109 185.43)",
+          "oklch(60.7% 0.0109 185.43)",
+          "oklch(72.1% 0.0109 185.43)",
+          "oklch(83.6% 0.0109 185.43)",
+          "oklch(95.0% 0.0109 185.43)"
+        ]
+      },
+      "weathered-border": {
+        "role": "neutral",
+        "displayName": "Weathered Border",
+        "tonalRamp": [
+          "oklch(15.0% 0.0337 96.72)",
+          "oklch(26.4% 0.0337 96.72)",
+          "oklch(37.9% 0.0337 96.72)",
+          "oklch(49.3% 0.0337 96.72)",
+          "oklch(60.7% 0.0337 96.72)",
+          "oklch(72.1% 0.0337 96.72)",
+          "oklch(83.6% 0.0337 96.72)",
+          "oklch(95.0% 0.0337 96.72)"
+        ]
+      },
+      "panel-border": {
+        "role": "neutral",
+        "displayName": "Panel Border",
+        "tonalRamp": [
+          "oklch(15.0% 0.0547 90.96)",
+          "oklch(26.4% 0.0547 90.96)",
+          "oklch(37.9% 0.0547 90.96)",
+          "oklch(49.3% 0.0547 90.96)",
+          "oklch(60.7% 0.0547 90.96)",
+          "oklch(72.1% 0.0547 90.96)",
+          "oklch(83.6% 0.0547 90.96)",
+          "oklch(95.0% 0.0547 90.96)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Native body",
+        "purpose": "Shared Godot controls; fallback font, not an approved display family."
+      },
+      "status-label": {
+        "displayName": "Status label",
+        "purpose": "Buildup and direct-effect readouts; readability unverified."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "marker-arrival",
+        "value": "2s",
+        "purpose": "Retained beacon/marker fade after arrival; not combat vignette."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "loadout-single-column",
+        "value": "960px"
+      }
+    ],
+    "review": {
+      "rendered": false,
+      "disposition": "recapture",
+      "reason": "No current rebuild captures; user prohibited imports/runtime tests."
+    }
+  },
+  "components": [
+    {
+      "name": "Action Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Documentation approximation of the native Godot shared button.",
+      "html": "<button class=\"ds-action\">Prepare loadout</button>",
+      "css": ".ds-action{font:17px sans-serif;color:#e7dfc9;background:#0b1413;border:1px solid #6d6852;border-radius:0;padding:10px 14px}.ds-action:hover{background:#192522;border-color:#e3c580}.ds-action:focus-visible{outline:2px solid #e3c580;outline-offset:0}.ds-action:disabled{color:#878a84}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "description": "Native search field analogue for the design panel only.",
+      "html": "<input class=\"ds-search\" aria-label=\"Search owned equipment\" placeholder=\"Search owned equipment\">",
+      "css": ".ds-search{font:17px sans-serif;color:#e7dfc9;background:#0b1413;border:1px solid #6d6852;border-radius:0;padding:10px 14px}.ds-search:hover{border-color:#e3c580}.ds-search:focus-visible{outline:2px solid #e3c580}"
+    },
+    {
+      "name": "Service Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat bordered service container; not a floating web card.",
+      "html": "<section class=\"ds-panel\">Attuned shrines</section>",
+      "css": ".ds-panel{font:17px sans-serif;background:#0b1211;color:#e7dfc9;border:1px solid #8d805b;padding:26px;border-radius:0}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Illustrated gothic fantasy",
+    "overview": "Illustrated gothic fantasy built from project-contained SVG parts, Godot scenes, procedural geometry and shaders. The world uses weathered stone, layered foliage and quiet amber guidance; magic is the bright, readable exception.\n\nMenus remain flat, dark and legible around the fixed equipment cross. The source implementation is recorded here, not visually certified: current-game captures and runtime typography/contrast review are still pending.",
+    "keyCharacteristics": [
+      "Eight-direction layered characters and explicit weapon sockets.",
+      "Weathered, asymmetrical environment silhouettes with subdued foliage.",
+      "Gold/amber interaction language around a fixed Souls-style equipment cross.",
+      "Bounded spectacular magic, grounded physical impacts and restrained camera feedback."
+    ],
+    "rules": [
+      {
+        "name": "Meaning before ornament",
+        "body": "Reserve the amber highlight for focus, selection and navigation; rely on silhouette and geometry to distinguish the world.",
+        "section": "colors"
+      },
+      {
+        "name": "Art is not collision",
+        "body": "Rebuilt textures and shadows never define reach, floor support, obstacle clearance or damage boundaries.",
+        "section": "elevation"
+      },
+      {
+        "name": "One equipment cross",
+        "body": "Spells stay above, right hand right, utilities below and left hand left.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "Do keep art sources and procedural presentation inside the project.",
+      "Do preserve the equipment cross and readable enemy telegraphs.",
+      "Do treat texture bounds, weapon sockets, collision and damage geometry as separate contracts.",
+      "Do use local Theme overrides instead of mutating shared Resources.",
+      "Do honour Blood, Reduced Effects and the existing visual budgets."
+    ],
+    "donts": [
+      "Don't add FP, motion blur, fullscreen fog or a renderer change.",
+      "Don't hide important UI behind the permanent vignette or combat feedback.",
+      "Don't replace eight-direction views with a mirrored front-facing actor.",
+      "Don't create blood or successful-hit feedback for rejected contacts.",
+      "Don't claim imported SVGs remain infinite-resolution runtime vectors."
+    ]
+  }
+}

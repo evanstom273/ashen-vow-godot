@@ -16,6 +16,14 @@ var _selected_slot: int = 0
 var _draft_right: Array[WeaponDefinition] = []
 var _draft_left: Array[WeaponDefinition] = []
 var _draft_spells: Array[SpellDefinition] = []
+var _right_ids: Array[String] = []
+var _left_ids: Array[String] = []
+var _services: Control
+var _services_button: Button
+var _search_field: LineEdit
+var _columns: GridContainer
+var _frame: PanelContainer
+var _search: String = ""
 
 var _slot_box: VBoxContainer
 var _available_box: VBoxContainer
@@ -37,13 +45,19 @@ func handle_menu_input(event: InputEvent) -> bool:
     if event is InputEventJoypadButton:
         confirm = event.button_index == JOY_BUTTON_A
         back = event.button_index == JOY_BUTTON_B or event.button_index == JOY_BUTTON_START
+    # Native widgets, including OptionButton popups, own service confirmation.
+    if is_instance_valid(_services) and not back: return false
+    if confirm and get_viewport().gui_get_focus_owner() == _search_field: return false
     if not confirm and not back: return false
     # Consume both edges before GUI dispatch, so rebuilding the focused row
     # cannot activate a second button on release or leak input into gameplay.
     get_viewport().set_input_as_handled()
     if not event.is_pressed() or event.is_echo(): return true
     if back:
-        cancel()
+        if is_instance_valid(_services):
+            _services.queue_free()
+            (_tab_buttons[_section] as Button).grab_focus()
+        else: cancel()
     else:
         var focused: Control = get_viewport().gui_get_focus_owner()
         if focused is Button and is_ancestor_of(focused):
@@ -54,6 +68,7 @@ func handle_menu_input(event: InputEvent) -> bool:
     return true
 
 func _process(delta: float) -> void:
+    if is_instance_valid(_services): return
     if not visible:
         _stick_direction = Vector2.ZERO
         _stick_repeat = 0.0
@@ -85,10 +100,13 @@ func _process(delta: float) -> void:
         _stick_direction = direction
 
 func _ready() -> void:
+    theme = GameTheme.get_theme()
     process_mode = Node.PROCESS_MODE_ALWAYS
     mouse_filter = Control.MOUSE_FILTER_STOP
     set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     _build_ui()
+    resized.connect(_layout_menu)
+    _layout_menu()
     visible = false
 
 func open_for(target: PlayerController) -> void:
@@ -107,20 +125,30 @@ func cancel() -> void:
 
 func _apply_and_close() -> void:
     if not is_instance_valid(player): return
-    player.set_weapon_loadout(&"right", _draft_right)
-    player.set_weapon_loadout(&"left", _draft_left)
+    if player.spell_memory_used(_draft_spells) > player.get_spell_slot_capacity():
+        _details_title.text = "Not enough memory"
+        _details_body.text = "Remove a spell before confirming this preparation."
+        return
+    if not GameSession.prepare_weapons(_right_ids, _left_ids):
+        _details_body.text = "Choose owned, compatible equipment. An item instance cannot occupy two slots."
+        return
     player.set_spell_loadout(_draft_spells)
     player.show_message("Loadout prepared", 1.4)
     visible = false
     closed.emit(true)
 
 func _copy_drafts() -> void:
+    GameSession.capture()
+    _right_ids.assign(GameSession.character.right_slots)
+    _left_ids.assign(GameSession.character.left_slots)
+    while _right_ids.size() < player.get_weapon_slot_capacity(&"right"): _right_ids.append("")
+    while _left_ids.size() < player.get_weapon_slot_capacity(&"left"): _left_ids.append("")
     _draft_right.clear()
     _draft_left.clear()
     _draft_spells.clear()
     for item: WeaponDefinition in player.right_hand_weapons: _draft_right.append(item)
     for item: WeaponDefinition in player.left_hand_weapons: _draft_left.append(item)
-    for item: SpellDefinition in player.spells: _draft_spells.append(item)
+    for item: SpellDefinition in PlayerSpellbook.prepared(player): _draft_spells.append(item)
     _resize_weapon_draft(_draft_right, player.get_weapon_slot_capacity(&"right"))
     _resize_weapon_draft(_draft_left, player.get_weapon_slot_capacity(&"left"))
     _resize_spell_draft(_draft_spells, player.get_spell_slot_capacity())
@@ -141,29 +169,39 @@ func _build_ui() -> void:
     add_child(backdrop)
 
     var frame := PanelContainer.new()
-    frame.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-    frame.position = Vector2(-430, -270)
-    frame.custom_minimum_size = Vector2(860, 540)
+    _frame = frame
+    frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    frame.offset_left = 24
+    frame.offset_top = 24
+    frame.offset_right = -24
+    frame.offset_bottom = -24
     frame.add_theme_stylebox_override("panel", _panel_style())
     add_child(frame)
 
+    var content_scroll := ScrollContainer.new()
+    content_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    content_scroll.follow_focus = true
+    frame.add_child(content_scroll)
     var main := VBoxContainer.new()
+    main.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     main.add_theme_constant_override("separation", 12)
-    frame.add_child(main)
+    content_scroll.add_child(main)
 
     var eyebrow := _label("ASHEN SHRINE", 11, GOLD, HORIZONTAL_ALIGNMENT_CENTER)
     main.add_child(eyebrow)
     var heading := _label("PREPARE LOADOUT", 26, TEXT, HORIZONTAL_ALIGNMENT_CENTER)
     main.add_child(heading)
-    var sub := _label("Choose what you carry into the courtyard. Changes apply when confirmed.", 12, MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+    var sub := _label("Prepare your equipment. Changes apply when confirmed.", 12, MUTED, HORIZONTAL_ALIGNMENT_CENTER)
     main.add_child(sub)
 
-    var tabs := HBoxContainer.new()
+    var tabs := HFlowContainer.new()
     tabs.add_theme_constant_override("separation", 8)
     main.add_child(tabs)
     _add_tab(tabs, &"right", "RIGHT HAND")
     _add_tab(tabs, &"left", "LEFT HAND")
     _add_tab(tabs, &"spell", "SPELLS")
+    _services_button = _button("SHRINE SERVICES", _open_services, Vector2(170, 38))
+    tabs.add_child(_services_button)
 
     var section_header := HBoxContainer.new()
     main.add_child(section_header)
@@ -173,7 +211,9 @@ func _build_ui() -> void:
     _capacity_label = _label("", 11, MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
     section_header.add_child(_capacity_label)
 
-    var columns := HBoxContainer.new()
+    var columns := GridContainer.new()
+    _columns = columns
+    columns.columns = 3
     columns.custom_minimum_size = Vector2(0, 320)
     columns.add_theme_constant_override("separation", 14)
     columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -199,8 +239,17 @@ func _build_ui() -> void:
     available_wrap.add_theme_constant_override("separation", 7)
     available_panel.add_child(available_wrap)
     available_wrap.add_child(_label("AVAILABLE", 11, MUTED))
+    var search := LineEdit.new()
+    _search_field = search
+    search.placeholder_text = "Search owned equipment..."
+    search.text_changed.connect(func(value: String) -> void:
+        _search = value.to_lower()
+        _refresh_available()
+        _wire_focus())
+    available_wrap.add_child(search)
     var scroll := ScrollContainer.new()
     scroll.follow_focus = true
+    scroll.custom_minimum_size.y = 220
     scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
     scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
     available_wrap.add_child(scroll)
@@ -221,6 +270,7 @@ func _build_ui() -> void:
     _details_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     details_wrap.add_child(_details_title)
     _details_scroll = ScrollContainer.new()
+    _details_scroll.custom_minimum_size.y = 190
     _details_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
     _details_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _details_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -239,7 +289,17 @@ func _build_ui() -> void:
     _action_buttons.append(_button("APPLY & RETURN", _apply_and_close, Vector2(190, 40), true))
     for button: Button in _action_buttons: actions.add_child(button)
 
-func _add_tab(parent: HBoxContainer, section: StringName, text: String) -> void:
+func _layout_menu() -> void:
+    if not is_instance_valid(_columns): return
+    var compact: bool = size.x < 960
+    _columns.columns = 1 if compact else 3
+    for panel: Control in _columns.get_children():
+        panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    var margin: float = maxf(16, (size.x - 1180) * 0.5)
+    _frame.offset_left = margin
+    _frame.offset_right = -margin
+
+func _add_tab(parent: Container, section: StringName, text: String) -> void:
     var button := _button(text, _set_section.bind(section), Vector2(0, 38))
     button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     parent.add_child(button)
@@ -258,11 +318,18 @@ func _select_slot(index: int) -> void:
     _wire_focus()
     (_available_box.get_child(0) as Button).grab_focus()
 
-func _equip_weapon(item: WeaponDefinition) -> void:
-    var draft: Array[WeaponDefinition] = _draft_right if _section == &"right" else _draft_left
-    for i in draft.size():
-        if i != _selected_slot and draft[i] == item: draft[i] = null
-    draft[_selected_slot] = item
+func _equip_weapon(identity: String) -> void:
+    for hand: StringName in [&"right", &"left"]:
+        var ids: Array[String] = _right_ids if hand == &"right" else _left_ids
+        var draft: Array[WeaponDefinition] = _draft_right if hand == &"right" else _draft_left
+        for i in ids.size():
+            if ids[i] == identity:
+                ids[i] = ""
+                draft[i] = null
+    var selected_ids: Array[String] = _right_ids if _section == &"right" else _left_ids
+    var selected_draft: Array[WeaponDefinition] = _draft_right if _section == &"right" else _draft_left
+    selected_ids[_selected_slot] = identity
+    selected_draft[_selected_slot] = GameSession.weapon(identity)
     _refresh_all()
 
 func _equip_spell(item: SpellDefinition) -> void:
@@ -272,6 +339,8 @@ func _equip_spell(item: SpellDefinition) -> void:
     _refresh_all()
 
 func _clear_slot() -> void:
+    if _section == &"right": _right_ids[_selected_slot] = ""
+    elif _section == &"left": _left_ids[_selected_slot] = ""
     if _section == &"right": _draft_right[_selected_slot] = null
     elif _section == &"left": _draft_left[_selected_slot] = null
     else: _draft_spells[_selected_slot] = null
@@ -285,7 +354,7 @@ func _refresh_all() -> void:
     _section_title.text = titles[_section]
     var capacity: int = player.get_spell_slot_capacity() if _section == &"spell" else player.get_weapon_slot_capacity(_section)
     if _section == &"spell":
-        _capacity_label.text = str(capacity) + " slots  ·  " + str(player.spell_slot_bonus) + " bonus"
+        _capacity_label.text = str(player.spell_memory_used(_draft_spells)) + " / " + str(capacity) + " memory"
     else:
         _capacity_label.text = str(capacity) + " slots"
     for section: StringName in _tab_buttons:
@@ -308,10 +377,12 @@ func _link_focus(button: Control, top: Control, bottom: Control, left: Control, 
 func _wire_focus() -> void:
     # Explicit neighbors keep scrolling lists and rebuilt rows reachable.
     var tabs: Array = _tab_buttons.values()
+    tabs.append(_services_button)
     var slot: Control = _slot_box.get_child(_selected_slot) as Control
     var first_item: Control = _available_box.get_child(0) as Control
     for i in tabs.size():
         _link_focus(tabs[i], tabs[i], slot, tabs[posmod(i - 1, tabs.size())], tabs[(i + 1) % tabs.size()])
+    _link_focus(_search_field, _tab_buttons[_section], first_item, slot, _services_button)
     for i in _slot_box.get_child_count():
         var row: Control = _slot_box.get_child(i) as Control
         var above: Control = _slot_box.get_child(i - 1) as Control if i > 0 else _tab_buttons[_section] as Control
@@ -319,7 +390,7 @@ func _wire_focus() -> void:
         _link_focus(row, above, below, row, first_item)
     for i in _available_box.get_child_count():
         var row: Control = _available_box.get_child(i) as Control
-        var above: Control = _available_box.get_child(i - 1) as Control if i > 0 else _tab_buttons[_section] as Control
+        var above: Control = _available_box.get_child(i - 1) as Control if i > 0 else _search_field
         var below: Control = _available_box.get_child(i + 1) as Control if i + 1 < _available_box.get_child_count() else _action_buttons[1]
         _link_focus(row, above, below, slot, _action_buttons[1])
     _link_focus(_action_buttons[0], slot, _action_buttons[0], _action_buttons[1], _action_buttons[1])
@@ -343,24 +414,42 @@ func _refresh_available() -> void:
     _available_box.add_child(_button("— EMPTY SLOT —", _clear_slot, Vector2(0, 38)))
     if _section == &"spell":
         for spell: SpellDefinition in CATALOG.spells:
-            if spell == null: continue
+            if spell == null or spell.is_basic(): continue
+            if not GameSession.character.known_spells.has(String(spell.id)): continue
+            if not _search.is_empty() and not spell.display_name.to_lower().contains(_search): continue
             var button := _button(spell.display_name + "   ·   " + spell.school, _equip_spell.bind(spell), Vector2(0, 40))
             button.alignment = HORIZONTAL_ALIGNMENT_LEFT
             _available_box.add_child(button)
             button.focus_entered.connect(_refresh_details.bind(spell))
     else:
-        for weapon: WeaponDefinition in CATALOG.weapons:
+        for owned: EquipmentInstance in GameSession.character.equipment:
+            var weapon: WeaponDefinition = GameSession.weapon(owned.id)
             if weapon == null: continue
+            if not _search.is_empty() and not weapon.display_name.to_lower().contains(_search): continue
             if _section == &"right" and not weapon.usable_in_right_hand: continue
             if _section == &"left" and not weapon.usable_in_left_hand: continue
             var label_text: String = weapon.display_name + "   ·   " + weapon.category
-            var button := _button(label_text, _equip_weapon.bind(weapon), Vector2(0, 40))
+            var button := _button(label_text + "  +" + str(owned.upgrade_level), _equip_weapon.bind(owned.id), Vector2(0, 40))
             button.alignment = HORIZONTAL_ALIGNMENT_LEFT
             _available_box.add_child(button)
             button.focus_entered.connect(_refresh_details.bind(weapon))
 
 func _selected_item() -> Resource:
     return _draft_item(_selected_slot)
+
+func _open_services() -> void:
+    if is_instance_valid(_services): return
+    _services = ShrineServices.new()
+    add_child(_services)
+    _services.tree_exited.connect(_services_closed)
+
+func _services_closed() -> void:
+    if not is_inside_tree() or not is_instance_valid(player) or not visible: return
+    _services = null
+    _copy_drafts()
+    _selected_slot = 0
+    _refresh_all()
+    _services_button.grab_focus()
 
 func _draft_item(index: int) -> Resource:
     if _section == &"right": return _draft_right[index] if index < _draft_right.size() else null

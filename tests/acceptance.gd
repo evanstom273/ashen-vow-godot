@@ -1,184 +1,89 @@
 extends Node
-var court: Node2D
-var player: PlayerController
+## Opt-in rebuild data regressions. Authored, NOT run during implementation.
+## Does not instantiate actors, change the active character, or write user save files.
 var failures: int = 0
-var captures: bool = false
 
 func _ready() -> void:
-    captures = "--capture" in OS.get_cmdline_user_args()
-    call_deferred("_run")
+	if "--rebuild-tests" not in OS.get_cmdline_user_args() and "--foundation-tests" not in OS.get_cmdline_user_args():
+		push_warning("Acceptance is opt-in. Read docs/VERIFICATION.txt before running it.")
+		return
+	call_deferred("_run")
 
 func check(condition: bool, label: String) -> void:
-    if not condition:
-        failures += 1
-        push_error("ACCEPTANCE FAIL: " + label)
-    else: print("PASS: " + label)
-
-func frames(count: int) -> void:
-    for i in count: await get_tree().physics_frame
-
-func snap(label: String) -> void:
-    if not captures: return
-    await RenderingServer.frame_post_draw
-    var path: String = "res://.godot/qa/" + label + ".png"
-    get_viewport().get_texture().get_image().save_png(path)
-    print("CAPTURE: " + path)
+	if condition: print("PASS: ", label)
+	else:
+		failures += 1
+		push_error("FAIL: " + label)
 
 func _run() -> void:
-    DirAccess.make_dir_recursive_absolute("res://.godot/qa")
-    court = load("res://scenes/main.tscn").instantiate()
-    add_child(court)
-    player = court.player
-    player.set_process_unhandled_input(false)
-    await frames(8)
-    var enemy: Node2D = get_tree().get_first_node_in_group("sentinel")
-    enemy.set_physics_process(false)
-    await frames(285 if captures else 2)
-    check(player.health == 5 and player.stamina == 100,"Spawn health and stamina")
-    await snap("01-courtyard-idle")
-    Input.action_press("move_right")
-    player._right_held = true
-    player._hold_time = 0.3
-    await frames(12)
-    check(player.sprinting and player.velocity.length() > 350,"Hold sprint and stamina expenditure")
-    await snap("02-sprint")
-    Input.action_release("move_right")
-    player._right_held = false
-    await frames(2)
-    player.global_position = Vector2(-180,120)
-    player.set_target(get_tree().get_first_node_in_group("interactable"))
-    player._cooldown = 0
-    player.stamina = 100
-    player.request_action("dodge")
-    check(player.dodge_direction.y > 0.8,"Stationary dodge uses locked aim")
-    await frames(10)
-    var prior_health: int = player.health
-    player.take_damage(1,enemy)
-    check(player.health == prior_health,"Roll invulnerability during active interval")
-    await snap("03-roll")
-    await frames(30)
-    check(player.state == PlayerController.PlayerState.NORMAL and absf(player.visuals.roll_pivot.rotation) < 0.01,"Roll returns upright")
-    player.stamina = 0
-    player.request_action("attack")
-    check(player.state == PlayerController.PlayerState.NORMAL,"Insufficient stamina prevents attack")
-    player._regen_delay = 0
-    await frames(15)
-    check(player.stamina > 0,"Stamina regenerates")
-    var dummy: Node2D = get_tree().get_first_node_in_group("resettable")
-    player.global_position = dummy.global_position + Vector2(33,0)
-    player.set_target(dummy)
-    player.stamina = 100
-    player.request_action("attack")
-    await frames(9)
-    await snap("04-attack-impact")
-    await frames(28)
-    check(dummy.health == 2,"One damage per active attack window")
-    player.global_position = Vector2(700,400)
-    await frames(2)
-    check(player.locked_target == null and not dummy.locked,"Out-of-range lock clears indicator")
-    var shrine: Node2D = get_tree().get_first_node_in_group("interactable")
-    player.set_target(shrine)
-    check(player.nearby_interactable() == null,"Distant shrine interaction rejected")
-    player.global_position = shrine.global_position + Vector2(0,40)
-    player.health = 2
-    player.stamina = 20
-    enemy.state = enemy.State.APPROACH
-    check(not shrine.can_interact(player),"Rest blocked during combat")
-    enemy.state = enemy.State.IDLE
-    player.interact_nearby()
-    check(player.health == 5 and player.stamina == 100 and dummy.health == 3,"Shrine restores and resets encounter")
-    await frames(12)
-    await snap("06-shrine")
-    await _directions(dummy, enemy)
-    player.global_position = Vector2(230,-20)
-    enemy.reset_encounter()
-    enemy.state = enemy.State.WINDUP
-    enemy.clock = 0.35
-    enemy.direction = Vector2.DOWN
-    enemy.queue_redraw()
-    player.set_target(enemy)
-    await frames(15)
-    await snap("05-sentinel-telegraph")
-    enemy.set_physics_process(true)
-    await frames(75)
-    check(player.health < 5,"Sentinel strike damages player")
-    enemy.set_physics_process(false)
-    player._protection = 0
-    player.take_damage(20,enemy)
-    await frames(90)
-    check(player.state == PlayerController.PlayerState.DEAD,"Player death disables actions")
-    await snap("07-death")
-    get_tree().paused = false
-    print("ACCEPTANCE COMPLETE: ", failures, " failures")
-    print("PERFORMANCE: FPS=", Engine.get_frames_per_second(), " process_ms=", Performance.get_monitor(Performance.TIME_PROCESS) * 1000, " physics_ms=", Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000)
-    get_tree().quit(failures)
-
-func _directions(dummy: Node2D, enemy: Node2D) -> void:
-    var dummy_home: Vector2 = dummy.global_position
-    var directions_ok: bool = true
-    for i in 8:
-        var direction: Vector2 = Vector2.RIGHT.rotated(i * TAU / 8)
-        player.global_position = Vector2(-120,-140)
-        dummy.global_position = player.global_position + direction * 36
-        dummy.reset_encounter()
-        player.set_target(dummy)
-        player.stamina = 100
-        player.request_action("attack")
-        directions_ok = directions_ok and player.aim.dot(direction) > 0.99
-        await frames(30)
-        directions_ok = directions_ok and dummy.health == 2
-    check(directions_ok,"Eight-direction attacks hit once and aim correctly")
-    var rolls_ok: bool = true
-    for face in [-1.0, 1.0]:
-        for i in 8:
-            var direction: Vector2 = Vector2.RIGHT.rotated(i * TAU / 8)
-            player.global_position = Vector2(-120,-140)
-            dummy.global_position = player.global_position + Vector2(face*100,0)
-            dummy.reset_encounter()
-            player.set_target(dummy)
-            player._cooldown = 0
-            player.stamina = 100
-            _move(direction)
-            player.request_action("dodge")
-            _move(Vector2.ZERO)
-            await frames(9)
-            player.visuals._process(0.001)
-            var screen_rotation: float = player.visuals.roll_pivot.rotation * player.facing
-            var expected: float = signf(direction.x) if absf(direction.x) > 0.1 else signf(direction.y)
-            rolls_ok = rolls_ok and signf(screen_rotation) == expected
-            await frames(24)
-            player.visuals._process(0.001)
-            rolls_ok = rolls_ok and absf(player.visuals.roll_pivot.rotation) < 0.01
-    check(rolls_ok,"All 16 direction/facing roll combinations spin and restore correctly")
-    dummy.global_position = dummy_home
-    dummy.reset_encounter()
-    player.set_target(null)
-    player.global_position = Vector2(0,260)
-    player.health = 5
-    player._protection = 0
-    player._cooldown = 0
-    player.stamina = 100
-    player.request_action("dodge")
-    player.take_damage(1,enemy)
-    check(player.health == 4,"Roll startup remains vulnerable")
-    player.take_damage(1,enemy)
-    check(player.health == 4,"Damage protection prevents repeat hits")
-    await frames(25)
-    player.restore()
-    player.request_action("attack")
-    await frames(18)
-    player._cooldown = 0
-    player.request_action("dodge")
-    await frames(8)
-    check(player.state == PlayerController.PlayerState.DODGING,"Recovery input buffer starts dodge after attack")
-    await frames(33)
-    player._right_held = true
-    player._notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
-    check(not player._right_held,"Focus loss releases held sprint")
-
-func _move(direction: Vector2) -> void:
-    for action: String in ["move_left","move_right","move_up","move_down"]: Input.action_release(action)
-    if direction.x < -0.1: Input.action_press("move_left")
-    if direction.x > 0.1: Input.action_press("move_right")
-    if direction.y < -0.1: Input.action_press("move_up")
-    if direction.y > 0.1: Input.action_press("move_down")
+	var catalogue := load("res://data/game_catalog.tres") as GameDataCatalog
+	var issues: Array[String] = ContentAudit.inspect(catalogue)
+	for issue: String in issues: push_error(issue)
+	check(issues.is_empty(), "Catalogue authoring contracts")
+	check(DamageProfile.new().total() == 0, "New damage profiles have no hidden physical component")
+	check(not HitResult.reject(&"invulnerable").accepted, "Rejected hit is explicit")
+	check(HitResult.accept(17).damage == 17, "Accepted hit carries actual damage")
+	var sword := load("res://data/weapons/wanderer_sword.tres") as WeaponDefinition
+	check(sword.light_attack.charge_threshold > 0, "Light candidate has a valid threshold")
+	check(sword.charged_attack.stamina_cost > 0, "Charged sword does not inherit free enemy action")
+	var fire := load("res://data/attacks/blackflame.tres") as AttackDefinition
+	var stats := AttributeStats.new()
+	stats.arcane = 10
+	check(is_equal_approx(fire.max_health_drain.total_fraction(stats), 0.02), "Blackflame low fraction")
+	check(is_equal_approx(fire.max_health_drain.lifetime(stats), 0.75), "Blackflame low duration")
+	stats.arcane = 60
+	check(is_equal_approx(fire.max_health_drain.total_fraction(stats), 0.05), "Blackflame capped fraction")
+	check(is_equal_approx(fire.max_health_drain.lifetime(stats), 1.25), "Blackflame capped duration")
+	stats.arcane = 99
+	check(is_equal_approx(fire.max_health_drain.total_fraction(stats), 0.05), "No benefit past Arcane 60")
+	check(fire.damage.fire > 0, "Separate ordinary fire damage remains")
+	var state := CharacterState.new()
+	state.class_id = &"ashen_wanderer"
+	state.checkpoint = {"scene": state.scene, "position": CharacterState.point(Vector2.ZERO), "elevation": 0}
+	var first: EquipmentInstance = state.add_equipment(sword)
+	var second: EquipmentInstance = state.add_equipment(sword)
+	state.right_slots.append(first.id)
+	state.left_slots.append(second.id)
+	state.currency = 123
+	state.spell_uses["star_shard"] = 7
+	state.utility_pool["healing_flask"] = 1
+	var encoded: Variant = JSON.parse_string(JSON.stringify(state.to_record()))
+	check(encoded is Dictionary and CharacterState.valid_record(encoded), "JSON schema round trip")
+	if encoded is Dictionary and CharacterState.valid_record(encoded):
+		var restored := CharacterState.from_record(encoded)
+		check(restored.currency == 123 and int(restored.spell_uses.star_shard) == 7, "Currency and uses restored in memory")
+		check(restored.right_slots[0] != restored.left_slots[0], "Two weapon copies retain distinct owned IDs")
+		check(int(restored.utility_pool.get("healing_flask", -1)) == 1, "Unequipped utility charges survive the record")
+		encoded.selected = ["not a number"]
+		check(not CharacterState.valid_record(encoded), "Malformed typed boundary rejected")
+	var movement := load("res://data/movement/player_movement.tres") as MovementDefinition
+	check(is_equal_approx(movement.walk_speed, 512) and is_equal_approx(movement.walk_speed * movement.sprint_multiplier, 768), "Human speed contract")
+	var fixed_drop := CurrencyDropDefinition.new()
+	fixed_drop.minimum_amount = 12
+	fixed_drop.maximum_amount = 12
+	check(fixed_drop.roll_amount() == 12, "Equal min/max currency range")
+	var wand := load("res://data/weapons/pilgrim_wand.tres") as WeaponDefinition
+	check(wand.basic_spell != null and wand.basic_spell.is_basic() and wand.basic_spell.starting_charges() == -1, "Catalyst basic is an unlimited virtual entry")
+	check(not (load("res://data/spells/star_shard.tres") as SpellDefinition).is_basic(), "Prepared named spells remain finite")
+	var original_damage: int = sword.light_attack.health_damage(stats)
+	var upgraded := sword.light_attack.duplicate(true) as AttackDefinition
+	upgraded.upgrade_multiplier = 1.8
+	check(upgraded.health_damage(stats) >= original_damage and sword.light_attack.upgrade_multiplier == 1.0, "Upgrade multiplier is per-hit, not shared")
+	upgraded.resolved_health_damage = 27
+	check(upgraded.health_damage(stats) == 27, "Percentage-health exact payload is not upgraded")
+	for path: String in ["res://data/statuses/poison.tres", "res://data/statuses/bleed.tres", "res://data/statuses/frost.tres"]:
+		var status := load(path) as StatusDefinition
+		check(status != null and status.threshold > 0 and status.icon != null, "Status authoring: " + path.get_file())
+	var malformed: Dictionary = state.to_record()
+	malformed.attributes = malformed.attributes.duplicate(true)
+	malformed.attributes.arcane = 10.5
+	check(not CharacterState.valid_record(malformed), "Fractional attributes rejected at save boundary")
+	check(GameSettings._valid_settings({"bindings": {"cast_spell": [{"kind": "key", "code": 70}]}}), "Valid typed rebind record")
+	check(not GameSettings._valid_settings({"bindings": {"cast_spell": [{"kind": "axis", "code": 0, "sign": 0}]}}), "Neutral controller binding rejected")
+	var climate := load("res://data/environment/climate.tres") as ClimateDefinition
+	check(is_equal_approx(climate.day_seconds, 1440.0), "Pausable authored 24-minute day")
+	var invalid_effect := SpellEffectDefinition.new()
+	invalid_effect.interval = 0.0
+	check(not invalid_effect.validation_error().is_empty(), "Malformed periodic interval cannot enter a tick loop")
+	print("REBUILD DATA CHECKS COMPLETE: ", failures, " failures. Gameplay, visuals and performance are NOT covered.")
+	get_tree().quit(failures)

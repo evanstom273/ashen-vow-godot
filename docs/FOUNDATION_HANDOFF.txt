@@ -1,0 +1,4 @@
+SUPERSEDED — historical foundation-stage handoff
+The rebuild continued across the remaining systems at the user's request.
+Read WHOLE_GAME_HANDOFF.txt and REBUILD_ROADMAP.txt for the current implementation.
+Runtime/visual/performance review is still unverified; no imports/tests were run.

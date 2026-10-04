@@ -14,4 +14,4 @@
 script = ExtResource("script")
 display_name = "Right hand"
 max_slots = 2
-weapons = Array[ExtResource("weapon_type")]([ExtResource("sword"), ExtResource("dagger")])
+weapons = Array[ExtResource("weapon_type")]([ExtResource("wand"), ExtResource("sword")])

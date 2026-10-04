@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/shrine.gd" id="1_shrine"]
 [ext_resource type="Resource" path="res://data/interactables/ashen_shrine.tres" id="2_definition"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/shrine_frame.svg" id="frame"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_shrine"]
 size = Vector2(28, 28)
@@ -19,8 +20,14 @@ polygon = PackedVector2Array(-20, 10, -12, 3, 8, 3, 20, 10, 10, 15, -10, 15)
 color = Color(0.015, 0.025, 0.06, 0.42)
 
 [node name="Stone" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(-13, -8, 0, -22, 13, -8, 10, 12, 0, 19, -10, 12)
 color = Color(0.34902, 0.403922, 0.411765, 1)
+
+[node name="IllustratedFrame" type="Sprite2D" parent="."]
+texture = ExtResource("frame")
+scale = Vector2(0.5, 0.5)
+position = Vector2(0, -4)
 
 [node name="Core" type="Polygon2D" parent="."]
 polygon = PackedVector2Array(-6, -7, 0, -14, 6, -7, 5, 7, 0, 12, -5, 7)

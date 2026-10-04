@@ -59,6 +59,7 @@ position = Vector2(-256, 192)
 position = Vector2(-256, -256)
 collision_layer = 1
 definition = SubResource("CampShrineDefinition")
+checkpoint_id = &"stillwood_camp"
 
 [node name="Campfire" parent="Actors" unique_id=1882055898 instance=ExtResource("fire")]
 position = Vector2(358.4, 64)

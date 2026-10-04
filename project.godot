@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="ashen-vow"
-run/main_scene="uid://dg2tnjeelley8"
+run/main_scene="res://scenes/title_screen.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
@@ -20,6 +20,12 @@ config/icon="res://icon.svg"
 Fullscreen="*res://scripts/fullscreen.gd"
 Feedback="*res://scripts/feedback.gd"
 EnvironmentWind="*res://scripts/environment_wind.gd"
+GameSession="*res://scripts/game_session.gd"
+GameSettings="*res://scripts/game_settings.gd"
+UIFlow="*res://scripts/ui_flow.gd"
+ActorRegistry="*res://scripts/actor_registry.gd"
+WorldClimate="*res://scripts/world_climate.gd"
+ProceduralMusic="*res://scripts/procedural_music.gd"
 
 [shader_globals]
 

@@ -1,5 +1,33 @@
 class_name SpellDeliveryService
 extends RefCounted
+static var validation_cache: Dictionary = {}
+
+static func validated(definition: SpellDeliveryDefinition) -> String:
+	if definition == null: return "Missing delivery"
+	var identity: int = definition.get_instance_id()
+	if validation_cache.has(identity):
+		var entry: Dictionary = validation_cache[identity]
+		if is_instance_valid(entry.resource.get_ref()): return str(entry.error)
+	var error: String = validate(definition)
+	if validation_cache.size() >= 512: validation_cache.clear()
+	_track_definition(definition, {})
+	validation_cache[identity] = {"resource": weakref(definition), "error": error}
+	return error
+
+static func _invalidate_validation() -> void:
+	validation_cache.clear()
+
+static func _track_definition(resource: Resource, visited: Dictionary) -> void:
+	if resource == null or visited.has(resource) or not resource.get_script() is Script: return
+	visited[resource] = true
+	if not resource.changed.is_connected(_invalidate_validation): resource.changed.connect(_invalidate_validation)
+	for property: Dictionary in resource.get_property_list():
+		if not (int(property.usage) & PROPERTY_USAGE_STORAGE) or property.name == &"script": continue
+		var value: Variant = resource.get(property.name)
+		if value is Resource: _track_definition(value, visited)
+		elif value is Array:
+			for child: Variant in value:
+				if child is Resource: _track_definition(child, visited)
 
 static func alive(actor: Node) -> bool:
 	return is_instance_valid(actor) and actor.is_inside_tree() and (actor.get("health") == null or int(actor.get("health")) > 0)
@@ -7,13 +35,12 @@ static func alive(actor: Node) -> bool:
 static func on_plane(context: SpellCastContext, actor: Node) -> bool:
 	return is_instance_valid(actor) and (context.cross_elevations or Elevation.occupies(actor, context.elevation))
 
-static func targets(context: SpellCastContext, filter: String = "Hostile") -> Array[Node2D]:
+static func targets(context: SpellCastContext, filter: String = "Hostile", center: Vector2 = Vector2.INF, radius: float = 0.0) -> Array[Node2D]:
 	var result: Array[Node2D] = []
 	if not alive(context.caster): return result
 	if filter == "Caster":
 		if on_plane(context, context.caster): result.append(context.caster)
 		return result
-	var tree: SceneTree = context.caster.get_tree()
 	# Conditional array literals lose their element type in GDScript.
 	var groups: Array[String] = []
 	if context.faction == &"enemy":
@@ -27,8 +54,12 @@ static func targets(context: SpellCastContext, filter: String = "Hostile") -> Ar
 	else:
 		groups.append("player")
 		groups.append("spell_ally")
+	var candidates: Array[Node2D] = []
+	if center.is_finite() and radius > 0.0: candidates = ActorRegistry.nearby(center, radius + 256.0)
+	else: candidates = ActorRegistry.registered()
 	for group: String in groups:
-		for actor: Node in tree.get_nodes_in_group(group):
+		for actor: Node2D in candidates:
+			if not actor.is_in_group(group): continue
 			if not actor is Node2D or not alive(actor) or result.has(actor): continue
 			if not on_plane(context, actor): continue
 			if filter == "Hostile" and actor.has_method("is_targetable") and not actor.is_targetable(): continue
@@ -39,8 +70,8 @@ static func targets(context: SpellCastContext, filter: String = "Hostile") -> Ar
 static func wall_end(context: SpellCastContext, start: Vector2, end: Vector2) -> Vector2:
 	var query := PhysicsRayQueryParameters2D.create(start, end, 1)
 	if context.caster is CollisionObject2D: query.exclude = [(context.caster as CollisionObject2D).get_rid()]
-	var hit: Dictionary = Elevation.ray(context.caster, query, context.elevation, context.cross_elevations)
-	return hit.position if not hit.is_empty() else end
+	var ray_result: Dictionary = Elevation.ray(context.caster, query, context.elevation, context.cross_elevations)
+	return ray_result.position if not ray_result.is_empty() else end
 
 static func visible(context: SpellCastContext, start: Vector2, end: Vector2) -> bool:
 	return wall_end(context, start, end).distance_to(end) < 2.0
@@ -83,7 +114,8 @@ static func validate(definition: SpellDeliveryDefinition, visited: Array = [], i
 			var error: String = validate(value as SpellDeliveryDefinition, path, in_summon)
 			if not error.is_empty(): return error
 	for effect: SpellEffectDefinition in definition.effects:
-		if effect == null or effect.interval <= 0 or effect.duration < 0: return "Invalid effect"
+		if effect == null: return "Missing effect"
+		if not effect.validation_error().is_empty(): return effect.validation_error()
 	if definition is OrbitingDelivery and not definition.child is ProjectileDelivery: return "Orbiters require a projectile child"
 	if definition is ImbueDelivery and (definition.bonus_damage == null or definition.recipient not in ["opposite", "left", "right"]): return "Invalid weapon imbue"
 	if definition is DashDelivery and (definition.invulnerability_start < 0 or definition.invulnerability_end > 1 or definition.invulnerability_start > definition.invulnerability_end): return "Invalid dash invulnerability window"
@@ -95,17 +127,15 @@ static func validate(definition: SpellDeliveryDefinition, visited: Array = [], i
 			if not drain.is_valid():
 				return "Invalid maximum-health drain curve"
 		for effect: SpellEffectDefinition in definition.completion_effects:
-			if effect == null or effect.interval <= 0 or effect.duration < 0: return "Invalid completion effect"
+			if effect == null: return "Missing completion effect"
+			if not effect.validation_error().is_empty(): return effect.validation_error()
 	if definition is SummonDelivery:
 		if in_summon: return "Summons cannot summon"
 		var summon: SummonDefinition = definition.summon
 		if summon == null or summon.health <= 0 or summon.attack_interval <= 0: return "Invalid summon"
 		if summon.delivery != null and (summon.delivery.is_channel() or summon.delivery is DashDelivery or summon.delivery is ImbueDelivery): return "Summon attacks must be independent deliveries"
-		if summon.scene != null:
-			var instance: Node = summon.scene.instantiate()
-			var compatible: bool = instance is SpellSummon
-			instance.free()
-			if not compatible: return "Summon scene requires SpellSummon"
+		if summon.scene != null and not SceneContract.inherits_script(summon.scene, &"SpellSummon"):
+			return "Summon scene requires SpellSummon"
 		return validate(summon.delivery, path, true)
 	return ""
 
@@ -130,14 +160,16 @@ static func launch(definition: SpellDeliveryDefinition, context: SpellCastContex
 	WorldScale.attach_art(instance, context.caster.get_tree().current_scene, context.origin, 1.0)
 	return instance
 
-static func hit(definition: SpellDeliveryDefinition, context: SpellCastContext, actor: Node2D, multiplier: float = 1.0) -> void:
-	if not alive(actor): return
+static func hit(definition: SpellDeliveryDefinition, context: SpellCastContext, actor: Node2D, multiplier: float = 1.0) -> HitResult:
+	if not alive(actor): return HitResult.reject(&"invalid_target")
+	var outcome := HitResult.accept()
 	var attack: AttackDefinition = definition.attack if definition.attack != null else context.attack
 	var cross: bool = context.cross_elevations or definition.cross_elevations or (attack != null and attack.cross_elevations)
-	if not cross and not Elevation.occupies(actor, context.elevation): return
-	if attack != null and definition.target_filter == "Hostile" and actor.has_method("receive_hit"):
-		var payload := attack.duplicate(true) as AttackDefinition
+	if not cross and not Elevation.occupies(actor, context.elevation): return HitResult.reject(&"elevation")
+	if definition.target_filter == "Hostile":
+		var payload: AttackDefinition = attack.duplicate(true) as AttackDefinition if attack != null else AttackDefinition.new()
 		payload.has_hit_elevation = true
+		payload.upgrade_multiplier = context.upgrade_multiplier
 		payload.hit_elevation = context.elevation
 		payload.cross_elevations = cross
 		payload.recurring_feedback = definition.kind() in [&"beam", &"cone", &"zone", &"aura", &"tether"] or context.from_summon
@@ -151,11 +183,20 @@ static func hit(definition: SpellDeliveryDefinition, context: SpellCastContext, 
 		if payload.damage != null:
 			for channel: String in ["physical", "magic", "fire", "lightning", "holy"]:
 				payload.damage.set(channel, float(payload.damage.get(channel)) * multiplier)
-		var before: int = int(actor.get("health")) if actor.get("health") != null else 0
-		actor.receive_hit(payload, context.attributes, context.attribution)
-		if not alive(actor): return
-		if actor.get("health") != null and int(actor.get("health")) >= before: return
-	for effect: SpellEffectDefinition in definition.effects: SpellEffects.of(actor).apply(effect, context)
+		if attack != null:
+			outcome = HitRequest.deliver(actor, payload, context.attributes, context.attribution)
+			# A zero-damage slow/curse is still a contact, but must pass the same
+			# dodge, protection, death and floor gates before attaching an effect.
+			if outcome.reason == &"no_damage" and not definition.effects.is_empty(): outcome = HitResult.accept()
+		else:
+			var rejected: StringName = HitRequest.rejection(actor, payload, context.attribution)
+			if not rejected.is_empty(): return HitResult.reject(rejected)
+			if definition.effects.is_empty(): return HitResult.reject(&"no_payload")
+		if not outcome.accepted or not alive(actor): return outcome
+	for effect: SpellEffectDefinition in definition.effects:
+		if effect == null: continue
+		if SpellEffects.of(actor).apply(effect, context): outcome.applied_effects.append(effect.id)
+	return outcome
 
 static func clear_owned(caster: Node) -> void:
 	Feedback.clear_spell_visuals(caster.get_instance_id())

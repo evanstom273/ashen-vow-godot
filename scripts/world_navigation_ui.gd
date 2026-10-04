@@ -20,6 +20,10 @@ var woodland: Array = []
 var landmarks: Array[Dictionary] = []
 var discovered: Dictionary = {}
 var markers: Array[Vector2] = []
+var marker_levels: Array[int] = []
+var selected_floor: int = 0
+var controller_cursor := Vector2.ZERO
+var controller_map: bool = false
 var marker_fades: Array[float] = [] # -1: unreached; otherwise seconds remaining.
 const ARRIVAL_FADE_SECONDS: float = 2.0
 var active_marker: int = -1
@@ -43,6 +47,8 @@ var map_dirty: bool = true
 var map_vignette: GradientTexture2D
 
 func _ready() -> void:
+	add_to_group("world_navigation")
+	GameSession.character_changed.connect(_restore_navigation)
 	var edge_gradient := Gradient.new()
 	edge_gradient.offsets = PackedFloat32Array([0.0, 0.45, 0.75, 1.0])
 	edge_gradient.colors = PackedColorArray([Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0.4), Color(0, 0, 0, 1)])
@@ -84,10 +90,16 @@ func _ready() -> void:
 			if region_boundary.is_empty() and actor.get_script() == preload("res://scripts/forest_tree.gd"):
 				trees.append(actor.global_position)
 			if actor is AshenShrine:
-				landmarks.append({"position": actor.global_position, "name": actor.definition.display_name, "kind": "shrine"})
+				landmarks.append({"id": actor.checkpoint_id, "position": actor.global_position, "name": actor.definition.display_name, "kind": "shrine"})
 			elif actor.get_script() == preload("res://scripts/campfire.gd"):
 				landmarks.append({"position": actor.global_position, "name": "Campfire", "kind": "fire"})
 	map_canvas = Control.new()
+	for shrine: Node in get_tree().get_nodes_in_group("shrine"):
+		if not shrine is AshenShrine: continue
+		var exists: bool = false
+		for landmark: Dictionary in landmarks:
+			if landmark.get("id", &"") == shrine.checkpoint_id: exists = true; break
+		if not exists: landmarks.append({"id": shrine.checkpoint_id, "position": shrine.global_position, "name": shrine.definition.display_name, "kind": "shrine", "floor": Elevation.level(shrine)})
 	map_canvas.mouse_filter = Control.MOUSE_FILTER_STOP
 	map_canvas.clip_contents = true
 	map_canvas.draw.connect(_draw_map)
@@ -140,9 +152,12 @@ func _layout() -> void:
 
 func request_open() -> void:
 	if opened or get_tree().paused or not is_instance_valid(player) or player.health <= 0: return
+	if not UIFlow.acquire(self): return
 	opened = true
+	selected_floor = Elevation.level(player)
+	controller_cursor = size * 0.5
+	controller_map = player.gamepad_active
 	player.reset_control_holds()
-	get_tree().paused = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	map_canvas.show()
 	# Keep the user's zoom and pan between visits.
@@ -170,12 +185,50 @@ func _finish_close_map() -> void:
 	map_closing = false
 	opened = false
 	dragging_marker = -1
-	get_tree().paused = false
+	UIFlow.release(self)
 	player.reset_control_holds()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	map_canvas.hide()
 	_layout()
 	map_toggled.emit(false)
+	GameSession.save_now()
+
+func _landmark_key(index: int) -> String:
+	# Unidentified scenery must not alias every other object with the same name.
+	# Add a stable authored ID to a map record when its discovery should persist.
+	return String(landmarks[index].get("id", ""))
+
+func save_navigation() -> Dictionary:
+	var known: Array[String] = []
+	for index in landmarks.size():
+		var identity: String = _landmark_key(index)
+		if discovered.has(index) and not identity.is_empty(): known.append(identity)
+	var pins: Array[Array] = []
+	for point: Vector2 in markers: pins.append(CharacterState.point(point))
+	return {"discovered": known, "markers": pins, "fades": marker_fades, "active": active_marker,
+		"zoom": view_zoom, "pan": CharacterState.point(pan), "floors": marker_levels}
+
+func _restore_navigation() -> void:
+	if GameSession.character == null: return
+	var record: Dictionary = GameSession.character.navigation.get(get_tree().current_scene.scene_file_path, {})
+	var known: Array = record.get("discovered", [])
+	for index in landmarks.size():
+		var identity: String = _landmark_key(index)
+		if not identity.is_empty() and known.has(identity): discovered[index] = true
+	markers.clear()
+	marker_levels.clear()
+	marker_fades.clear()
+	var pins: Array = record.get("markers", [])
+	var fades: Array = record.get("fades", [])
+	for index in mini(MAX_MARKERS, pins.size()):
+		markers.append(CharacterState.vector(pins[index]))
+		var floors: Array = record.get("floors", [])
+		marker_levels.append(int(floors[index]) if index < floors.size() else 0)
+		marker_fades.append(clampf(float(fades[index]), -1.0, ARRIVAL_FADE_SECONDS) if index < fades.size() else -1.0)
+	active_marker = clampi(int(record.get("active", -1)), -1, markers.size() - 1)
+	view_zoom = clampf(float(record.get("zoom", 1.0)), 0.5, 6.0)
+	pan = CharacterState.vector(record.get("pan"))
+	map_dirty = true
 
 func handle_input(event: InputEvent) -> bool:
 	if event.is_action_pressed("world_map") and not event.is_echo():
@@ -184,6 +237,25 @@ func handle_input(event: InputEvent) -> bool:
 		get_viewport().set_input_as_handled()
 		return true
 	if not opened: return false
+	if event is InputEventJoypadButton and not event.pressed:
+		get_viewport().set_input_as_handled()
+		return true
+	if event is InputEventJoypadButton and event.pressed:
+		controller_map = true
+		match event.button_index:
+			JOY_BUTTON_A: _place_or_select(controller_cursor); dragging_marker = -1
+			JOY_BUTTON_X: _remove_active()
+			JOY_BUTTON_Y: _centre_player()
+			JOY_BUTTON_LEFT_SHOULDER: _change_floor(-1)
+			JOY_BUTTON_RIGHT_SHOULDER: _change_floor(1)
+			JOY_BUTTON_B, JOY_BUTTON_BACK: close_map()
+		map_dirty = true
+		get_viewport().set_input_as_handled()
+		return true
+	if event is InputEventKey and event.pressed and event.keycode in [KEY_PAGEUP, KEY_PAGEDOWN]:
+		_change_floor(1 if event.keycode == KEY_PAGEUP else -1)
+		get_viewport().set_input_as_handled()
+		return true
 	if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
 		close_map()
 		get_viewport().set_input_as_handled()
@@ -193,6 +265,21 @@ func handle_input(event: InputEvent) -> bool:
 
 func _process(delta: float) -> void:
 	if not is_instance_valid(player): return
+	if opened and not map_closing:
+		for device: int in Input.get_connected_joypads():
+			var cursor_motion := Vector2(Input.get_joy_axis(device, JOY_AXIS_LEFT_X), Input.get_joy_axis(device, JOY_AXIS_LEFT_Y))
+			var pan_motion := Vector2(Input.get_joy_axis(device, JOY_AXIS_RIGHT_X), Input.get_joy_axis(device, JOY_AXIS_RIGHT_Y))
+			var zoom_motion: float = Input.get_joy_axis(device, JOY_AXIS_TRIGGER_RIGHT) - Input.get_joy_axis(device, JOY_AXIS_TRIGGER_LEFT)
+			if cursor_motion.length() > 0.2:
+				controller_cursor = (controller_cursor + cursor_motion * delta * 460.0).clamp(Vector2(12, 12), size - Vector2(12,12))
+				controller_map = true
+				map_dirty = true
+			if pan_motion.length() > 0.2: pan -= pan_motion * delta * 500.0; map_dirty = true
+			if absf(zoom_motion) > 0.1:
+				var anchor: Vector2 = _unproject(controller_cursor)
+				view_zoom = clampf(view_zoom * exp(zoom_motion * delta), 0.5, 6.0)
+				pan += controller_cursor - _project(anchor)
+				map_dirty = true
 	if not get_tree().paused:
 		for i in range(markers.size() - 1, -1, -1):
 			if marker_fades[i] < 0: continue
@@ -211,8 +298,9 @@ func _process(delta: float) -> void:
 		if active_marker >= 0:
 			beacon.modulate.a = _marker_alpha(active_marker)
 			beacon.global_position = markers[active_marker]
+			beacon.set_meta(&"elevation_level", marker_levels[active_marker])
 			beacon.set("marker_number", active_marker + 1)
-			if not get_tree().paused and not arrival_announced and marker_fades[active_marker] < 0 and player.global_position.distance_to(markers[active_marker]) <= 192:
+			if not get_tree().paused and not arrival_announced and marker_fades[active_marker] < 0 and Elevation.level(player) == marker_levels[active_marker] and player.global_position.distance_to(markers[active_marker]) <= 192:
 				arrival_announced = true
 				marker_fades[active_marker] = ARRIVAL_FADE_SECONDS
 				player.show_message("Destination %d reached" % (active_marker + 1))
@@ -251,6 +339,7 @@ func _marker_alpha(index: int) -> float:
 
 func _erase_marker(index: int) -> void:
 	markers.remove_at(index)
+	marker_levels.remove_at(index)
 	marker_fades.remove_at(index)
 	if active_marker == index:
 		active_marker = -1
@@ -261,6 +350,7 @@ func _erase_marker(index: int) -> void:
 	elif dragging_marker > index: dragging_marker -= 1
 
 func _marker_hit(index: int, point: Vector2) -> bool:
+	if marker_levels[index] != selected_floor: return false
 	var at: Vector2 = _project(markers[index])
 	return at.distance_to(point) <= 16 or (at + Vector2(0, -26)).distance_to(point) <= 16
 
@@ -283,13 +373,24 @@ func _place_or_select(point: Vector2) -> void:
 	if markers.size() >= MAX_MARKERS:
 		notice = "Eight markers placed — remove one first"
 		return
+	if not _supported_marker(world, selected_floor):
+		notice = "Place upper-storey markers on a mapped floor"
+		return
 	markers.append(world)
+	marker_levels.append(selected_floor)
 	marker_fades.append(-1.0)
 	active_marker = markers.size() - 1
 	arrival_announced = false
 	notice = "Destination %d placed" % (active_marker + 1)
 
+func _supported_marker(world: Vector2, level: int) -> bool:
+	if level == 0: return true
+	for floor_layer: BuildingFloor in Elevation.of(player).floors:
+		if is_instance_valid(floor_layer) and floor_layer.storey() == level and floor_layer.contains_world(world): return true
+	return false
+
 func _map_input(event: InputEvent) -> void:
+	if event is InputEventMouse: controller_map = false
 	map_dirty = true
 	if map_closing:
 		map_canvas.accept_event()
@@ -311,7 +412,7 @@ func _map_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion and dragging_marker >= 0 and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
 		var world: Vector2 = _unproject(event.position)
 		world = world.clamp(bounds.position, bounds.end)
-		if region_boundary.is_empty() or Geometry2D.is_point_in_polygon(world,region_boundary): markers[dragging_marker] = world
+		if (region_boundary.is_empty() or Geometry2D.is_point_in_polygon(world,region_boundary)) and _supported_marker(world, marker_levels[dragging_marker]): markers[dragging_marker] = world
 		marker_fades[dragging_marker] = -1.0
 		arrival_announced = false
 		notice = "Destination %d moved" % (dragging_marker + 1)
@@ -402,6 +503,7 @@ func _draw_map() -> void:
 		map_canvas.draw_colored_polygon(polygon,tint)
 		polygon.append(polygon[0])
 		map_canvas.draw_polyline(polygon,Color("1b3026"),1,true)
+	_draw_floor_overlay(true)
 	var label_boxes: Array[Rect2] = []
 	var landmark_order: Array[int] = []
 	for i in landmarks.size(): landmark_order.append(i)
@@ -442,7 +544,8 @@ func _draw_map() -> void:
 	# Interface overlays belong on the map canvas, above the terrain, not behind it.
 	_text(map_canvas, Vector2(32, 51), region_name.to_upper(), 26, GOLD)
 	if not notice.is_empty(): _text(map_canvas, Vector2(32, 73), notice, 12, INK)
-	_text(map_canvas, Vector2(32, size.y - 77), "Click: place/select   Drag marker: move   Right-click: remove   Wheel: zoom   Middle-drag: pan", 13)
+	_draw_floor_overlay(false)
+	if not controller_map: _text(map_canvas, Vector2(32, size.y - 77), "Click: place/select   Drag marker: move   Right-click: remove   Wheel: zoom   Middle-drag: pan", 13)
 	if active_marker >= 0:
 		_text(map_canvas, Vector2(390, size.y - 33), "Beacon %d / %.1f m" % [active_marker + 1, player.global_position.distance_to(markers[active_marker]) / 128.0], 14, Color("b5e5d8"))
 	elif not notice.is_empty():
@@ -456,6 +559,33 @@ func _draw_map() -> void:
 	var ruler: float = ruler_metres * 128 * _map_scale()
 	map_canvas.draw_line(Vector2(32, size.y - 126), Vector2(32 + ruler, size.y - 126), GOLD, 2)
 	_text(map_canvas, Vector2(32, size.y - 136), "%d m" % roundi(ruler_metres), 12, GOLD)
+
+func _change_floor(direction: int) -> void:
+	var levels: Array[int] = [0]
+	for floor_layer: BuildingFloor in Elevation.of(player).floors:
+		if is_instance_valid(floor_layer) and not levels.has(floor_layer.storey()): levels.append(floor_layer.storey())
+	levels.sort()
+	selected_floor = levels[posmod(levels.find(selected_floor) + direction, levels.size())]
+	map_dirty = true
+
+func _draw_floor_overlay(geometry: bool) -> void:
+	for floor_layer: BuildingFloor in Elevation.of(player).floors:
+		if not geometry: break
+		if not is_instance_valid(floor_layer) or floor_layer.storey() != selected_floor or floor_layer.definition == null: continue
+		for region: PackedVector2Array in floor_layer.definition.regions_metres:
+			var points := PackedVector2Array()
+			for point: Vector2 in region: points.append(_project(floor_layer.to_global(point * 128.0)))
+			if points.size() < 3: continue
+			map_canvas.draw_colored_polygon(points, Color(0.68,0.66,0.5,0.35))
+			points.append(points[0])
+			map_canvas.draw_polyline(points, GOLD, 1.5, true)
+	if geometry: return
+	_text(map_canvas, Vector2(32, 92), "Storey %d  ·  Player %d   [PgUp/PgDn · LB/RB]" % [selected_floor, Elevation.level(player)], 14)
+	if controller_map:
+		map_canvas.draw_arc(controller_cursor, 10, 0, TAU, 24, INK, 2, true)
+		map_canvas.draw_line(controller_cursor - Vector2(16,0), controller_cursor + Vector2(16,0), GOLD, 1)
+		map_canvas.draw_line(controller_cursor - Vector2(0,16), controller_cursor + Vector2(0,16), GOLD, 1)
+		_text(map_canvas, Vector2(32, size.y-82), "A: place/select   X: remove   Y: centre   Left stick: cursor   Right stick: pan   Triggers: zoom", 14)
 
 func _landmark_priority(index: int) -> int:
 	match str(landmarks[index].kind):
@@ -491,4 +621,4 @@ func _compass_marker(world: Vector2, width: float, left: float, color: Color, ra
 
 func _exit_tree() -> void:
 	if is_instance_valid(beacon): beacon.queue_free()
-	if opened: get_tree().paused = false
+	if opened: UIFlow.release(self)

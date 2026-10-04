@@ -11,6 +11,11 @@ var stairs: Array[ElevationTransition] = []
 var visuals: Dictionary = {}
 var revision: int = 0
 var viewer: Node2D
+const CELL: float = 2048.0
+var raised_buckets: Dictionary = {}
+var raised_cells: Dictionary = {}
+var raised_movers: Dictionary = {}
+var _body_clock: float = 0.0
 
 static func of(node: Node) -> Elevation:
 	var scene: Node = node
@@ -50,6 +55,12 @@ func _forget_visual(id: int) -> void:
 	visuals.erase(id)
 
 func _process(delta: float) -> void:
+	_body_clock += delta
+	if _body_clock >= 0.1:
+		_body_clock = 0.0
+		for identity: int in raised_movers.keys():
+			var object: Object = instance_from_id(identity)
+			if is_instance_valid(object) and object is CollisionObject2D: _refresh_exceptions(object)
 	if not is_instance_valid(viewer): viewer = get_tree().get_first_node_in_group("player") as Node2D
 	if not is_instance_valid(viewer): return
 	for entry: Dictionary in visuals.values():
@@ -326,12 +337,24 @@ func _apply_masks(body: CollisionObject2D) -> void:
 			mask |= mask_for(base_mask(body), extra)
 	body.collision_layer = layers
 	body.collision_mask = mask
+	_index_body(body)
 
 func _refresh_exceptions(member: CollisionObject2D) -> void:
 	if not member is PhysicsBody2D: return
 	var body := member as PhysicsBody2D
-	for reference: WeakRef in members.values():
-		var candidate: Variant = reference.get_ref()
+	_index_body(body)
+	# Ground bodies have a separate physics bank and need no pairwise scan.
+	var candidates: Array[CollisionObject2D] = []
+	if raised_cells.has(body.get_instance_id()): candidates = nearby_raised(_body_bounds(body).grow(1024.0))
+	# Reconcile existing pairs even when a body changes floor or leaves this window.
+	for key: String in exceptions.keys():
+		var pair: Dictionary = exceptions[key]
+		var a: Variant = pair.a.get_ref()
+		var b: Variant = pair.b.get_ref()
+		if not is_instance_valid(a) or not is_instance_valid(b): _remove_exception(key); continue
+		if a == body and not candidates.has(b): candidates.append(b)
+		elif b == body and not candidates.has(a): candidates.append(a)
+	for candidate: CollisionObject2D in candidates:
 		if not is_instance_valid(candidate) or not candidate is PhysicsBody2D or candidate == body: continue
 		var other := candidate as PhysicsBody2D
 		var key: String = str(mini(body.get_instance_id(), other.get_instance_id())) + ":" + str(maxi(body.get_instance_id(), other.get_instance_id()))
@@ -355,6 +378,7 @@ func _remove_exception(key: String) -> void:
 	exceptions.erase(key)
 
 func _forget_member(id: int) -> void:
+	_unindex_body(id)
 	# Reparenting leaves/re-enters the tree too. Restore semantic bits before a
 	# new registration so raised masks cannot be shifted a second time.
 	var departing: Variant = members[id].get_ref() if members.has(id) else null
@@ -363,13 +387,62 @@ func _forget_member(id: int) -> void:
 		departing.collision_mask = base_mask(departing)
 		departing.tree_entered.connect(Elevation.register_body.bind(departing), CONNECT_ONE_SHOT)
 	members.erase(id)
-	revision += 1
+	# Dynamic actors never contributed static navigation occupancy on registration.
+	# Their removal must not invalidate all local windows (e.g. expiring summons).
+	if is_instance_valid(departing) and not departing is CharacterBody2D: revision += 1
 	for key: String in exceptions.keys():
 		var entry: Dictionary = exceptions[key]
 		var a: Variant = entry.a.get_ref()
 		var b: Variant = entry.b.get_ref()
 		if not is_instance_valid(a) or not is_instance_valid(b) or a.get_instance_id() == id or b.get_instance_id() == id:
 			_remove_exception(key)
+
+func _body_bounds(body: CollisionObject2D) -> Rect2:
+	var result := Rect2(body.global_position - Vector2.ONE, Vector2.ONE * 2)
+	for child: Node in body.get_children():
+		if child is CollisionShape2D and child.shape != null: result = result.merge(child.global_transform * child.shape.get_rect())
+		elif child is CollisionPolygon2D:
+			for point: Vector2 in child.polygon: result = result.expand(child.to_global(point))
+	return result
+
+func _unindex_body(identity: int) -> void:
+	for cell: Vector2i in raised_cells.get(identity, []):
+		if raised_buckets.has(cell):
+			raised_buckets[cell].erase(identity)
+			if raised_buckets[cell].is_empty(): raised_buckets.erase(cell)
+	raised_cells.erase(identity)
+	raised_movers.erase(identity)
+
+func _index_body(body: CollisionObject2D) -> void:
+	var identity: int = body.get_instance_id()
+	_unindex_body(identity)
+	if ((body.collision_layer | body.collision_mask) & (CATEGORY_BITS << RAISED_SHIFT)) == 0: return
+	var rect: Rect2 = _body_bounds(body).grow(64.0)
+	var lo := Vector2i((rect.position / CELL).floor())
+	var hi := Vector2i((rect.end / CELL).floor())
+	var cells: Array[Vector2i] = []
+	for y in range(lo.y, hi.y+1):
+		for x in range(lo.x, hi.x+1):
+			var cell := Vector2i(x,y)
+			if not raised_buckets.has(cell): raised_buckets[cell] = []
+			raised_buckets[cell].append(identity)
+			cells.append(cell)
+	raised_cells[identity] = cells
+	if body is CharacterBody2D: raised_movers[identity] = true
+
+func nearby_raised(rect: Rect2) -> Array[CollisionObject2D]:
+	var result: Array[CollisionObject2D] = []
+	var seen: Dictionary = {}
+	var lo := Vector2i((rect.position / CELL).floor())
+	var hi := Vector2i((rect.end / CELL).floor())
+	for y in range(lo.y, hi.y+1):
+		for x in range(lo.x, hi.x+1):
+			for identity: int in raised_buckets.get(Vector2i(x,y), []):
+				if seen.has(identity): continue
+				seen[identity] = true
+				var object: Object = instance_from_id(identity)
+				if is_instance_valid(object) and object is CollisionObject2D: result.append(object)
+	return result
 
 ## Queries copy their parameters. Cached navigation jobs never get a twice-mapped
 ## mask or exclusions left behind by another cell's incompatible-floor results.

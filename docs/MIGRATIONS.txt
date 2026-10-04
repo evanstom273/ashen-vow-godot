@@ -1,0 +1,82 @@
+ASHEN VOW — SAVE / RESOURCE / SOURCE MIGRATION NOTES
+2026-10-04 | Implementation-only; failure-path behavior NOT runtime-tested
+
+FIRST PERSISTENT FORMAT
+Before this roadmap there was no persistent character/save progression to migrate.
+Schema1 envelopes live under user://characters/slot_1.json through slot_3.json.
+Each envelope: schema, JSON-string payload, SHA256 checksum. Maximum4MiB.
+user://session.json remembers active slot; user://settings.json stores preferences
+and keyboard/controller bindings. No Node IDs or serialized executable Resources.
+The exact OS user:// directory is selected by Godot; do not hardcode a Windows home.
+
+WRITE / RECOVERY DESIGN
+Validate record -> write same-directory .tmp -> flush/close -> preserve verified
+primary to .bak.tmp/.bak -> rename .tmp over primary. Valid backup is not replaced
+by a corrupt primary. Newer-schema files/backs are refused,not downgraded.
+If both files fail validation,autosave disables and originals remain. New Game
+chooses an unused slot; there is no implicit "overwrite slot" operation.
+Atomic replacement semantics,locked files,permissions,power loss and disk-full
+behavior still require explicit runtime/file-failure verification. No failure
+simulation or file-writing test was run during implementation.
+
+ADDITIVE FIELDS
+Schema1 tolerates absent climate and utility_pool records; defaults supply climate
+and old prepared utility charges populate the pool. Existing material/world reward
+records are optional where older phase1 schema1 did not write them.
+All attributes must be finite integers; earned points must match level above class
+minimums. Hand slots reference existing owned IDs with compatible/unique placement.
+Unknown catalogue IDs,unsupported scenes,invalid typed values or newer schema do
+not load as live game state. Saves refer to stable content IDs,not filepaths except
+the allowlisted region scene. Renaming a resource file while preserving ID is safe;
+changing an ID requires explicit migration,not silently granting replacement gear.
+
+RESOURCE CONNECTIONS
+20 existing spell assets remain with original IDs,paths and gameplay payloads.
+Two new catalogue spells are catalyst basics,not prepared-spell replacements.
+Added WeaponDefinition.basic_spell and SpellDefinition.UsePolicy. Basic uses=-1
+and memory0 are runtime policy; old finite .tres defaults remain intact.
+StatusApplication/StatusDefinition extend AttackDefinition. Existing effects,
+Blackflame,DamageProfile,AttributeScaling and all17 delivery types are retained.
+Default DamageProfile channels nowzero; live sword110physical is explicit to
+preserve its actual action instead of relying on a hidden generic default.
+Eight incorrectly copied charged action assignments were repaired individually.
+No blanket world/weapon/spell damage-scale migration was applied.
+New EnemyDefinition perception/move/reward/atlas fields are optional. Empty move
+arrays retain elite weapon execution. Existing Sentinel public receiver contract
+remains available; receive_hit now returns explicit HitResult.
+
+OWNERSHIP / LIFECYCLE
+First attach creates owned copies from class loadouts plus retained starting-owned
+gear. Later attach restores the session rather than recreating class defaults.
+Ordinary new Wanderer:all-school wand+backup sword,retained shield/seal,finite spell
+selection and utilities; retained dagger stays owned for preparation.
+No automatic grant-all on a normal save. Debug catalogue mode explicitly grants
+a reward record. Combat lab creates an isolated throwaway character with no writes.
+Rest/respawn/travel clear temporary effects,deliveries,imbues/statuses and ordinary
+enemy-defeat flags. Authored claimed rewards/first-defeat rewards remain claimed.
+Currency recovery is separate from enemy/world pickups and replaces on zero death.
+Airborne/invalid positions recover on recorded valid human ground/checkpoint.
+Current elevation/last-valid elevation persist; restored actor stays input-locked
+until scene collision is registered and landing validation completes.
+
+ART / SCENE COMPATIBILITY
+Equipment grip/tip/cast sockets coexist with original scene roots. Public action,
+loadout,targetable/interactable/shrine and feedback entry points remain adapters.
+Layered SVG actor children replace visible legacy polygons; old source nodes may
+remain hidden for compatibility. Do not re-enable both visual generations.
+Theme is now an Inspector Resource; GameTheme only accesses it.
+Landmark transforms/collision/geometry and scale Resources were not relocated.
+New art changes only texture/material/visual child ownership.
+
+ROLLBACK / WORKTREE
+Baseline:d151e70b49f7304281378dc3c3373fed013d141e,610files,clean before work.
+All rebuild edits are uncommitted; CHANGED_ASSETS.json includes new/untracked files.
+No reset,checkout,commit,push or recursive cleanup was performed.
+To review/revert later, use the baseline and inventory, preserve any later user
+edits and separately preserve user:// saves. Old code won't understand new saves.
+This document is not authorization to delete saves,cache files or project assets.
+
+UNVERIFIED
+Parser/import,backup recovery,newer-schema refusal,three-slot switches,close while
+paused,death/rest/reload/travel,charge pools,discovery flags,autosave timing,
+development-lab isolation and first-run defaults require later actual verification.

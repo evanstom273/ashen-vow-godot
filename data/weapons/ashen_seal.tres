@@ -11,6 +11,8 @@
 
 [ext_resource type="Resource" path="res://data/attacks/presentation/ashen_seal_charged.tres" id="presentation_charged"]
 
+[ext_resource type="Resource" path="res://data/spells/votive_spark.tres" id="basic"]
+
 [resource]
 script = ExtResource("script")
 equipped_scene = ExtResource("equipped_model")
@@ -21,6 +23,7 @@ category = "Seal"
 weight = 0.8
 requirements = ExtResource("requirements")
 is_spell_catalyst = true
+basic_spell = ExtResource("basic")
 catalyst_schools = Array[String](["Incantation", "Arcane"])
 light_attack = ExtResource("presentation_light")
 charged_attack = ExtResource("presentation_charged")

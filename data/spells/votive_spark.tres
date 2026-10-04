@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="SpellDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/spell_definition.gd" id="spell"]
+[ext_resource type="Script" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" path="res://scripts/resources/attribute_scaling.gd" id="scaling"]
+[ext_resource type="Script" path="res://scripts/resources/projectile_delivery.gd" id="delivery"]
+[ext_resource type="Resource" path="res://data/vfx_basic_votive_spark.tres" id="vfx"]
+[ext_resource type="Texture2D" path="res://assets/icons/spells/vowed_wisp.svg" id="basic_icon"]
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+holy = 48.0
+[sub_resource type="Resource" id="Scaling"]
+script = ExtResource("scaling")
+faith = 0.025
+[sub_resource type="Resource" id="Cast"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+scaling = SubResource("Scaling")
+stamina_cost = 8.0
+poise_damage = 8.0
+knockback = 35.0
+windup = 0.18
+active = 0.08
+recovery = 0.24
+movement_multiplier = 0.65
+hit_stop = 0.0
+camera_shake = 0.6
+swing_sound = &"spell_cast"
+[sub_resource type="Resource" id="Delivery"]
+script = ExtResource("delivery")
+vfx = ExtResource("vfx")
+speed = 1840.0
+radius = 14.0
+duration = 1.1
+[resource]
+script = ExtResource("spell")
+icon = ExtResource("basic_icon")
+id = &"votive_spark"
+display_name = "Votive Spark"
+description = "A modest holy spark supplied by the equipped catalyst. Unlimited uses; consumes stamina during combat. Requires no spell memory. Stronger prepared spells remain separate."
+school = "Incantation"
+use_policy = 1
+cast = SubResource("Cast")
+delivery_definition = SubResource("Delivery")
+charges = 1
+maximum_charges = 1
+

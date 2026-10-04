@@ -1,5 +1,5 @@
 class_name SpellVisual
-extends Node2D
+extends PresentationVisual
 ## Cosmetic-only snapshot consumer. Never queries targets or applies damage.
 var profile: VFXDefinition
 var frame: Dictionary = {}
@@ -144,9 +144,10 @@ func stop() -> void:
 		if is_instance_valid(emitter): emitter.emitting = false
 	if is_instance_valid(lamp): lamp.visible = false
 	# Preserve world-space particles and ribbons after the gameplay owner disappears.
-	if is_inside_tree() and get_tree().current_scene != null and get_parent() != get_tree().current_scene:
+	var tail_parent: Node = safe_tail_parent()
+	if tail_parent != null and get_parent() != tail_parent:
 		var final_level: int = Elevation.level(self)
-		reparent(get_tree().current_scene, true)
+		reparent(tail_parent, true)
 		# Tree-exit cleanup releases old bindings during reparenting. The fading
 		# tail stays on its final floor instead of following the caster upstairs.
 		Feedback._bind_elevation(self, 0, null, final_level)

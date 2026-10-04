@@ -129,7 +129,7 @@ func _physics_process(delta: float) -> void:
 			beam_end = SpellDeliveryService.wall_end(context, global_position, global_position + context.direction * d.length)
 			while clock >= definition.tick_interval:
 				clock -= definition.tick_interval
-				var victims: Array[Node2D] = SpellDeliveryService.targets(context, definition.target_filter)
+				var victims: Array[Node2D] = SpellDeliveryService.targets(context, definition.target_filter, global_position, d.length)
 				victims.sort_custom(func(a: Node2D, b: Node2D) -> bool: return global_position.distance_squared_to(a.global_position) < global_position.distance_squared_to(b.global_position))
 				for actor: Node2D in victims:
 					if _segment_distance(actor.global_position, global_position, beam_end) <= d.width * 0.5 + SpellDeliveryService.target_radius(actor):
@@ -139,7 +139,7 @@ func _physics_process(delta: float) -> void:
 			global_position = context.caster.global_position
 			while not cancelled and (not d.held or clock >= definition.tick_interval):
 				if d.held: clock -= definition.tick_interval
-				for actor: Node2D in SpellDeliveryService.targets(context, definition.target_filter):
+				for actor: Node2D in SpellDeliveryService.targets(context, definition.target_filter, global_position, d.radius):
 					var offset: Vector2 = actor.global_position - global_position
 					if offset.length() <= d.radius and context.direction.dot(offset.normalized()) >= cos(deg_to_rad(d.angle_degrees * 0.5)) and SpellDeliveryService.visible(context, global_position, actor.global_position):
 						SpellDeliveryService.hit(definition, context, actor)
@@ -215,7 +215,7 @@ func _physics_process(delta: float) -> void:
 			if Elevation.level(body) != context.elevation:
 				cancel()
 				return
-			for actor: Node2D in SpellDeliveryService.targets(context):
+			for actor: Node2D in SpellDeliveryService.targets(context, "Hostile", start, requested.length() + d.hit_width):
 				if not hits.has(actor.get_instance_id()) and _segment_distance(actor.global_position, start, global_position) <= d.hit_width * 0.5 + SpellDeliveryService.target_radius(actor):
 					hits[actor.get_instance_id()] = true
 					SpellDeliveryService.hit(definition, context, actor)
@@ -234,8 +234,8 @@ func _physics_process(delta: float) -> void:
 				clock -= definition.tick_interval
 				if d.drain_definition() != null:
 					if not drain_applied and broken_time == 0:
-						SpellDeliveryService.hit(definition, context, context.target)
-						drain_applied = true
+						var result: HitResult = SpellDeliveryService.hit(definition, context, context.target)
+						drain_applied = result.accepted
 				elif broken_time == 0: SpellDeliveryService.hit(definition, context, context.target)
 	if elapsed >= runtime_duration and not cancelled:
 		if definition.is_channel() and context.profile != null and broken_time == 0:
@@ -257,7 +257,7 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 func _area(radius: float, occlusion: bool, emit_impact: bool = true) -> void:
-	for actor: Node2D in SpellDeliveryService.targets(context, definition.target_filter):
+	for actor: Node2D in SpellDeliveryService.targets(context, definition.target_filter, global_position, radius):
 		if actor.global_position.distance_to(global_position) <= radius and (not occlusion or SpellDeliveryService.visible(context, global_position, actor.global_position)):
 			var before: int = int(actor.get("health")) if actor.get("health") != null else 0
 			var at: Vector2 = actor.global_position
@@ -272,7 +272,7 @@ func _area(radius: float, occlusion: bool, emit_impact: bool = true) -> void:
 func _nearest(origin: Vector2, radius: float, require_sight: bool = true) -> Node2D:
 	var nearest: Node2D
 	var distance: float = radius
-	for actor: Node2D in SpellDeliveryService.targets(context):
+	for actor: Node2D in SpellDeliveryService.targets(context, "Hostile", origin, radius):
 		var candidate: float = origin.distance_to(actor.global_position)
 		if not hits.has(actor.get_instance_id()) and candidate <= distance and (not require_sight or SpellDeliveryService.visible(context, origin, actor.global_position)):
 			nearest = actor
@@ -297,7 +297,7 @@ func _travel(distance: float, radius: float, wave: bool) -> void:
 		var wall: Vector2 = SpellDeliveryService.wall_end(context, start, end)
 		global_position = wall
 		travelled += start.distance_to(wall)
-		for actor: Node2D in SpellDeliveryService.targets(context, definition.target_filter):
+		for actor: Node2D in SpellDeliveryService.targets(context, definition.target_filter, start, start.distance_to(wall) + (d.width if wave else radius)):
 			var padding: float = SpellDeliveryService.target_radius(actor)
 			var near: bool = _segment_distance(actor.global_position, start, wall) <= radius + padding
 			if wave:
@@ -377,7 +377,7 @@ func _visual_snapshot() -> Dictionary:
 		# Keep contact decoration at the first receiver without changing damage geometry.
 		if not definition.piercing:
 			var distance: float = global_position.distance_to(beam_end)
-			for actor: Node2D in SpellDeliveryService.targets(context, definition.target_filter):
+			for actor: Node2D in SpellDeliveryService.targets(context, definition.target_filter, global_position, definition.length):
 				if _segment_distance(actor.global_position, global_position, beam_end) <= definition.width * 0.5 + SpellDeliveryService.target_radius(actor):
 					var projected: float = (actor.global_position - global_position).dot(context.direction)
 					if projected >= 0 and projected < distance:

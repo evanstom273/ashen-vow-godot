@@ -11,4 +11,6 @@ extends Resource
 @export var acquisition_range: float = 1200.0
 @export var attack_range: float = 800.0
 @export var attack_interval: float = 1.0
+## Bounded target selection; path queries never run once per candidate per frame.
+@export_range(0.1, 2.0, 0.05) var acquisition_interval: float = 0.4
 @export var delivery: SpellDeliveryDefinition

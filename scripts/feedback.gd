@@ -4,6 +4,7 @@ var reduced_effects: bool = false
 var blood_enabled: bool = true
 var shake_strength: float = 1.0
 var sounds: Dictionary = {}
+var sound_definitions: Dictionary = {}
 var light_texture: Texture2D
 var particle_texture: Texture2D
 var voices: Array[AudioStreamPlayer2D] = []
@@ -285,7 +286,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	rng.seed = 817
 	_inputs()
-	for bus in ["Effects", "Ambience"]:
+	for bus in ["Effects", "Ambience", "Music"]:
 		if AudioServer.get_bus_index(bus) < 0:
 			AudioServer.add_bus()
 			AudioServer.set_bus_name(AudioServer.bus_count - 1, bus)
@@ -299,6 +300,11 @@ func _ready() -> void:
 	fragment_texture = ImageTexture.create_from_image(fragment)
 	for kind in ["step", "roll", "swing", "wood", "metal", "hurt", "death", "shrine", "tell", "wind", "fire", "rumble"]:
 		sounds[kind] = _sound(kind)
+	var library: ProceduralAudioLibrary = preload("res://data/environment/audio_library.tres")
+	for definition: ProceduralSoundDefinition in library.events:
+		if definition == null: continue
+		sounds[String(definition.id)] = definition.synthesize()
+		sound_definitions[String(definition.id)] = definition
 
 func _inputs() -> void:
 	var keys: Dictionary = {"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT], "move_up": [KEY_W, KEY_UP], "move_down": [KEY_S, KEY_DOWN], "pause": [KEY_ESCAPE], "help": [KEY_TAB]}
@@ -358,12 +364,28 @@ func ambient_emitter(smoke: bool = false) -> GPUParticles2D:
 		return null
 	return effect
 
-func play(kind: String, at: Vector2, volume: float = 0.0) -> void:
+func play(kind: String, at: Vector2, volume: float = 0.0, emitter: Node = null, floor_level: Variant = null) -> void:
 	if DisplayServer.get_name() == "headless": return
+	if not is_instance_valid(get_tree().current_scene): return
+	if kind == "step" and is_instance_valid(GameSession.actor):
+		kind = "step_stone" if Elevation.level(GameSession.actor) != 0 or WorldClimate.sheltered else "step_grass"
+	var definition: ProceduralSoundDefinition = sound_definitions.get(kind)
+	var priority: int = definition.priority if definition != null else 2
 	for index in range(voices.size() - 1, -1, -1):
 		if not is_instance_valid(voices[index]): voices.remove_at(index)
-	if voices.size() >= 18 or not sounds.has(kind): return
+	if not sounds.has(kind): return
+	if voices.size() >= 18:
+		var victim: int = -1
+		var lowest: int = priority
+		for index in voices.size():
+			var value: int = int(voices[index].get_meta("priority", 0))
+			if value < lowest: lowest = value; victim = index
+		if victim < 0: return
+		voices[victim].stop()
+		voices[victim].queue_free()
+		voices.remove_at(victim)
 	var voice := AudioStreamPlayer2D.new()
+	voice.set_meta("priority", priority)
 	voice.stream = sounds[kind]
 	# Ambient emitters use the looping fire stream directly; one-shot spell
 	# playback must finish so it releases its voice slot.
@@ -371,10 +393,17 @@ func play(kind: String, at: Vector2, volume: float = 0.0) -> void:
 		var one_shot: AudioStreamWAV = sounds[kind].duplicate() as AudioStreamWAV
 		one_shot.loop_mode = AudioStreamWAV.LOOP_DISABLED
 		voice.stream = one_shot
-	voice.bus = "Effects"
+	voice.bus = definition.bus if definition != null else "Effects"
 	voice.volume_db = volume - 10.0
-	voice.pitch_scale = rng.randf_range(0.93, 1.07)
-	voice.max_distance = WorldScale.art_distance(1200.0)
+	var variation: float = definition.pitch_variation if definition != null else 0.07
+	voice.pitch_scale = rng.randf_range(1.0-variation, 1.0+variation)
+	voice.max_distance = definition.audible_metres * 128.0 if definition != null else WorldScale.art_distance(1200.0)
+	# Optional context keeps legacy event callers compatible while giving spells,
+	# actors and impacts the same floor-aware attenuation as their presentation.
+	if is_instance_valid(GameSession.actor):
+		var origin_level: int = int(floor_level) if floor_level != null else Elevation.level(emitter)
+		if (floor_level != null or is_instance_valid(emitter)) and not Elevation.occupies(GameSession.actor, origin_level): voice.volume_db -= 18.0
+	if WorldClimate.sheltered and is_instance_valid(GameSession.actor) and at.distance_to(GameSession.actor.global_position) > 640.0: voice.volume_db -= 7.0
 	get_tree().current_scene.add_child(voice)
 	voice.global_position = at
 	voices.append(voice)

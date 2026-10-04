@@ -8,6 +8,9 @@
 [ext_resource type="Resource" path="res://data/environment/cover_gravewood.tres" id="ground_cover"]
 [ext_resource type="PackedScene" path="res://scenes/props/approach_graveyard.tscn" id="approach"]
 
+[ext_resource type="PackedScene" path="res://scenes/props/authored_reward.tscn" id="discovery_scene"]
+[ext_resource type="Resource" path="res://data/progression/reward_graveyard.tres" id="discovery_reward"]
+
 [node name="graveyard" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("landmark")
@@ -272,6 +275,13 @@ solid = true
 variation = 901
 
 [node name="grave_warden1" parent="." instance=ExtResource("placed_enemy")]
+encounter_id = &"graveyard_warden"
 position = Vector2(640, 512)
 
 [node name="ApproachDressing" parent="." instance=ExtResource("approach")]
+
+
+[node name="AuthoredDiscovery" parent="." instance=ExtResource("discovery_scene")]
+position = Vector2(-512, 640)
+reward_id = &"graveyard_reliquary"
+definition = ExtResource("discovery_reward")

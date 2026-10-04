@@ -58,7 +58,7 @@ func _make_emitter() -> void:
 	process.spread = 35.0 if mode == &"hit" else 70.0
 	process.initial_velocity_min = profile.emission_speed * 0.35
 	process.initial_velocity_max = profile.emission_speed * intensity
-	process.gravity = Vector3(0, profile.gravity if mode == &"hit" else -8, 0)
+	process.gravity = Vector3(0, profile.gravity if mode == &"hit" else -8.0, 0)
 	process.damping_min = 20.0 if not persistent else 0.0
 	process.damping_max = 40.0 if not persistent else 2.0
 	process.scale_min = profile.particle_scale * 0.3

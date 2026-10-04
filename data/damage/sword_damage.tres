@@ -4,3 +4,4 @@
 
 [resource]
 script = ExtResource("script")
+physical = 110.0

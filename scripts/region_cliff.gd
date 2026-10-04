@@ -3,6 +3,7 @@ extends StaticBody2D
 var from_metres := Vector2.ZERO
 var to_metres := Vector2.ZERO
 var variant: int = 0
+@export var strata_texture: Texture2D = preload("res://assets/illustrated/cliff_strata.svg")
 
 func _ready() -> void:
 	collision_layer = 17
@@ -27,8 +28,14 @@ func _draw() -> void:
 		var height_b: float = 3.2+sin(b.x*0.11+b.y*0.2)*0.75
 		var top_a: Vector2 = a+Vector2(0,-height_a)
 		var top_b: Vector2 = b+Vector2(0,-height_b)
-		draw_colored_polygon(PackedVector2Array([a,b,top_b,top_a]),Color("3a4539").lightened(float((i+variant)%3)*0.025))
-		draw_colored_polygon(PackedVector2Array([top_a,top_b,top_b+normal*2,top_a+normal*2]),Color("616951"))
+		var face := PackedVector2Array([a,b,top_b,top_a])
+		var crown := PackedVector2Array([top_a,top_b,top_b+normal*2,top_a+normal*2])
+		var tint: Color = Color("3a4539").lightened(float((i+variant)%3)*0.025)
+		if not Geometry2D.triangulate_polygon(face).is_empty():
+			if strata_texture != null:
+				draw_polygon(face, PackedColorArray([Color(0.8, 0.86, 0.79)]), PackedVector2Array([Vector2(0,1),Vector2(1,1),Vector2(1,0),Vector2.ZERO]), strata_texture)
+			else: draw_colored_polygon(face, tint)
+		if not Geometry2D.triangulate_polygon(crown).is_empty(): draw_colored_polygon(crown,Color("616951"))
 		draw_line(top_a,top_b,Color("7d8265"),0.07)
 		draw_line(a.lerp(b,0.35),top_a.lerp(top_b,0.55),Color("263a30"),0.08)
 	draw_set_transform(Vector2.ZERO)

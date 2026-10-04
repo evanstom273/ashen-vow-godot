@@ -1,6 +1,9 @@
 @tool
 class_name SpellDefinition
 extends Resource
+enum UsePolicy { FINITE, CATALYST_BASIC }
+## Basic entries are supplied by selected catalysts; never occupy prepared memory.
+@export var use_policy: UsePolicy = UsePolicy.FINITE
 ## Spell definition consumed by the player's minimal casting path.
 @export var id: StringName = &"spell"
 @export var display_name: String = "Spell"
@@ -67,4 +70,7 @@ var delivery: String = "Projectile":
 		delivery = value
 		emit_changed()
 func starting_charges() -> int:
+	if is_basic(): return -1
 	return clampi(charges, 0, maximum_charges)
+
+func is_basic() -> bool: return use_policy == UsePolicy.CATALYST_BASIC

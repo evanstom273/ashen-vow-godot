@@ -6,6 +6,11 @@
 [ext_resource type="Resource" path="res://data/environment/cover_wetland.tres" id="ground_cover"]
 [ext_resource type="PackedScene" path="res://scenes/props/approach_crossing.tscn" id="approach"]
 
+[ext_resource type="PackedScene" path="res://scenes/props/authored_reward.tscn" id="discovery_scene"]
+[ext_resource type="Resource" path="res://data/progression/reward_crossing.tres" id="discovery_reward"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="checkpoint_scene"]
+[ext_resource type="Resource" path="res://data/progression/shrine_crossing.tres" id="checkpoint_definition"]
+
 [node name="crossing" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("landmark")
@@ -100,3 +105,14 @@ solid = true
 variation = 272
 
 [node name="ApproachDressing" parent="." instance=ExtResource("approach")]
+
+
+[node name="AuthoredDiscovery" parent="." instance=ExtResource("discovery_scene")]
+position = Vector2(-1408, 128)
+reward_id = &"crossing_reliquary"
+definition = ExtResource("discovery_reward")
+
+[node name="ApproachShrine" parent="." instance=ExtResource("checkpoint_scene")]
+position = Vector2(-1536, 768)
+checkpoint_id = &"crossing_approach"
+definition = ExtResource("checkpoint_definition")

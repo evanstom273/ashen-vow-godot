@@ -14,6 +14,7 @@ extends Resource
 @export_range(0, 100000, 0.1) var stamina_restore: float = 0.0
 @export_range(0, 10, 0.01) var use_time: float = 0.0
 @export_range(0, 10, 0.01) var recovery_time: float = 0.0
+@export_range(0, 1, 0.01) var movement_multiplier: float = 0.35
 @export var vfx: PackedScene
 @export var sound_key: StringName = &"item"
 

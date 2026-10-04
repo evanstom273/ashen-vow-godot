@@ -1,0 +1,78 @@
+ASHEN VOW — WHOLE-GAME REBUILD HANDOFF
+2026-10-04
+
+SCOPE
+Continued beyond the earlier foundation stop. Source implementation now covers
+combat/session/magic/status/progression/AI/art/audio/world/map/UI/editor tooling.
+It is NOT runtime-tested or release-certified. See REBUILD_ROADMAP.txt for each
+A–L connection and the phase7 gate. No Godot import/launch/automated/runtime tests
+were run by this agent; no commit/push/reset was made.
+
+RUNTIME-CONNECTED IN SOURCE
+- Title/3slots/Continue/settings; character-owned state and equipment identities.
+- Shrine respawn, separate persistent recovery/world rewards, autosaves/backups.
+- Explicit accepted/rejected hit result, LOS/elevation, timed committed utilities.
+- Virtual unlimited Glimmer/Votive Spark alongside20existing finite spells.
+- Poison/bleed/frost buildup with resistances/immunity/proc/cleanse and HUD feedback.
+- Levels/free earned-point respec/per-copy upgrades,owned loadouts/material rewards.
+- Grave/Greywatch wardens,fast Thorn Stalker,ranged Ash Cantor,retained Sentinel.
+- Last-known pursuit/search/return/local alerts,move resources,windup tracking.
+- Eight-view layered SVG rigs,weapon sockets,illustrated environment/props/Raven.
+- New shared Theme/settings scene,scrollable services,search,binding/device prompts.
+- Four checkpoint shrines,attunement/validated travel,controller map/floor markers.
+- Pausable24-minute day/clear/overcast/rain,interior shelter and persistent climate.
+- Cached procedural audio/music,priority voices,floor-aware impact sound.
+- Spatial actors/elevation,route/stair graph,clearance caches,bounded terrain detail.
+- Editor shelf/UndoRedo placement/overlays/audit;disposable current-scale combat lab.
+
+CONTENT INVENTORY
+Full per-file list:CHANGED_ASSETS.json (new assets + modified tracked files).
+Inventory snapshot:102 modified tracked files and241 new files,including89
+Godot metadata sidecars;55 SVG sources,33 Resources,6 scenes,41 scripts added.
+The open editor may create further metadata; this is not an import/test result.
+Tuning:LIVE_TUNING.json and TUNING_SUMMARY.txt (10weapons,22spells,6enemy definitions).
+Four humanoid SVG atlases,sixparts/eightviews;10weapon illustrations;9treecrowns+
+trunk;15initialprop textures +arch;roof/floor/cliff textures;shrine/campfire/Raven/
+effigy/wordmark/status/rain assets. Existing procedural water/terrain/cloth remain.
+New resource families:progression/rewards/status/application/perception/moves/
+climate/weather/procedural sound/library/music/environmentart.
+New scenes:title,settings,combatlab,authoredreward,stalker,cantor;existing scenes
+are wired rather than duplicated into a separate inventory or parallel world.
+
+INTENTIONAL COMPATIBILITY
+Existing IDs and20spell resources retained;only2basic abilities added for the
+roadmap's unlimited magic requirement. No boss,newregion,Wolf/feline,guard/parry.
+128u/m and all movement/acceleration/camera/geographic anchors kept.
+Equipment cross,permanent vignette,noFP/no motionblur,existing spell tuning/VFX
+budgets kept. Impact feedback remains data-driven; old burst/play callers work.
+Melee actor-local geometry and delivery world geometry stay distinct.
+Exact Blackflame percent/heal/imbue bonus does not inherit equipment upgrades.
+Player controller remains authoritative for locomotion/action phases; helpers
+extract ownership,spellbook,progression,hit contracts,AI and presentation.
+
+SOURCE REVIEW
+Literal reference/resource-ID scans,diff inspection,typed-container and lifecycle
+review performed. Counts/results are recorded in VERIFICATION.txt.
+This does not establish GDScript parsing,scene instantiation or visual correctness.
+Opt-in data regressions were REPLACED/AUTHORED but NOT EXECUTED.
+Static review fixed additional edge cases:unequipped utility-use persistence,
+same-owned-ID double equipment,lab load/create isolation,late-floor audio context,
+rebind label refresh,route crossings,non-positive/typed authoring fields,mesh cache,
+direct interaction locks,malformed tick loops,dead-enemy perception and menu focus.
+
+REVIEW LIMITS
+All new behavior remains runtime-unverified,especially save failure handling,
+navigation/stairs,controller/modal paths,action interruption,SVG grip/layering/
+dissolve/occlusion,weather shelter,pause/reload,performance and export.
+No60FPS guarantee. Cache/scheduling changes are risk reductions,not measurements.
+No current captures of the rebuild exist. Impeccable finish disposition:recapture.
+The inline reviewer/documenter substituted for unavailable subagents.
+Fallback UI body typography/older heading styling remains,not canonized as a
+finished custom display system. Visual/animation quality needs real play review.
+No claim of balanced economy,enemies,statuses,magic,audio or exploration density.
+
+HOW TO REVIEW WHEN YOU CHOOSE
+Open the project in your pinned Godot4.7.1. Read parser output before gameplay.
+Use disposable combat_lab.tscn for combat checks without overwriting a character;
+normal game uses title->New Game/Continue. Full checklist:VERIFICATION.txt.
+Do not run diagnostics/imports/tests automatically from this handoff.

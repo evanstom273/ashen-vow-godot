@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="StatusDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/status_definition.gd" id="status"]
+[ext_resource type="Script" path="res://scripts/resources/spell_effect_definition.gd" id="effect"]
+[ext_resource type="Script" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" path="res://scripts/resources/defence_profile.gd" id="defence"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/status_frost.svg" id="icon"]
+[ext_resource type="Resource" path="res://data/statuses/frost_vfx.tres" id="vfx"]
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 0.0
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+poise_damage = 0.0
+knockback = 0.0
+hit_stop = 0.0
+camera_shake = 0.0
+[sub_resource type="Resource" id="Defence"]
+script = ExtResource("defence")
+physical = -10.0
+magic = -10.0
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("effect")
+display_name = "Frostbound"
+icon = ExtResource("icon")
+id = &"frost"
+tags = Array[StringName]([&"frost"])
+negative = true
+duration = 6.0
+interval = 1.0
+movement_multiplier = 0.7
+
+defence_bonus = SubResource("Defence")
+[resource]
+script = ExtResource("status")
+vfx = ExtResource("vfx")
+icon = ExtResource("icon")
+id = &"frost"
+display_name = "Frostbound"
+color = Color(0.5764705882352941, 0.8, 0.8588235294117647, 1)
+threshold = 100.0
+retrigger_delay = 6.0
+tags = Array[StringName]([&"frost"])
+triggered_effect = SubResource("Effect")
+

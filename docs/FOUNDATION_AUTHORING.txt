@@ -1,0 +1,3 @@
+SUPERSEDED — historical foundation-stage guide
+Read AUTHORING_GUIDE.txt and MIGRATIONS.txt for current system/resource contracts.
+The whole-game rebuild retains compatibility adapters; it is not runtime-certified.

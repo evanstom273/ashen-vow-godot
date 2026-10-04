@@ -15,6 +15,8 @@ var help_panel: PanelContainer
 var menu: PanelContainer
 var menu_title: Label
 var resume_button: Button
+var respawn_button: Button
+var slot_buttons: Array[Button] = []
 var atmosphere: ShaderMaterial
 var elapsed: float = 0
 var death_time: float = 0
@@ -23,15 +25,23 @@ var currency_label: Label
 var mobile_controls: MobileControls
 var shrine_loadout_menu: ShrineLoadoutMenu
 var world_navigation: WorldNavigationUI
+var controls_hint: Label
+var help_text: Label
+var _controller_prompts: bool = false
+var settings_panel: SettingsPanel
 
 func _ready() -> void:
 	layer = 50
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	player = get_tree().get_first_node_in_group("player")
 	root = Control.new()
+	root.theme = GameTheme.get_theme()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
+	GameSettings.settings_changed.connect(_apply_ui_scale)
+	get_viewport().size_changed.connect(_apply_ui_scale)
+	_apply_ui_scale()
 	var veil := ColorRect.new()
 	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -64,9 +74,16 @@ func _ready() -> void:
 	health_stack.add_child(health_bar)
 	stamina_bar = _bar(Color("8d9d72"),Vector2(200,7))
 	status.add_child(stamina_bar)
-	var controls_hint := _label("TAB: controls    ESC: pause    M: map",11,Color("929b98"))
+	controls_hint = _label("",11,Color("929b98"))
 	if MobileControls.should_enable(): controls_hint.text = "TOUCH CONTROLS"
 	status.add_child(controls_hint)
+	var status_effects := ActorStatusDisplay.new()
+	status_effects.actor = player
+	status_effects.position = Vector2(88, 113)
+	root.add_child(status_effects)
+	var onboarding := PlayerOnboarding.new()
+	onboarding.actor = player
+	player.add_child(onboarding)
 	currency_label = _label("Embers  0",13,Color("e6b968"))
 	currency_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	currency_label.offset_left = -150
@@ -130,11 +147,11 @@ func _ready() -> void:
 	help_panel = _panel()
 	root.add_child(help_panel)
 	help_panel.position = Vector2(32,130)
-	var help := _label("WASD / arrows   Move\nLMB   Right hand   /   RMB   Left hand\nSpace tap   Dodge   /   hold   Sprint\nQ/R   Weapons   C   Spells   V   Utilities\nF   Cast   /   G   Use   /   MMB   Lock target\nWheel   Switch target   /   E   Interact\nF11   Fullscreen",14,Color("ccd1bf"))
-	help.text += "\n\nGAMEPAD\nLS Move / RS Aim / R3 Lock / RS flick Switch target\nRB/R1 Right attack / LB/L1 Left attack\nRT/R2 & LT/L2 Tap attack / hold charge\nB/Circle Tap dodge / hold sprint\nD-pad: Up spell / Down item / Left & Right weapons\nX/Square Use item / Y/Triangle Interact\nA/Cross Cast / L3 Command orbiters\nMenus: D-pad navigate / A confirm / B back"
-	help.add_theme_font_size_override("font_size", 12)
+	help_text = _label("", 12, Color("ccd1bf"))
 	help_panel.position.y = 40
-	help_panel.add_child(help)
+	help_panel.add_child(help_text)
+	GameSettings.settings_changed.connect(_refresh_prompts)
+	_refresh_prompts()
 	help_panel.visible = false
 	_build_menu()
 	shrine_loadout_menu = preload("res://scenes/shrine_loadout_menu.tscn").instantiate() as ShrineLoadoutMenu
@@ -198,45 +215,42 @@ func _build_menu() -> void:
 	menu.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	menu.position += Vector2(-190,-215)
 	menu.custom_minimum_size = Vector2(380,430)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(332, 386)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	menu.add_child(scroll)
 	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_theme_constant_override("separation",12)
-	menu.add_child(box)
+	scroll.add_child(box)
 	menu_title = _label("A MOMENT OF REST",22,Color("d9c79f"))
 	menu_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(menu_title)
-	resume_button = _button("Return to the courtyard",func() -> void: _pause(false))
+	resume_button = _button("Resume",func() -> void: _pause(false))
 	box.add_child(resume_button)
-	box.add_child(_button("Begin again",func() -> void:
-		get_tree().paused = false
-		get_tree().reload_current_scene()))
-	for bus: String in ["Master","Effects","Ambience"]:
-		box.add_child(_label(bus + " volume",13,Color("a8b7af")))
-		var slider := HSlider.new()
-		slider.max_value = 1
-		slider.step = 0.01
-		slider.value = db_to_linear(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(bus)))
-		slider.value_changed.connect(func(value: float) -> void: AudioServer.set_bus_volume_db(AudioServer.get_bus_index(bus),linear_to_db(maxf(0.0001,value))))
-		box.add_child(slider)
-	var reduced := CheckButton.new()
-	reduced.text = "Reduced effects"
-	reduced.button_pressed = Feedback.reduced_effects
-	reduced.toggled.connect(func(value: bool) -> void: Feedback.reduced_effects = value)
-	box.add_child(reduced)
-	var blood := CheckButton.new()
-	blood.text = "Blood"
-	blood.button_pressed = Feedback.blood_enabled
-	blood.toggled.connect(func(value: bool) -> void:
-		Feedback.blood_enabled = value
-		if not value: Feedback.clear_blood())
-	box.add_child(blood)
-	box.add_child(_label("Screen shake intensity (0 = off)", 13, Color("a8b7af")))
-	var shake_slider := HSlider.new()
-	shake_slider.min_value = 0.0
-	shake_slider.max_value = 1.0
-	shake_slider.step = 0.05
-	shake_slider.value = Feedback.shake_strength
-	shake_slider.value_changed.connect(func(value: float) -> void: Feedback.shake_strength = value)
-	box.add_child(shake_slider)
+	respawn_button = _button("Return to last shrine", func() -> void: GameSession.respawn())
+	box.add_child(respawn_button)
+	box.add_child(_button("Save character", func() -> void: GameSession.save_now()))
+	box.add_child(_button("Settings & rebind controls", func() -> void:
+		if is_instance_valid(settings_panel): return
+		settings_panel = preload("res://scenes/settings_panel.tscn").instantiate() as SettingsPanel
+		menu.hide()
+		settings_panel.closed.connect(func() -> void:
+			menu.show()
+			resume_button.call_deferred("grab_focus"))
+		root.add_child(settings_panel)))
+	box.add_child(_button("Return to title", func() -> void:
+		if GameSession.development_session or GameSession.save_now():
+			UIFlow.clear()
+			GameSession.leave_development_session()
+			get_tree().change_scene_to_file("res://scenes/title_screen.tscn")))
+	box.add_child(_button("New Game (empty slot)", func() -> void: GameSession.new_character()))
+	for index in range(1, 4):
+		var load_button: Button = _button("Continue - slot %d" % index, GameSession.load_slot.bind(index))
+		load_button.disabled = not FileAccess.file_exists(GameSession.slot_path(index)) and not FileAccess.file_exists(GameSession.slot_path(index) + ".bak")
+		slot_buttons.append(load_button)
+		box.add_child(load_button)
+	# Presentation controls live in the shared SettingsPanel, not a second copy.
 	menu.visible = false
 
 func _button(text: String, callback: Callable) -> Button:
@@ -248,26 +262,36 @@ func _button(text: String, callback: Callable) -> Button:
 
 func _open_shrine_loadout() -> void:
 	if not is_instance_valid(player) or player.health <= 0: return
+	if not UIFlow.acquire(shrine_loadout_menu): return
 	menu.visible = false
 	help_panel.visible = false
-	get_tree().paused = true
 	player.reset_control_holds()
 	if is_instance_valid(mobile_controls): mobile_controls.set_controls_enabled(false)
 	shrine_loadout_menu.open_for(player)
 
 func _close_shrine_loadout(_applied: bool) -> void:
-	get_tree().paused = false
+	UIFlow.release(shrine_loadout_menu)
+	GameSession.save_now()
 	if is_instance_valid(mobile_controls): mobile_controls.set_controls_enabled(true)
 	prompt.text = ""
 
 func _pause(value: bool) -> void:
-	if value: player.reset_control_holds()
-	get_tree().paused = value
+	if value and not UIFlow.acquire(menu): return
+	if value:
+		player.reset_control_holds()
+		for index in slot_buttons.size():
+			slot_buttons[index].disabled = not FileAccess.file_exists(GameSession.slot_path(index + 1)) and not FileAccess.file_exists(GameSession.slot_path(index + 1) + ".bak")
+	if not value: UIFlow.release(menu)
 	menu.visible = value
 	player._right_held = false
 	if value: resume_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > 0.3):
+		if not _controller_prompts: _controller_prompts = true; _refresh_prompts()
+	elif event is InputEventKey or event is InputEventMouseButton:
+		if _controller_prompts: _controller_prompts = false; _refresh_prompts()
+	if is_instance_valid(settings_panel): return
 	if is_instance_valid(world_navigation) and world_navigation.handle_input(event): return
 	if is_instance_valid(shrine_loadout_menu) and shrine_loadout_menu.handle_menu_input(event):
 		return
@@ -313,4 +337,22 @@ func _process(delta: float) -> void:
 			menu_title.text = "YOUR EMBER FADES"
 			resume_button.visible = false
 			_pause(true)
-			(resume_button.get_parent().get_child(2) as Button).grab_focus()
+			respawn_button.grab_focus()
+
+func _apply_ui_scale() -> void:
+	if not is_instance_valid(root): return
+	var factor: float = clampf(float(GameSettings.values.ui_scale), 0.75, 1.5)
+	# Scale only the CanvasLayer content; gameplay zoom and world units never change.
+	root.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	root.scale = Vector2.ONE * factor
+	root.size = get_viewport().get_visible_rect().size / factor
+
+
+func _refresh_prompts() -> void:
+	if not is_instance_valid(controls_hint) or not is_instance_valid(help_text): return
+	controls_hint.text = GameSettings.prompt("help", _controller_prompts) + ": controls   ESC / Menu: pause"
+	var rows := PackedStringArray()
+	for pair: Array in [["move_up", "Move forward"], ["attack", "Right hand"], ["left_attack", "Left hand"], ["dodge", "Tap dodge / hold sprint"], ["cast_spell", "Cast selected spell"], ["use_utility", "Use utility / transform"], ["cycle_right", "Cycle right weapon"], ["cycle_left", "Cycle left weapon"], ["cycle_spell", "Cycle spell"], ["cycle_utility", "Cycle utility"], ["lock_on", "Lock enemy"], ["interact", "Interact / rest"], ["spell_command", "Command orbiters"], ["world_map", "World map"]]:
+		rows.append(GameSettings.prompt(pair[0], _controller_prompts) + "   " + pair[1])
+	rows.append("F11   Fullscreen\nMenus: directions navigate / confirm / back")
+	help_text.text = "\n".join(rows)

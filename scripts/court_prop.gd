@@ -78,6 +78,17 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	if kind in ["pillar", "rubble", "grass"]:
+		var texture: Texture2D = preload("res://assets/illustrated/court_pillar.svg")
+		var bounds := Rect2(-28,-78,56,96)
+		if kind == "rubble":
+			texture = preload("res://assets/illustrated/prop_rubble.svg")
+			bounds = Rect2(-17,-13,34,24)
+		elif kind == "grass":
+			texture = preload("res://assets/illustrated/prop_grass.svg")
+			bounds = Rect2(-14,-24,28,29)
+		draw_texture_rect(texture, bounds, false)
+		return
 	match kind:
 		"pillar":
 			draw_set_transform(Vector2(8,8),0,Vector2(1,0.45))
@@ -95,9 +106,7 @@ func _draw() -> void:
 			draw_set_transform(Vector2(4,7),0,Vector2(1,0.4))
 			draw_circle(Vector2.ZERO,23,Color(0,0,0,0.4))
 			draw_set_transform(Vector2.ZERO)
-			draw_rect(Rect2(-12,-5,24,11),Color("414247"))
-			draw_rect(Rect2(-5,-26,10,24),Color("555653"))
-			draw_polygon(PackedVector2Array([Vector2(-18,-34),Vector2(18,-34),Vector2(10,-21),Vector2(-10,-21)]),PackedColorArray([Color("6b6556")]))
+			draw_texture_rect(preload("res://assets/illustrated/court_brazier.svg"), Rect2(-19,-38,38,48), false)
 			if Engine.is_editor_hint():
 				for i in 4:
 					var x: float = -10 + i * 7

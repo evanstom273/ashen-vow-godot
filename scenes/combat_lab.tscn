@@ -1,0 +1,54 @@
+[gd_scene format=3]
+[ext_resource type="Script" path="res://scripts/combat_lab.gd" id="lab"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://scenes/props/shrine.tscn" id="shrine"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/training_dummy.tscn" id="dummy"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/court_sentinel.tscn" id="sentinel"]
+[ext_resource type="Script" path="res://scripts/spell_navigation.gd" id="navigation"]
+[sub_resource type="RectangleShape2D" id="horizontal"]
+size = Vector2(8256, 64)
+[sub_resource type="RectangleShape2D" id="vertical"]
+size = Vector2(64, 6080)
+[sub_resource type="RectangleShape2D" id="obstruction"]
+size = Vector2(64, 512)
+[node name="CombatLab" type="Node2D"]
+script = ExtResource("lab")
+metadata/development_sandbox = true
+[node name="SpellNavigation" type="Node" parent="."]
+script = ExtResource("navigation")
+bounds = Rect2(-4096,-3072,8192,6144)
+[node name="Actors" type="Node2D" parent="."]
+y_sort_enabled = true
+[node name="Player" parent="Actors" instance=ExtResource("player")]
+[node name="LabShrine" parent="Actors" instance=ExtResource("shrine")]
+position = Vector2(-256,512)
+checkpoint_id = &"combat_lab_shrine"
+[node name="Effigy" parent="Actors" instance=ExtResource("dummy")]
+position = Vector2(768,0)
+[node name="OccludedEffigy" parent="Actors" instance=ExtResource("dummy")]
+position = Vector2(1280,-768)
+[node name="Sentinel" parent="Actors" instance=ExtResource("sentinel")]
+position = Vector2(3072,-1536)
+encounter_id = &"combat_lab_sentinel"
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 17
+collision_mask = 0
+[node name="North" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0,-3072)
+shape = SubResource("horizontal")
+[node name="South" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0,3072)
+shape = SubResource("horizontal")
+[node name="East" type="CollisionShape2D" parent="Walls"]
+position = Vector2(4096,0)
+shape = SubResource("vertical")
+[node name="West" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-4096,0)
+shape = SubResource("vertical")
+[node name="WallTest" type="CollisionShape2D" parent="Walls"]
+position = Vector2(960,-768)
+shape = SubResource("obstruction")
+[node name="WallArt" type="Polygon2D" parent="Walls"]
+position = Vector2(960,-768)
+polygon = PackedVector2Array(-32,-256,32,-256,32,256,-32,256)
+color = Color(0.35,0.39,0.36,1)

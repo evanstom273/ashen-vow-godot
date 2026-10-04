@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="StatusDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/status_definition.gd" id="status"]
+[ext_resource type="Script" path="res://scripts/resources/spell_effect_definition.gd" id="effect"]
+[ext_resource type="Script" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" path="res://scripts/resources/defence_profile.gd" id="defence"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/status_poison.svg" id="icon"]
+[ext_resource type="Resource" path="res://data/statuses/poison_vfx.tres" id="vfx"]
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 12.0
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+poise_damage = 0.0
+knockback = 0.0
+hit_stop = 0.0
+camera_shake = 0.0
+[sub_resource type="Resource" id="Defence"]
+script = ExtResource("defence")
+physical = 0.0
+magic = 0.0
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("effect")
+display_name = "Poisoned"
+icon = ExtResource("icon")
+id = &"poison"
+tags = Array[StringName]([&"poison"])
+negative = true
+duration = 10.0
+interval = 1.0
+movement_multiplier = 1
+periodic_attack = SubResource("Attack")
+
+[resource]
+script = ExtResource("status")
+vfx = ExtResource("vfx")
+icon = ExtResource("icon")
+id = &"poison"
+display_name = "Poison"
+color = Color(0.4666666666666667, 0.6, 0.3411764705882353, 1)
+threshold = 100.0
+retrigger_delay = 10.0
+tags = Array[StringName]([&"poison"])
+triggered_effect = SubResource("Effect")
+

@@ -9,7 +9,7 @@ func _ready() -> void:
 
 
 func can_interact(player: Node) -> bool:
-	return is_inside_tree() and visible and Elevation.compatible(self, player)
+	return is_inside_tree() and visible and is_instance_valid(player) and player.has_method("can_world_interact") and player.call("can_world_interact") and Elevation.compatible(self, player)
 
 
 func get_interaction_prompt() -> String:

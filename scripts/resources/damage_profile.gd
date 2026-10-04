@@ -2,7 +2,7 @@
 class_name DamageProfile
 extends Resource
 ## Attack power by damage channel. Health damage is rounded once after mitigation.
-@export_range(0, 100000, 0.1) var physical: float = 110.0
+@export_range(0, 100000, 0.1) var physical: float = 0.0
 @export_range(0, 100000, 0.1) var magic: float = 0.0
 @export_range(0, 100000, 0.1) var fire: float = 0.0
 @export_range(0, 100000, 0.1) var lightning: float = 0.0

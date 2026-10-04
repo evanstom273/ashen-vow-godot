@@ -1,0 +1,8 @@
+Paths: DESIGN.md; .impeccable/design.json; PRODUCT.md.
+Palette: forest-ink fields, parchment text, restrained amber focus from the shared Theme.
+Type: native17px body,12px status labels; SVG title wordmark, no invented display-font system.
+Layout: retained equipment cross, responsive scrollable shrine/services and independent UI scale.
+Depth: actor/floor/reveal layering; flat UI borders, no fabricated shadow hierarchy.
+Rules: meaning before ornament; art is not collision; one equipment cross.
+Not canonized: fallback display headings and legacy small-label treatment pending rendered review; no current captures permitted.
+Inline reviewer/documenter substituted for unavailable subagents.

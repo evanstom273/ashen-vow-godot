@@ -22,8 +22,8 @@ func _ready() -> void:
 	flash_material = ShaderMaterial.new()
 	flash_material.shader = load("res://shaders/flash.gdshader")
 	visual.material = flash_material
-	for path: String in ["Body", "Head", "Eye"]:
-		var part: Polygon2D = get_node(path)
+	for path: String in ["Body", "Head", "Eye", "Illustration"]:
+		var part := get_node(path) as Node2D
 		part.reparent(visual)
 		part.use_parent_material = true
 	$LockRing.z_index = -1
@@ -40,26 +40,34 @@ func _process(delta: float) -> void:
 		visual.modulate.a = 0.45
 		if reset_timer <= 0 and definition.auto_restore_delay > 0: reset_encounter()
 func get_display_name() -> String: return definition.display_name
-func receive_hit(incoming: AttackDefinition, attacker_stats: AttributeStats, source: Node) -> void:
-	_apply_hit(incoming.health_damage(attacker_stats, SpellEffects.defence(self, vitals.defence)), source, incoming, attacker_stats)
+func receive_hit(incoming: AttackDefinition, attacker_stats: AttributeStats, source: Node) -> HitResult:
+	if incoming == null: return HitResult.reject(&"missing_attack")
+	var rejected: StringName = hit_rejection(source, incoming)
+	if not rejected.is_empty(): return HitResult.reject(rejected)
+	return _apply_hit(incoming.health_damage(attacker_stats, SpellEffects.defence(self, vitals.defence)), source, incoming, attacker_stats)
 func take_damage(amount: int, source: Node) -> void:
 	_apply_hit(amount, source)
-func _apply_hit(amount: int, source: Node, incoming: AttackDefinition = null, attacker_stats: AttributeStats = null) -> void:
-	if not Elevation.accepts_hit(self, source, incoming): return
-	if health <= 0: return
-	if health > amount: SpellEffects.apply_attack(self, incoming, attacker_stats, source)
-	if amount == 0 and incoming != null and incoming.max_health_drain != null: return
+func _apply_hit(amount: int, source: Node, incoming: AttackDefinition = null, attacker_stats: AttributeStats = null) -> HitResult:
+	var rejected: StringName = hit_rejection(source, incoming)
+	if not rejected.is_empty(): return HitResult.reject(rejected)
+	if amount <= 0 and (incoming == null or incoming.max_health_drain == null): return HitResult.reject(&"no_damage")
+	var outcome := HitResult.accept(mini(amount, health))
+	if health > amount and SpellEffects.apply_attack(self, incoming, attacker_stats, source):
+		outcome.applied_effects.append(incoming.max_health_drain.id)
+	if amount == 0: return outcome if not outcome.applied_effects.is_empty() else HitResult.reject(&"no_effect")
 	Feedback.damage_number(self, mini(amount, health))
 	if amount > 0: Feedback.hit_effect(global_position, source, definition.hit_surface, incoming, amount, self)
 	health = maxi(0, health - amount)
 	if incoming == null or not incoming.periodic_damage:
 		wobble = 0.7
 		timer = 0
-		Feedback.play(String(definition.hit_sound), global_position)
+		Feedback.play(String(definition.hit_sound), global_position, 0.0, self)
 	if health == 0:
 		reset_timer = definition.auto_restore_delay
 		locked = false
 		Feedback.burst(global_position, "death", Vector2.UP, null, get_instance_id())
+	outcome.killed = health == 0
+	return outcome
 func set_lock_on(value: bool) -> void: locked = value
 func reset_encounter() -> void:
 	SpellEffects.of(self).clear()

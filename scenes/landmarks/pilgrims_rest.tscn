@@ -8,6 +8,9 @@
 [ext_resource type="Resource" path="res://data/environment/cover_pilgrims.tres" id="ground_cover"]
 [ext_resource type="PackedScene" path="res://scenes/props/approach_pilgrims_rest.tscn" id="approach"]
 
+[ext_resource type="PackedScene" path="res://scenes/props/authored_reward.tscn" id="discovery_scene"]
+[ext_resource type="Resource" path="res://data/progression/reward_pilgrims_rest.tres" id="discovery_reward"]
+
 [node name="pilgrims_rest" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("landmark")
@@ -75,3 +78,9 @@ variation = 161
 position = Vector2(256, 640)
 
 [node name="ApproachDressing" parent="." instance=ExtResource("approach")]
+
+
+[node name="AuthoredDiscovery" parent="." instance=ExtResource("discovery_scene")]
+position = Vector2(-512, 640)
+reward_id = &"pilgrims_rest_reliquary"
+definition = ExtResource("discovery_reward")

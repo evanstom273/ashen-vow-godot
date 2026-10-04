@@ -1,0 +1,170 @@
+ASHEN VOW — WHOLE-GAME AUDIT AND REBUILD ROADMAP
+Maintained implementation register | 2026-10-04
+
+READ THIS FIRST
+The implementation now spans the roadmap, rather than stopping at phases 1–2.
+"Implemented" below means connected source, scenes and Resources. It NEVER
+means proven parsing, tested gameplay, finished visual quality or a 60 FPS result.
+Phase 7's runtime acceptance remains open under the user's explicit no-tests
+instruction. No Godot launch/import, automated test or runtime test was run by
+this agent. The user's already-open editor may generate its own import metadata.
+
+DELIVERY REGISTER
+0 BASELINE — recorded. Clean 610-file starting commit:
+  d151e70b49f7304281378dc3c3373fed013d141e.
+  Existing baseline includes the previously untracked regional assets. This
+  rebuild is left uncommitted, with new assets visible in CHANGED_ASSETS.json.
+1 CORRECTNESS — implemented source. Explicit HitRequest/HitResult; receiver
+  gates; obstruction/elevation; invalid attack repairs; timed committed utilities;
+  finite-use retention; summed memory; shared engagement and Raven entry lock.
+2 SESSION — implemented source. Three local character slots, title/continue,
+  versioned JSON/checksum/backup, event + 30-second autosave, last-shrine respawn,
+  persistent player recovery separate from world pickups, settings/bindings.
+3 VISUAL REBUILD — implemented source assets and connections. Eight authored
+  directional views in layered SVG rigs; weapon grip/tip/cast sockets; SVG tree,
+  prop, masonry/roof/cliff, shrine/fire, Raven and actor artwork; compatible
+  shader reveal/dissolve/flash; existing procedural geography remains authored.
+  This is not a prototype approval gate. Rendered quality is NOT reviewed yet.
+4 MAGIC/COMBAT/AI — implemented source. Two unlimited catalyst basics in normal
+  cycling; all 20 prior spells and 17 delivery types retained; statuses,
+  per-instance upgrades/imbues; ordinary, fast and ranged enemy roles; shared
+  perception, last-known search/return; route/stair graph and local grids.
+5 PROGRESSION — implemented source. Owned equipment IDs, discovery rewards,
+  material drops, levels, free earned-point respec, upgrades, utility preparation,
+  ownership-aware loadout search, memory enforcement and magic-ready Wanderer.
+6 REGION — implemented source. Ten authored discovery rewards, four total shrine
+  checkpoints, attunement/travel, controller map/floor markers, live day/weather,
+  procedural music/audio, bounded actor/nav/terrain work and editor overlays.
+7 REVIEW — static source/reference/diff review and replacement check authoring
+  recorded. Runtime, visual, audio, save-failure and performance acceptance NOT
+  executed. Impeccable finish disposition: recapture (no current build captures).
+
+AUTHORITATIVE CONSTRAINTS
+128 world units = 1 metre. Human 512/768u/s; Raven 1024/1536u/s.
+Authored acceleration, human zoom0.25 and Raven0.10–0.20 unchanged.
+Camp origin/footprint and Fort Greywatch at(57600,0),450m east, unchanged.
+Equipment cross: spell top, RH right, utility bottom, LH left.
+No FP, motion blur, guard/parry, renderer switch, new boss or new region.
+Moving attacks, free stamina outside combat, enemy-only lock acquisition and
+range-independent retained lock remain the controller's authoritative behavior.
+Blackflame:2–5% maxHP, Arcane10–60 capped, duration0.75–1.25s, separate fire.
+2048 particles /256 ambient /40 bursts /8 transient lights /64 blood stains.
+
+IMPLEMENTED SYSTEM MAP
+A Architecture
+  Resource definitions remain immutable. CharacterState/EquipmentInstance own
+  persistent state; SpellCastContext/HitRequest/HitResult own contact context.
+  PlayerSpellbook, CharacterProgression, GameSession, ActorStatuses, EnemyMind,
+  ActorRegistry, UIFlow and presentation helpers reduce controller responsibilities.
+  Existing player public methods remain compatible; movement and committed
+  action phase transitions intentionally remain in PlayerController.
+  ContentAudit + editor diagnostics inspect IDs, scenes/sockets, nested payloads.
+  Native JSON is validated before typed runtime construction; no scene-object IDs
+  or executable .tres files are loaded from a save.
+B Combat
+  All weapon/cast assignments are inventoried in LIVE_TUNING.json.
+  Hit eligibility, floor/LOS, receiver acceptance, damage/effects, attribution and
+  feedback no longer infer success from a health comparison. Receiver-specific
+  poise/hurt/death behavior remains local behind the contract.
+  Utilities spend on acceptance, restore at release and recover; interruption
+  does not refund. Temporary effects and imbues clear at lifecycle boundaries.
+  Development trace describes base, defence, scaling, upgrade and exact payload.
+C Magic
+  Glimmer (wand/staff) and Votive Spark (seal) are catalyst-owned virtual entries.
+  Same basic from both hands deduplicates; no memory; uses=-1 means infinity.
+  Finite spell pool survives cycling/removal/re-preparation.
+  Existing input-owned channels, child attribution, scheduled ticks, geometry,
+  targets, manual B orbiters and per-weapon imbues remain connected.
+  Actor-owned status meters add decay/resistance/immunity/retrigger/cleanse;
+  poison, bleed and frost have Resources/icons/VFX. Frost is a reusable template,
+  not assigned to a new player spell. Blackflame remains a separate direct burn.
+D Enemies
+  Court Sentinel remains elite. Grave Warden: slow mace/poison; Greywatch Warden:
+  spear spacing; Thorn Stalker: fast dagger/bleed; Ash Cantor: ranged fire.
+  Perception/moves are Inspector Resources. Distant accepted damage provokes,
+  local alerts are bounded, lost sight searches last-known location then returns.
+  Windup tracking ends at the move's authored fraction. Existing strike visuals,
+  collision timing and weapon-size boundaries remain separate from art.
+E Raven
+  Out-of-combat entry, moving transitions/sprint, landing checks, collision restore,
+  canopy handling and optional camera behavior retained. SVG parts dissolve with
+  polygons through the shared surface interface. Combat never forces landing.
+F Persistence/progression
+  Three character slots; no silent overwrite when slots are occupied. Health,
+  stamina, Embers, attributes, owned IDs/upgrades, loadouts/remaining uses,
+  memories, reward flags, shrine attunement, map and climate persist.
+  Invalid/airborne restores use recorded valid ground/checkpoint, not clipping.
+  Zero-Embers death replaces only the player's recovery. World drops persist
+  independently. Respawn/rest reset ordinary encounter defeats, not first rewards.
+  Shrine services offer levels, respec, equipment upgrades, utilities and travel.
+  Development catalogue is explicit; combat lab saves nothing to a character slot.
+G Art
+  Project-contained SVG source; imported textures are reused, not generated every
+  frame. Eight views and six animated body parts for humanoid rigs; sockets drive
+  held items. Tree families, weathered props, masonry, cliff strata, roof courses,
+  fire/shrine, Raven and training effigy now use illustrated source assets.
+  Terrain, water ripples, architecture footprints, paths, foliage meshes, cloth and
+  VFX deliberately retain procedural geometry where it serves deformation/scale.
+  Existing drag-and-drop scene transforms/colliders/manual placement are retained.
+H VFX/audio
+  Shared setup/update/stop visual contract and safe detached tails; no gameplay
+  work depends on an emitter budget. Body flash/dissolve don't replace reveal.
+  Persistent vignette stays independent of configured impact presentation.
+  Sound Resources cache synthesized samples;18 prioritized transient voices.
+  Sparse pattern music crossfades exploration/combat; six music voices. Audio
+  includes floor/interior attenuation; volume, shake, blood and vibration persist.
+I World/navigation/climate
+  Shared spatial actor index, floor-aware elevation/body lookup, floor/clearance
+  local windows and coarse route/stair graph. Local nav capped256 probes/frame,
+  eight resident/pending windows. Invalid/pending paths wait rather than teleport.
+  Ground-detail preparation capped2 jobs/2.5ms scheduling budget per frame;
+  cosmetic terrain cache128 chunks by default; no collision eviction.
+  Editable24-minute day, clear/overcast/rain, blended wind/light/ambience,
+  interior shelter, paused simulation and no offline clock.
+J Map/travel
+  Fullscreen M map, mouse zoom/pan, markers/beacons, arrival fade and vignette
+  preserved. Controller cursor/placement/removal/pan/zoom/centre/floor selection.
+  Marker floor and discoveries save; upper-floor placement requires floor support.
+  Additional checkpoints at chapel, crossing, Greywatch. Attunement required;
+  travel rejects combat/actions/Raven, saves first, prepares destination and validates.
+K UI/onboarding
+  Inspector Theme asset and reusable settings scene. Equipment cross retained;
+  infinity/basic/memory/status/duration and upgrade multipliers displayed.
+  Scrollable loadout/services/settings; owned-item search, controller focus,
+  device prompts, rebinding, UI scale, effects/audio settings and Reset Defaults.
+  Binding labels refresh immediately; UIFlow prevents modal unpause/input leakage.
+  Contextual first-use guidance persists as tutorial flags.
+L Authoring/toolchain
+  Existing deterministic preview/runtime pipeline retained. Editor asset shelf,
+  Undo/Redo placement, content/stable-ID audit, collision/landing/encounter/spell/
+  navigation-floor overlays. Preview does not run AI/audio or consume a session.
+  Disposable current-scale combat lab and opt-in data checks replace stale tests.
+  Engine/CI4.7.1; Windows export metadata0.2.0.0. Neither CI nor export was run.
+
+LIMITS THAT MUST NOT BE MISREPRESENTED
+- This is an untested implementation, not a release-ready certification.
+- Future phase-7 fixes depend on actual parser/runtime/render/profiler evidence.
+- The theme's fallback body font and some older menu headings are retained.
+  They are not an approved custom display type system; see DESIGN.md review notes.
+- Coarse routes guide local collision paths; they do not guarantee reachability.
+- Initial world collision remains present across the region; cosmetic caching is
+  not full streaming or a measured cure for every load/fullscreen stall.
+- Enemy roles start with one configured move each plus the retained elite; no boss.
+- No save existed before this roadmap. Schema1 is the first persistent format;
+  migration notes document additive fields and refusal of unsupported versions.
+
+HANDOFF FILES
+WHOLE_GAME_HANDOFF.txt — what changed, runtime connections and review limits.
+AUTHORING_GUIDE.txt — systems, units, recipes, editor tools and stable-ID rules.
+MIGRATIONS.txt — saves, item identity, compatibility and source rollback.
+LIVE_TUNING.json / TUNING_SUMMARY.txt — all weapon/spell/enemy payload assignments.
+FINDINGS.json — audit resolution evidence and pending verification.
+CHANGED_ASSETS.json — every changed/new source asset relative to the baseline.
+VERIFICATION.txt — recorded static checks and complete unrun acceptance matrix.
+../DESIGN.md — extracted visual rules; ../PRODUCT.md — confirmed product contract.
+
+EXCLUDED
+Boss, extra region,100 new spells,Wolf/feline,guard/parry,random-stat gear,
+crafting economy,merchants,NPC campaign,multiplayer,cloud saves,mobile optimization,
+external art/audio production,renderer change. No excluded system is implied by a
+reserved Resource field. All permission-gated testing remains outstanding.

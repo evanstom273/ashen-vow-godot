@@ -11,7 +11,11 @@ signal died
 signal target_changed(target: Node2D)
 signal interaction_changed(prompt: String)
 signal shrine_menu_requested
-enum PlayerState { NORMAL, ATTACK_HOLD, CHARGING, ATTACKING, DODGING, HURT, DEAD, CASTING }
+enum PlayerState { NORMAL, ATTACK_HOLD, CHARGING, ATTACKING, DODGING, HURT, DEAD, CASTING, USING_UTILITY }
+var _active_utility: UtilityDefinition
+var _utility_released: bool = false
+var _spell_use_pool: Dictionary = {}
+var _session_ready: bool = false
 @export_group("Definitions")
 @export var character_class: ClassDefinition = preload("res://data/classes/ashen_wanderer.tres")
 ## Leave empty to use the class starting weapon.
@@ -254,6 +258,7 @@ func _ready() -> void:
 		command_key.physical_keycode = KEY_B
 		InputMap.action_add_event("spell_command", command_key)
 	add_to_group("player")
+	ActorRegistry.register(self)
 	apply_definitions()
 	collision_layer = 1
 	collision_mask = 51
@@ -272,6 +277,7 @@ func _ready() -> void:
 	camera.limit_right = 820
 	camera.limit_top = -520
 	camera.limit_bottom = 520
+	GameSession.call_deferred("attach_player", self)
 
 ## Rebuild derived stats on spawn or after an explicit equipment/attribute change.
 func apply_definitions() -> void:
@@ -315,17 +321,22 @@ func apply_definitions() -> void:
 
 	if character_class.spell_loadout != null:
 		for i in mini(spell_capacity, character_class.spell_loadout.spells.size()):
-			spells.append(character_class.spell_loadout.spells[i])
+			var prepared: SpellDefinition = character_class.spell_loadout.spells[i]
+			if prepared != null and spell_memory_used(spells) + prepared.memory_slots > spell_capacity:
+				push_warning("Starting spell loadout exceeds memory: " + prepared.display_name)
+				spells.append(null)
+			else: spells.append(prepared)
 	for item: SpellDefinition in character_class.starting_spells:
-		if item != null and not spells.has(item) and spells.size() < spell_capacity: spells.append(item)
+		if item != null and not spells.has(item) and spells.size() < spell_capacity and spell_memory_used(spells) + item.memory_slots <= spell_capacity: spells.append(item)
 	while spells.size() < spell_capacity: spells.append(null)
 	spell_index = _first_filled_spell_index(spells)
 
 	if character_class.utility_loadout != null:
 		for item: UtilityDefinition in character_class.utility_loadout.utilities: utilities.append(item)
 	utility_charges.clear()
-	for item: UtilityDefinition in utilities: utility_charges.append(item.starting_charges())
+	for item: UtilityDefinition in utilities: utility_charges.append(item.starting_charges() if item != null else 0)
 	_rebuild_spell_charges()
+	PlayerSpellbook.refresh(self)
 	max_health = vitals.max_health(attributes)
 	max_stamina = vitals.max_stamina(attributes)
 	max_equip_load = vitals.max_load(attributes)
@@ -378,16 +389,35 @@ func set_weapon_loadout(hand: StringName, items: Array[WeaponDefinition]) -> voi
 		left_hand_weapons = next
 		left_hand_index = next.find(previous) if previous != null and next.has(previous) else _first_filled_weapon_index(next)
 		loadout_changed.emit(&"left", left_hand_index)
+	PlayerSpellbook.refresh(self)
 
 func set_spell_loadout(items: Array[SpellDefinition]) -> void:
+	if state != PlayerState.NORMAL: return
+	for item: SpellDefinition in items:
+		if item != null and item.is_basic():
+			show_message("Basic magic is supplied by your catalyst")
+			return
+	if spell_memory_used(items) > get_spell_slot_capacity():
+		show_message("Not enough spell memory")
+		return
 	var capacity: int = get_spell_slot_capacity()
 	var previous: SpellDefinition = get_selected_spell()
+	PlayerSpellbook.remember(self)
 	spells.clear()
 	for i in capacity:
 		spells.append(items[i] if i < items.size() else null)
 	spell_index = spells.find(previous) if previous != null and spells.has(previous) else _first_filled_spell_index(spells)
 	_rebuild_spell_charges()
-	loadout_changed.emit(&"spell", spell_index)
+	for i in spells.size():
+		if spells[i] != null and _spell_use_pool.has(spells[i].id):
+			spell_charges[i] = clampi(int(_spell_use_pool[spells[i].id]), 0, spells[i].maximum_charges)
+	PlayerSpellbook.refresh(self)
+
+func spell_memory_used(items: Array[SpellDefinition]) -> int:
+	var used: int = 0
+	for spell: SpellDefinition in items:
+		if spell != null and not spell.is_basic(): used += spell.memory_slots
+	return used
 
 func get_selected_spell() -> SpellDefinition:
 	return spells[spell_index] if not spells.is_empty() and spell_index >= 0 and spell_index < spells.size() else null
@@ -421,7 +451,7 @@ func get_selected_weapon(hand: StringName) -> WeaponDefinition:
 
 func cycle_weapon(hand: StringName, direction: int = 1) -> void:
 	if not form_allows("cycling"): return
-	if state in [PlayerState.ATTACKING, PlayerState.CASTING, PlayerState.DODGING, PlayerState.HURT, PlayerState.DEAD]: return
+	if state in [PlayerState.ATTACKING, PlayerState.CASTING, PlayerState.DODGING, PlayerState.HURT, PlayerState.DEAD, PlayerState.USING_UTILITY]: return
 	var loadout: Array[WeaponDefinition] = right_hand_weapons if hand == &"right" else left_hand_weapons
 	if loadout.is_empty(): return
 	var selected: int = right_hand_index if hand == &"right" else left_hand_index
@@ -436,10 +466,12 @@ func cycle_weapon(hand: StringName, direction: int = 1) -> void:
 			equipped_weapon = item
 		else: left_hand_index = selected
 		loadout_changed.emit(hand, selected)
+		PlayerSpellbook.refresh(self)
 		return
 
 func cycle_spell(direction: int = 1) -> void:
 	if not form_allows("cycling"): return
+	if state != PlayerState.NORMAL: return
 	if spells.is_empty(): return
 	var selected: int = spell_index
 	for _step in spells.size():
@@ -451,15 +483,19 @@ func cycle_spell(direction: int = 1) -> void:
 
 func cycle_utility(direction: int = 1) -> void:
 	if not form_allows("cycling"): return
-	if not utilities.is_empty():
+	if state != PlayerState.NORMAL: return
+	for _step in utilities.size():
 		utility_index = posmod(utility_index + direction, utilities.size())
+		if utilities[utility_index] == null: continue
 		loadout_changed.emit(&"utility", utility_index)
+		return
 
 func get_spell_catalyst(spell: SpellDefinition = null) -> WeaponDefinition:
 	var school: String = spell.school if spell != null else ""
 	for hand: StringName in [&"right", &"left"]:
 		var weapon: WeaponDefinition = get_selected_weapon(hand)
 		if weapon == null or not weapon.is_spell_catalyst: continue
+		if spell != null and spell.is_basic() and weapon.basic_spell != spell: continue
 		if hand == &"left" and not weapon.usable_in_left_hand: continue
 		if hand == &"right" and not weapon.usable_in_right_hand: continue
 		if not attributes.meets(weapon.requirements): continue
@@ -540,7 +576,7 @@ func _start_attack(hand: StringName, definition: AttackDefinition) -> void:
 	state = PlayerState.ATTACKING
 	aim = Vector2.RIGHT.rotated(snappedf(aim.angle(), PI / 4.0))
 	_hits.clear()
-	Feedback.play(String(definition.swing_sound), global_position)
+	Feedback.play(String(definition.swing_sound), global_position, 0.0, self)
 	visuals.begin("attack")
 
 func get_display_name() -> String: return character_class.display_name
@@ -580,6 +616,7 @@ func _notification(what: int) -> void:
 		_cancel_attack_candidate()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not _session_ready: return
 	if is_instance_valid(transformation) and transformation.handle_zoom_input(event):
 		get_viewport().set_input_as_handled()
 		return
@@ -617,17 +654,28 @@ func movement_input() -> Vector2:
 	return physical
 
 func form_allows(permission: String) -> bool:
+	if not _session_ready: return false
 	return not is_instance_valid(transformation) or transformation.allows(permission)
+
+var _engagement_frame: int = -1
+var _engagement_cached: bool = false
 
 func in_combat() -> bool:
 	if state == PlayerState.DEAD or health <= 0: return false
 	# Lock-on alone is not aggression, and an enemy fighting another actor must not
 	# charge this player's stamina. Enemies expose their engagement explicitly.
-	for enemy: Node in get_tree().get_nodes_in_group("enemy"):
-		if enemy.is_queued_for_deletion(): continue
-		if enemy.has_method("is_engaged_with") and enemy.call("is_engaged_with", self):
-			_combat_time = movement.combat_exit_delay
-			return true
+	var frame: int = Engine.get_physics_frames()
+	if frame != _engagement_frame:
+		_engagement_frame = frame
+		_engagement_cached = false
+		for enemy: Node2D in ActorRegistry.registered():
+			if enemy.is_queued_for_deletion() or not enemy.is_in_group("enemy"): continue
+			if enemy.has_method("is_engaged_with") and enemy.call("is_engaged_with", self):
+				_engagement_cached = true
+				break
+	if _engagement_cached:
+		_combat_time = movement.combat_exit_delay
+		return true
 	return _combat_time > 0.0
 
 func note_combat_damage(opponent: Node) -> void:
@@ -646,16 +694,21 @@ func _spend_stamina(cost: float, delay_regeneration: bool = true) -> void:
 	stamina_changed.emit(stamina)
 
 func uses_ground_locomotion() -> bool:
-	if state not in [PlayerState.NORMAL, PlayerState.ATTACK_HOLD, PlayerState.CHARGING, PlayerState.ATTACKING, PlayerState.CASTING]: return false
+	if state not in [PlayerState.NORMAL, PlayerState.ATTACK_HOLD, PlayerState.CHARGING, PlayerState.ATTACKING, PlayerState.CASTING, PlayerState.USING_UTILITY]: return false
 	# A movement spell owns its displacement; it is not a walking animation.
 	return _active_spell == null or not _active_spell.delivery_definition is DashDelivery
 
 func _move_attack_candidate() -> void:
 	var multiplier: float = _active_attack.movement_multiplier if _active_attack != null else 1.0
-	velocity = movement_input() * speed * multiplier
+	_move_action_velocity(multiplier, get_physics_process_delta_time())
 	var look: Vector2 = aim_direction()
 	if absf(look.x) > 0.04: facing = signf(look.x)
 	Elevation.slide(self, get_physics_process_delta_time())
+
+func _move_action_velocity(multiplier: float, delta: float) -> void:
+	var desired: Vector2 = movement_input() * speed * multiplier
+	var braking: bool = desired.length_squared() < velocity.length_squared() or velocity.dot(desired) < 0.0
+	velocity = velocity.move_toward(desired, (movement.deceleration if braking else movement.acceleration) * delta)
 
 func aim_direction() -> Vector2:
 	if valid_target(locked_target):
@@ -703,10 +756,11 @@ func request_action(action: String) -> void:
 	_cooldown = dodge_cooldown
 	_roll_trail_time = 0.0
 	visuals.movement_effect("dodge", to_global(Vector2(0, 10)), -dodge_direction)
-	Feedback.play("roll", global_position)
+	Feedback.play("roll", global_position, 0.0, self)
 	visuals.begin("roll")
 
 func _physics_process(delta: float) -> void:
+	if not _session_ready: return
 	_combat_time = maxf(0.0, _combat_time - delta)
 	var combat_active: bool = in_combat()
 	if not combat_active: _sprint_exhausted = false
@@ -715,7 +769,7 @@ func _physics_process(delta: float) -> void:
 	if state != PlayerState.CASTING: _clear_cast_vfx()
 	if is_instance_valid(_cast_vfx) and is_instance_valid(visuals):
 		var catalyst_model: Node2D = visuals.get_hand_model(_active_hand)
-		if is_instance_valid(catalyst_model): _cast_vfx.global_position = catalyst_model.global_position
+		if is_instance_valid(catalyst_model): _cast_vfx.global_position = visuals.cast_socket(_active_hand)
 	_poise_delay = maxf(0, _poise_delay - delta)
 	if _poise_delay <= 0: poise_remaining = minf(vitals.poise, poise_remaining + vitals.poise_regeneration * delta)
 	_cooldown = maxf(0, _cooldown - delta)
@@ -768,14 +822,14 @@ func _physics_process(delta: float) -> void:
 			_move_attack_candidate()
 			charge_changed.emit(_active_hand, 1.0)
 		PlayerState.ATTACKING:
-			velocity = movement_input() * speed * attack.movement_multiplier
+			_move_action_velocity(attack.movement_multiplier, delta)
 			Elevation.slide(self, get_physics_process_delta_time())
 			if action_time >= attack.windup and action_time - delta < attack.active_end(): _attack_hits()
 			if action_time >= attack_duration: _finish_action()
 		PlayerState.CASTING:
 			var delivery: SpellDeliveryDefinition = _active_spell.delivery_definition
 			var multiplier: float = float(delivery.get("movement_multiplier")) if delivery != null and delivery.is_channel() else _active_attack.movement_multiplier
-			velocity = movement_input() * speed * multiplier
+			_move_action_velocity(multiplier, delta)
 			if not delivery is DashDelivery: Elevation.slide(self, get_physics_process_delta_time())
 			if not _spell_launched and action_time >= _active_attack.windup:
 				_cast_active_spell()
@@ -786,6 +840,14 @@ func _physics_process(delta: float) -> void:
 						_channel_input = &""
 					if action_time - _spell_delivery_ended_at >= _active_attack.recovery: _finish_action()
 			elif action_time >= _active_attack.duration(): _finish_action()
+		PlayerState.USING_UTILITY:
+			if _active_utility == null:
+				_finish_action()
+				return
+			_move_action_velocity(_active_utility.movement_multiplier, delta)
+			Elevation.slide(self, delta)
+			if not _utility_released and action_time >= _active_utility.use_time: _release_utility()
+			if action_time >= _active_utility.use_time + _active_utility.recovery_time: _finish_action()
 		PlayerState.DODGING:
 			var p: float = clampf(action_time / dodge_duration, 0, 1)
 			velocity = dodge_direction * dodge_distance / dodge_duration * (1.45 - 0.9 * p)
@@ -796,7 +858,7 @@ func _physics_process(delta: float) -> void:
 				visuals.movement_effect("wake", to_global(Vector2(0, 10)), -dodge_direction)
 			if action_time >= dodge_duration:
 				visuals.movement_effect("settle", to_global(Vector2(0, 10)), -dodge_direction)
-				Feedback.play("step", global_position, -3)
+				Feedback.play("step", global_position, -3, self)
 				_finish_action()
 		PlayerState.HURT:
 			velocity = velocity.move_toward(Vector2.ZERO, delta * vitals.knockback_deceleration * WorldScale.actor_scale(self))
@@ -811,7 +873,7 @@ func _physics_process(delta: float) -> void:
 		var step_spacing: float = visuals.current_step_distance()
 		if _step_distance > step_spacing:
 			_step_distance = fmod(_step_distance, step_spacing)
-			Feedback.play("step", global_position, -8)
+			Feedback.play("step", global_position, -8, self)
 			visuals.movement_effect("sprint" if sprinting else "footstep", to_global(Vector2(0, 13)), -velocity.normalized())
 	# Exploration can regenerate while moving/acting, without resetting the bar or
 	# consuming stamina. Combat retains its normal idle/walking regeneration rules.
@@ -830,6 +892,7 @@ func _finish_action() -> void:
 	if not keep_movement: velocity = Vector2.ZERO
 	_active_attack = null
 	_active_spell = null
+	_active_utility = null
 	charge_changed.emit(_active_hand, 0.0)
 	visuals.begin("RESET")
 	if not _buffer.is_empty() and _buffer_time > 0:
@@ -861,11 +924,8 @@ func _attack_hits() -> void:
 		var offset: Vector2 = (target as Node2D).global_position - global_position
 		if not offset.is_zero_approx() and aim.dot(offset.normalized()) < cos(deg_to_rad(attack.arc_degrees * 0.5)): continue
 		_hits[target.get_instance_id()] = true
-		if target.has_method("receive_hit"):
-			target.receive_hit(SpellEffects.of(self).imbue_attack(attack, weapon_token(_active_hand)), attributes, self)
-		else:
-			target.take_damage(attack_damage, self)
-		if attack.feedback == null:
+		var outcome: HitResult = HitRequest.deliver(target as Node2D, SpellEffects.of(self).imbue_attack(CharacterProgression.attack(attack, self, _active_hand), weapon_token(_active_hand)), attributes, self, true)
+		if outcome.accepted and attack.feedback == null:
 			hit_stop = attack.hit_stop
 			shake = attack.camera_shake
 
@@ -879,12 +939,15 @@ func use_selected_spell(hand: StringName = &"") -> void:
 	if spell == null or spell.cast == null:
 		show_message("No spell equipped")
 		return
-	if spell_charges.size() <= spell_index or spell_charges[spell_index] <= 0:
+	if not spell.is_basic() and (spell_charges.size() <= spell_index or spell_charges[spell_index] <= 0):
 		show_message("No uses remaining")
 		return
 	var catalyst: WeaponDefinition = get_spell_catalyst(spell) if hand.is_empty() else get_selected_weapon(hand)
 	if catalyst == null or not catalyst.is_spell_catalyst:
 		show_message("Select a " + spell.school + " catalyst with Q/R (Wand casts all)")
+		return
+	if spell.is_basic() and catalyst.basic_spell != spell:
+		show_message("This basic spell belongs to the other catalyst")
 		return
 	if not attributes.meets(catalyst.requirements) or (not catalyst.catalyst_schools.is_empty() and not catalyst.catalyst_schools.has(spell.school)):
 		show_message("This catalyst cannot cast " + spell.school)
@@ -902,7 +965,7 @@ func use_selected_spell(hand: StringName = &"") -> void:
 		return
 	_delivery_context = null
 	if spell.delivery_definition != null:
-		var error: String = SpellDeliveryService.validate(spell.delivery_definition)
+		var error: String = SpellDeliveryService.validated(spell.delivery_definition)
 		if not error.is_empty():
 			show_message(error)
 			return
@@ -915,7 +978,8 @@ func use_selected_spell(hand: StringName = &"") -> void:
 		_delivery_context.direction = aim_direction()
 		_delivery_context.hand = hand if not hand.is_empty() else (&"right" if get_selected_weapon(&"right") == catalyst else &"left")
 		_delivery_context.attributes = attributes.duplicate(true) as AttributeStats
-		_delivery_context.attack = spell.cast
+		_delivery_context.attack = CharacterProgression.attack(spell.cast, self, _delivery_context.hand)
+		_delivery_context.upgrade_multiplier = CharacterProgression.multiplier(self, _delivery_context.hand)
 		_delivery_context.profile = spell.delivery_definition.vfx
 		_delivery_context.ownership = spell.id
 		var delivery: SpellDeliveryDefinition = spell.delivery_definition
@@ -947,9 +1011,11 @@ func use_selected_spell(hand: StringName = &"") -> void:
 				return
 			_delivery_context.weapon_token = weapon_token(recipient)
 		_channel_input = (hand if not hand.is_empty() else &"cast") if delivery.is_channel() else &""
-	spell_charges[spell_index] -= 1
+	if not spell.is_basic():
+		spell_charges[spell_index] -= 1
+		_spell_use_pool[spell.id] = spell_charges[spell_index]
 	_active_spell = spell
-	_active_attack = spell.cast
+	_active_attack = CharacterProgression.attack(spell.cast, self, _delivery_context.hand)
 	_active_hand = hand if not hand.is_empty() else (&"right" if get_selected_weapon(&"right") == catalyst else &"left")
 	_spell_launched = false
 	_spell_delivery_ended_at = -1.0
@@ -963,14 +1029,14 @@ func use_selected_spell(hand: StringName = &"") -> void:
 	state = PlayerState.CASTING
 	visuals.begin("RESET")
 	var catalyst_model: Node2D = visuals.get_hand_model(_active_hand)
-	var cast_origin: Vector2 = catalyst_model.global_position if is_instance_valid(catalyst_model) else global_position
+	var cast_origin: Vector2 = visuals.cast_socket(_active_hand)
 	_cast_vfx = Feedback.spell_effect(cast_origin, spell.delivery_definition.vfx, &"cast", catalyst_model if is_instance_valid(catalyst_model) else self, WorldScale.art_distance(20), spell.cast.windup, get_instance_id())
 	show_message(spell.display_name, spell.cast.duration())
 
 func spell_visual_origin(hand: StringName) -> Vector2:
 	if not is_instance_valid(visuals): return global_position
 	var model: Node2D = visuals.get_hand_model(hand)
-	return model.global_position if is_instance_valid(model) else global_position
+	return visuals.socket_position(model, &"Cast")
 
 func _cast_active_spell() -> void:
 	if _active_spell == null or _spell_launched: return
@@ -989,7 +1055,7 @@ func _cast_active_spell() -> void:
 	_delivery_runtime = SpellDeliveryService.launch(_active_spell.delivery_definition, _delivery_context)
 	var profile: VFXDefinition = _active_spell.delivery_definition.vfx
 	if profile != null: Feedback.present(profile.release_feedback, global_position, aim_direction(), self)
-	Feedback.play(String(_active_spell.cast.swing_sound), global_position)
+	Feedback.play(String(_active_spell.cast.swing_sound), global_position, 0.0, self)
 
 func use_selected_utility() -> void:
 	# Always permit this button to attempt reversion, even if the form forbids items.
@@ -1006,32 +1072,61 @@ func use_selected_utility() -> void:
 		show_message("No charges remaining")
 		return
 	utility_charges[utility_index] -= 1
-	health = mini(max_health, health + utility.health_restore)
-	stamina = minf(max_stamina, stamina + utility.stamina_restore)
-	_utility_cooldown = utility.recovery_time
+	_active_utility = utility
+	_utility_released = false
+	action_time = 0.0
+	sprinting = false
+	state = PlayerState.USING_UTILITY
+	visuals.begin("RESET")
+	loadout_changed.emit(&"utility", utility_index)
+
+func _release_utility() -> void:
+	if _active_utility == null or _utility_released or state != PlayerState.USING_UTILITY: return
+	_utility_released = true
+	health = mini(max_health, health + _active_utility.health_restore)
+	stamina = minf(max_stamina, stamina + _active_utility.stamina_restore)
 	health_changed.emit(health, max_health)
 	stamina_changed.emit(stamina)
-	show_message(utility.display_name)
-	Feedback.play(String(utility.sound_key), global_position)
+	show_message(_active_utility.display_name)
+	Feedback.play(String(_active_utility.sound_key), global_position, 0.0, self)
+	if _active_utility.vfx != null:
+		var effect: Node2D = Feedback.custom_effect(_active_utility.vfx, global_position, 5.0, 1.0)
+		if is_instance_valid(effect):
+			effect.set_meta("spell_owner", get_instance_id())
+			effect.add_to_group("spell_visuals")
+			Elevation.register_visual(effect, self)
 
-func receive_hit(incoming: AttackDefinition, attacker_stats: AttributeStats, source: Node) -> void:
-	_apply_damage(incoming.health_damage(attacker_stats, SpellEffects.defence(self, vitals.defence)), source, incoming.poise_damage, incoming.knockback, incoming.hit_stop, incoming.camera_shake, incoming, attacker_stats)
+func receive_hit(incoming: AttackDefinition, attacker_stats: AttributeStats, source: Node) -> HitResult:
+	if incoming == null: return HitResult.reject(&"missing_attack")
+	var rejected: StringName = hit_rejection(source, incoming)
+	if not rejected.is_empty(): return HitResult.reject(rejected)
+	return _apply_damage(incoming.health_damage(attacker_stats, SpellEffects.defence(self, vitals.defence)), source, incoming.poise_damage, incoming.knockback, incoming.hit_stop, incoming.camera_shake, incoming, attacker_stats)
 
 ## Compatibility entry point: direct, unmitigated damage.
 func take_damage(amount: int, source: Node) -> void:
 	_apply_damage(maxi(0, amount), source, vitals.poise, 180.0, 0.04, 5.0)
 
-func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: float, freeze: float, camera_kick: float, incoming: AttackDefinition = null, attacker_stats: AttributeStats = null) -> void:
-	if not Elevation.accepts_hit(self, source, incoming): return
-	if state == PlayerState.DEAD or _protection > 0: return
+func hit_rejection(source: Node, incoming: AttackDefinition = null) -> StringName:
+	if not _session_ready: return &"restoring_session"
+	if not Elevation.accepts_hit(self, source, incoming): return &"elevation"
+	if state == PlayerState.DEAD or health <= 0: return &"dead"
+	if _protection > 0 and (incoming == null or not incoming.accepted_contact_child): return &"invulnerable"
 	if is_instance_valid(_delivery_runtime) and not _delivery_runtime.is_queued_for_deletion() and _delivery_runtime.get("definition") is DashDelivery:
 		var dash: DashDelivery = _delivery_runtime.get("definition")
 		var fraction: float = float(_delivery_runtime.get("elapsed")) / dash.duration
-		if dash.invulnerable and fraction >= dash.invulnerability_start and fraction <= dash.invulnerability_end: return
-	if state == PlayerState.DODGING and action_time >= dodge_duration * movement.invulnerability_start and action_time <= dodge_duration * maxf(movement.invulnerability_start, movement.invulnerability_end): return
+		if dash.invulnerable and fraction >= dash.invulnerability_start and fraction <= dash.invulnerability_end: return &"invulnerable"
+	if state == PlayerState.DODGING and action_time >= dodge_duration * movement.invulnerability_start and action_time <= dodge_duration * maxf(movement.invulnerability_start, movement.invulnerability_end): return &"invulnerable"
+	return &""
+
+func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: float, freeze: float, camera_kick: float, incoming: AttackDefinition = null, attacker_stats: AttributeStats = null) -> HitResult:
+	var rejected: StringName = hit_rejection(source, incoming)
+	if not rejected.is_empty(): return HitResult.reject(rejected)
+	var outcome := HitResult.accept(mini(amount, health))
+	if amount <= 0 and (incoming == null or incoming.max_health_drain == null): return HitResult.reject(&"no_damage")
 	if amount > 0: note_combat_damage(source)
-	if health > amount: SpellEffects.apply_attack(self, incoming, attacker_stats, source)
-	if amount == 0 and incoming != null and incoming.max_health_drain != null: return
+	if health > amount and SpellEffects.apply_attack(self, incoming, attacker_stats, source):
+		outcome.applied_effects.append(incoming.max_health_drain.id)
+	if amount == 0: return outcome if not outcome.applied_effects.is_empty() else HitResult.reject(&"no_effect")
 	if incoming != null and incoming.feedback != null and not incoming.recurring_feedback:
 		freeze = incoming.feedback.hit_stop
 		camera_kick = 0.0
@@ -1054,11 +1149,12 @@ func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: fl
 		action_time = 0
 		var origin: Vector2 = (source as Node2D).global_position if is_instance_valid(source) and source is Node2D else global_position - Vector2.RIGHT
 		velocity = (global_position - origin).normalized() * knockback * WorldScale.actor_scale(self)
-	if incoming == null or not incoming.periodic_damage: Feedback.play("hurt", global_position)
+	if incoming == null or not incoming.periodic_damage: Feedback.play("hurt", global_position, 0.0, self)
 	if health == 0: Feedback.clear_physical_effects(get_instance_id())
 	if amount > 0: Feedback.hit_effect(global_position, source, EnemyDefinition.HitSurface.FLESH, incoming, amount, self)
 	if incoming == null or not incoming.periodic_damage: visuals.flash = 1.0
 	if health == 0:
+		_active_utility = null
 		_combat_time = 0.0
 		transformation.clear()
 		state = PlayerState.DEAD
@@ -1072,14 +1168,18 @@ func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: fl
 		set_target(null)
 		visuals.begin("death")
 		visuals.movement_effect("death", to_global(Vector2(0, 10)), Vector2.UP)
-		Feedback.play("death", global_position)
+		Feedback.play("death", global_position, 0.0, self)
 		died.emit()
 	elif staggered:
+		_active_utility = null
 		state = PlayerState.HURT
 		cancel_spell_channel()
 		_clear_cast_vfx()
 		state = PlayerState.HURT
 		visuals.begin("hurt")
+	outcome.staggered = staggered
+	outcome.killed = health == 0
+	return outcome
 
 func restore(restore_health: bool = true, restore_stamina: bool = true, _unused: bool = true) -> void:
 	if transformation.phase != PlayerTransformation.Phase.HUMAN:
@@ -1093,14 +1193,25 @@ func restore(restore_health: bool = true, restore_stamina: bool = true, _unused:
 	for actor: Node in get_tree().get_nodes_in_group("targetable"):
 		var effects := actor.get_node_or_null("SpellEffects") as SpellEffects
 		if effects != null: effects.clear()
+		var statuses := actor.get_node_or_null("ActorStatuses") as ActorStatuses
+		if statuses != null: statuses.clear()
 	SpellEffects.of(self).clear()
 	if restore_health: health = max_health
 	if restore_stamina: stamina = max_stamina
 	_combat_time = 0.0
 	_sprint_exhausted = false
-	for i in utilities.size(): utility_charges[i] = utilities[i].maximum_charges
+	_active_utility = null
+	for i in utilities.size(): utility_charges[i] = utilities[i].maximum_charges if utilities[i] != null else 0
+	if GameSession.character != null:
+		for identity: String in GameSession.character.known_utilities:
+			var utility := GameSession.definition(&"utilities", StringName(identity)) as UtilityDefinition
+			if utility != null: GameSession.character.utility_pool[identity] = utility.maximum_charges
+	for key: Variant in _spell_use_pool:
+		var rested_spell := GameSession.definition(&"spells", StringName(key)) as SpellDefinition
+		if rested_spell != null: _spell_use_pool[key] = rested_spell.maximum_charges
 	for i in spells.size():
-		spell_charges[i] = spells[i].maximum_charges if spells[i] != null else 0
+		spell_charges[i] = (-1 if spells[i].is_basic() else spells[i].maximum_charges) if spells[i] != null else 0
+		if spells[i] != null and not spells[i].is_basic(): _spell_use_pool[spells[i].id] = spell_charges[i]
 	poise_remaining = vitals.poise
 	_poise_delay = 0.0
 	_protection = 0
@@ -1111,21 +1222,10 @@ func add_currency(amount: int, feedback_message: String = "") -> void:
 	current_currency = maxi(0, current_currency + amount)
 	currency_changed.emit(current_currency)
 	if not feedback_message.is_empty(): show_message(feedback_message)
+	GameSession.queue_save()
 
 func _spawn_currency_drop() -> void:
-	if current_currency <= 0 or not character_class.lose_currency_on_death: return
-	for old: Node in get_tree().get_nodes_in_group("currency_drop"): old.queue_free()
-	var drop: Node2D = load("res://scenes/currency_drop.tscn").instantiate()
-	drop.amount = current_currency
-	drop.definition = character_class.death_drop.duplicate(true) as CurrencyDropDefinition if character_class.death_drop != null else CurrencyDropDefinition.new()
-	drop.definition.delivery_mode = CurrencyDropDefinition.DeliveryMode.PICKUP
-	drop.definition.fixed_amount = current_currency
-	drop.definition.display_name = currency_definition.display_name if currency_definition != null else "Embers"
-	drop.definition.color = currency_definition.color if currency_definition != null else Color("e6b968")
-	drop.set_meta(&"elevation_level", Elevation.level(self))
-	WorldScale.attach_art(drop, get_parent(), global_position, 1.0)
-	current_currency = 0
-	currency_changed.emit(current_currency)
+	GameSession.record_death()
 
 func clear_camera_feedback() -> void:
 	shake = 0.0
@@ -1198,10 +1298,7 @@ func cycle_target(step: int) -> void:
 
 func nearby_interactable() -> Node2D:
 	if not form_allows("interaction"): return null
-	if state == PlayerState.DEAD:
-		for target: Node in get_tree().get_nodes_in_group("currency_drop"):
-			if target is Node2D and _eligible(target) and global_position.distance_to(target_point(target)) <= interaction_radius: return target
-		return null
+	if state != PlayerState.NORMAL: return null
 	if is_instance_valid(locked_target) and _eligible(locked_target): return locked_target
 	var nearest: Node2D
 	var distance: float = interaction_radius
@@ -1225,10 +1322,12 @@ func on_elevation_changed(_previous: int, _current: int) -> void:
 		cancel_spell_channel()
 		if state == PlayerState.CASTING: _finish_action()
 
+func can_world_interact() -> bool:
+	return is_inside_tree() and not get_tree().paused and health > 0 and state == PlayerState.NORMAL and form_allows("interaction")
+
 func interact_nearby() -> void:
-	if not form_allows("interaction"): return
+	if not can_world_interact(): return
 	var target: Node2D = nearby_interactable()
-	if state != PlayerState.NORMAL and not (state == PlayerState.DEAD and target != null and target.is_in_group("currency_drop")): return
 	if target != null: target.interact(self)
 
 func show_message(text: String, duration: float = 1.8) -> void:

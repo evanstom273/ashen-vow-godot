@@ -1,4 +1,5 @@
 @tool
+class_name Sentinel
 extends CharacterBody2D
 signal health_changed(value: int, maximum: int)
 signal died
@@ -6,12 +7,17 @@ enum State { IDLE, APPROACH, WINDUP, STRIKE, RECOVERY, HURT, DEAD }
 @export var definition: EnemyDefinition = preload("res://data/enemies/court_sentinel.tres")
 ## Placement-level label; never mutate the shared EnemyDefinition to rename a guard.
 @export var display_name_override: String = ""
+## Unique authored placement ID. Empty placements are deliberately non-persistent.
+@export var encounter_id: StringName = &""
 ## Zero derives authored AI/melee distances from the actor's actual world scale.
 ## A positive value is an explicit override for unusually proportioned enemies.
 @export var world_spatial_scale: float = 0.0
 var spatial_scale: float:
 	get: return world_spatial_scale if world_spatial_scale > 0.0 else WorldScale.actor_scale(self)
 @export var use_world_navigation: bool = false
+@export var patrol_points: PackedVector2Array = PackedVector2Array()
+var mind := EnemyMind.new()
+var selected_move: EnemyMove
 var navigation_cooldown: float = 0.0
 var navigation_route := PackedVector2Array()
 ## Accepted damage provokes pursuit independently of passive detection/leash range.
@@ -26,7 +32,7 @@ var _poise_delay: float = 0.0
 var _protection: float = 0.0
 var _recoil_speed: float = 100.0
 var attack: AttackDefinition:
-	get: return equipped_weapon.light_attack
+	get: return selected_move.attack if selected_move != null else equipped_weapon.light_attack
 var approach_speed: float:
 	get: return definition.approach_speed * spatial_scale
 var detection_radius: float:
@@ -44,13 +50,14 @@ var hit_stop: float = 0.0
 var struck: bool = false
 var player: PlayerController
 var art: Node2D
+var stride_phase: float = 0.0
+var enemy_weapon: Node2D
 var flash_material: ShaderMaterial
 var melee_ribbon: MeleeTrail
 var windup_glint: PhysicalVFX
 
 func _clear_strike(victim: Node2D) -> bool:
-	if not Elevation.compatible(self, victim): return false
-	if not use_world_navigation: return true
+	if not is_instance_valid(victim) or not Elevation.compatible(self, victim): return false
 	var query := PhysicsRayQueryParameters2D.create(global_position, victim.global_position, 1)
 	var excluded: Array[RID] = [get_rid()]
 	if victim is CollisionObject2D: excluded.append(victim.get_rid())
@@ -73,13 +80,14 @@ func _ready() -> void:
 	poise_remaining = vitals.poise
 	add_to_group("targetable")
 	add_to_group("enemy")
+	if not Engine.is_editor_hint(): ActorRegistry.register(self)
 	add_to_group("sentinel")
 	collision_layer = 2
 	collision_mask = 1
-	if not Engine.is_editor_hint(): Elevation.register_body(self)
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 	home = position
 	home_elevation = Elevation.level(self)
+	mind.setup(self, definition.perception)
 	if not Engine.is_editor_hint(): player = get_tree().get_first_node_in_group("player")
 	else: set_physics_process(false)
 	var collider := CollisionShape2D.new()
@@ -87,17 +95,20 @@ func _ready() -> void:
 	circle.radius = 15
 	collider.shape = circle
 	add_child(collider)
-	art = Node2D.new()
+	if not Engine.is_editor_hint(): Elevation.register_body(self)
+	art = IllustratedRig.new()
+	(art as IllustratedRig).atlas = definition.illustrated_atlas
 	add_child(art)
 	flash_material = ShaderMaterial.new()
 	flash_material.shader = load("res://shaders/flash.gdshader")
 	art.material = flash_material
-	_poly([Vector2(-15,0), Vector2(-18,-22), Vector2(-10,-37), Vector2(12,-37), Vector2(21,-19), Vector2(15,5)], Color("414b50"))
-	_poly([Vector2(-13,-29), Vector2(-17,-17), Vector2(0,-12), Vector2(18,-19), Vector2(11,-30)], Color("69716b"))
-	_poly([Vector2(-10,-38), Vector2(-8,-51), Vector2(8,-51), Vector2(12,-39), Vector2(6,-30), Vector2(-7,-30)], Color("899084"))
-	_poly([Vector2(-7,-40), Vector2(8,-40), Vector2(7,-37), Vector2(-6,-37)], Color("e6b66e"))
-	_poly([Vector2(-13,0), Vector2(-3,0), Vector2(-3,12), Vector2(-16,12)], Color("262e33"))
-	_poly([Vector2(4,0), Vector2(14,0), Vector2(17,12), Vector2(4,12)], Color("262e33"))
+	if equipped_weapon.equipped_scene != null:
+		enemy_weapon = equipped_weapon.equipped_scene.instantiate() as Node2D
+		if enemy_weapon != null:
+			art.get_node("RightArm").add_child(enemy_weapon)
+			enemy_weapon.position = Vector2(0, 10)
+			enemy_weapon.scale = Vector2.ONE * 0.85
+	if not Engine.is_editor_hint(): call_deferred("restore_persistent_state")
 
 func _poly(points: Array, color: Color) -> void:
 	var polygon := Polygon2D.new()
@@ -118,62 +129,65 @@ func _physics_process(delta: float) -> void:
 	phase += delta
 	flash = move_toward(flash, 0, delta * 7)
 	flash_material.set_shader_parameter("flash", flash)
+	if art is IllustratedRig: art.flash(flash)
 	if hit_stop > 0:
 		hit_stop -= delta
 		return
 	clock += delta
 	navigation_cooldown -= delta
-	var provoker: Node2D = _provoked_attacker()
-	var victim: Node2D = provoker
-	if victim == null:
-		victim = player if player.health > 0 and Elevation.compatible(self, player) else null
-		for ally: Node in get_tree().get_nodes_in_group("spell_ally"):
-			if SpellDeliveryService.alive(ally) and Elevation.compatible(self, ally) and (victim == null or global_position.distance_to(ally.global_position) < global_position.distance_to(victim.global_position)):
-				victim = ally
-	if player.health <= 0 and state != State.DEAD:
-		_clear_provocation()
-		provoker = null
-		victim = null
-		_state(State.IDLE)
-	var offset: Vector2 = victim.global_position - global_position if victim != null else Vector2.ZERO
-	var distance: float = offset.length() if victim != null else INF
+	if state != State.DEAD: mind.update(delta, get_parent().to_global(home), patrol_points, home_elevation)
+	var victim: Node2D = mind.target()
+	var offset: Vector2 = victim.global_position - global_position if victim != null and mind.sees_target else mind.goal - global_position
+	var distance: float = offset.length() if victim != null and mind.sees_target else INF
 	velocity = Vector2.ZERO
-	if victim == null and state not in [State.IDLE, State.HURT, State.DEAD]:
-		navigation_route.clear()
-		_state(State.IDLE)
 	match state:
 		State.IDLE:
-			if (provoker != null or distance < detection_radius) and player.health > 0: _state(State.APPROACH)
+			if mind.engaged(): _state(State.APPROACH)
+			elif mind.mode in [EnemyMind.Mode.PATROL, EnemyMind.Mode.RETURN]:
+				velocity = _navigate_toward(mind.goal)
 		State.APPROACH:
-			direction = offset.normalized()
-			velocity = direction * approach_speed
-			if use_world_navigation:
-				if navigation_cooldown <= 0:
-					navigation_route = SpellNavigation.of(self).path(self, victim.global_position, provoker != null)
-					navigation_cooldown = 0.6
-				while not navigation_route.is_empty() and global_position.distance_to(navigation_route[0]) < 48: navigation_route.remove_at(0)
-				velocity = (navigation_route[0]-global_position).normalized()*approach_speed if not navigation_route.is_empty() else Vector2.ZERO
-			if distance < definition.attack_distance * spatial_scale and _clear_strike(victim):
-				_state(State.WINDUP)
-				Feedback.play(String(definition.windup_sound), global_position)
-			elif provoker == null and distance > definition.disengage_radius * spatial_scale: _state(State.IDLE)
+			if not mind.engaged() and mind.mode == EnemyMind.Mode.IDLE:
+				_state(State.IDLE)
+			else:
+				if offset.length_squared() > 1: direction = offset.normalized()
+				velocity = _navigate_toward(mind.goal)
+				if mind.mode == EnemyMind.Mode.SEARCH and global_position.distance_to(mind.goal) < 100:
+					velocity = Vector2.ZERO
+					direction = Vector2.RIGHT.rotated(phase * 0.6)
+				if definition.preferred_distance_metres > 0 and mind.sees_target:
+					var spacing: float = definition.preferred_distance_metres * 128.0
+					if distance < spacing * 0.65: velocity = -direction * approach_speed * 0.7
+					elif distance < spacing: velocity = Vector2.ZERO
+				var move: EnemyMove = mind.choose(definition.moves, distance)
+				var can_attack: bool = move != null or (definition.moves.is_empty() and mind.sees_target and distance < definition.attack_distance * spatial_scale)
+				if can_attack and _clear_strike(victim):
+					selected_move = move
+					if move != null: mind.cooldowns[move.id] = move.cooldown + move.attack.duration()
+					_state(State.WINDUP)
+					Feedback.play(String(definition.windup_sound), global_position, 0.0, self)
 		State.WINDUP:
-			direction = offset.normalized()
+			var tracking: float = selected_move.track_windup_fraction if selected_move != null else 0.6
+			if clock <= attack.windup * tracking and mind.sees_target and not offset.is_zero_approx(): direction = offset.normalized()
 			if clock >= attack.windup:
 				_state(State.STRIKE)
 				struck = false
-				Feedback.play(String(attack.swing_sound), global_position, 2)
+				Feedback.play(String(attack.swing_sound), global_position, 2, self)
 		State.STRIKE:
 			velocity = direction * attack.lunge_speed * spatial_scale
-			if not struck and distance < attack.reach * spatial_scale and _clear_strike(victim) and direction.dot(offset.normalized()) > cos(deg_to_rad(attack.arc_degrees * 0.5)):
+			if not struck and selected_move != null and selected_move.delivery != null:
 				struck = true
-				victim.receive_hit(attack, attributes, self)
+				_release_delivery(victim)
+			if not struck and (selected_move == null or selected_move.delivery == null) and distance < attack.reach * spatial_scale and _clear_strike(victim) and direction.dot(offset.normalized()) > cos(deg_to_rad(attack.arc_degrees * 0.5)):
+				struck = true
+				HitRequest.deliver(victim, attack, attributes, self, true)
 			if clock >= attack.active:
 				_state(State.RECOVERY)
 				Feedback.burst(global_position + direction * 50 * spatial_scale, "dust", direction, null, get_instance_id())
 				player.shake = maxf(player.shake, 1.5 if distance < 160 * spatial_scale else 0.0)
 		State.RECOVERY:
-			if clock >= attack.recovery: _state(State.APPROACH)
+			if clock >= attack.recovery:
+				selected_move = null
+				_state(State.APPROACH)
 		State.HURT:
 			velocity = -direction * maxf(0, _recoil_speed * (1 - clock / vitals.stagger_duration))
 			if clock >= vitals.stagger_duration: _state(State.APPROACH)
@@ -184,6 +198,8 @@ func _physics_process(delta: float) -> void:
 				reset_encounter()
 	velocity *= SpellEffects.movement(self)
 	Elevation.slide(self, delta)
+	stride_phase += get_real_velocity().length() * delta * PI / 192.0
+	if art is IllustratedRig: art.animate_stride(stride_phase, clampf(get_real_velocity().length() / maxf(1.0, approach_speed), 0.0, 1.0), direction)
 	if state != State.DEAD:
 		art.position.y = -absf(sin(phase * 8)) * (1.5 if state == State.APPROACH else 0.3)
 		art.rotation = lerp_angle(art.rotation, -0.12 if state == State.WINDUP else (0.16 if state == State.RECOVERY else 0.0), delta * 10)
@@ -191,6 +207,12 @@ func _physics_process(delta: float) -> void:
 	if state == State.STRIKE: blade_angle += lerpf(-0.9, 0.9, clampf(clock / attack.active, 0, 1))
 	var grip: Vector2 = to_global(Vector2(9, -14))
 	var tip: Vector2 = to_global(Vector2(9, -14) + Vector2.RIGHT.rotated(blade_angle) * attack.reach * 0.58)
+	if is_instance_valid(enemy_weapon):
+		var arm: Node2D = enemy_weapon.get_parent()
+		enemy_weapon.rotation = (arm.to_local(enemy_weapon.global_position + Vector2.RIGHT.rotated(blade_angle)) - enemy_weapon.position).angle()
+		grip = enemy_weapon.global_position
+		var socket := enemy_weapon.get_node_or_null("Sockets/Tip") as Node2D
+		if socket != null: tip = socket.global_position
 	if state == State.STRIKE and is_instance_valid(melee_ribbon):
 		melee_ribbon.sample(grip, tip, attack.melee_vfx)
 	if is_instance_valid(windup_glint): windup_glint.global_position = tip
@@ -210,7 +232,7 @@ func _draw() -> void:
 	if state != State.DEAD:
 		var angle: float = direction.angle() - (0.9 if state == State.WINDUP else 0.0)
 		if state == State.STRIKE: angle += lerpf(-0.9,0.9,clampf(clock/attack.active,0,1))
-		draw_line(Vector2(9,-14), Vector2(9,-14) + Vector2.RIGHT.rotated(angle)*attack.reach*0.58, equipped_weapon.blade_color, 5, true)
+		if not is_instance_valid(enemy_weapon): draw_line(Vector2(9,-14), Vector2(9,-14) + Vector2.RIGHT.rotated(angle)*attack.reach*0.58, equipped_weapon.blade_color, 5, true)
 		if state == State.STRIKE and attack.melee_vfx == null: draw_arc(Vector2.ZERO, attack.reach*0.73, angle-0.5, angle, 15, attack.slash_color, 4, true)
 
 func _state(next: State) -> void:
@@ -228,6 +250,7 @@ func _alert_to_attacker(source: Node) -> void:
 	if not source.is_in_group("player") and not source.is_in_group("spell_ally"): return
 	if not SpellDeliveryService.alive(source) or source.is_queued_for_deletion(): return
 	if not Elevation.compatible(self, source): return
+	mind.provoke(source as Node2D)
 	if _provoked_by_id != source.get_instance_id():
 		_provoked_by_id = source.get_instance_id()
 		navigation_route.clear()
@@ -250,32 +273,45 @@ func _provoked_attacker() -> Node2D:
 
 func _clear_provocation() -> void:
 	_provoked_by_id = 0
+	mind.clear()
 	navigation_route.clear()
 	navigation_cooldown = 0.0
 
 func is_targetable() -> bool: return health > 0
 func get_target_point() -> Vector2: return global_position
 func set_lock_on(value: bool) -> void: locked = value
-func in_combat() -> bool: return state not in [State.IDLE, State.DEAD]
+func in_combat() -> bool: return state != State.DEAD and mind.engaged()
 func is_engaged_with(actor: Node) -> bool:
 	# This enemy's AI pursues its player or that player's allied summons.
-	return is_instance_valid(player) and player == actor and Elevation.compatible(self, actor) and health > 0 and in_combat()
+	return is_instance_valid(player) and player == actor and health > 0 and in_combat()
 
 func get_display_name() -> String: return display_name_override if not display_name_override.is_empty() else definition.display_name
 
-func receive_hit(incoming: AttackDefinition, attacker_stats: AttributeStats, source: Node) -> void:
-	_apply_damage(incoming.health_damage(attacker_stats, SpellEffects.defence(self, vitals.defence)), source, incoming.poise_damage, incoming.knockback, incoming.hit_stop, incoming, attacker_stats)
+func receive_hit(incoming: AttackDefinition, attacker_stats: AttributeStats, source: Node) -> HitResult:
+	if incoming == null: return HitResult.reject(&"missing_attack")
+	var rejected: StringName = hit_rejection(source, incoming)
+	if not rejected.is_empty(): return HitResult.reject(rejected)
+	return _apply_damage(incoming.health_damage(attacker_stats, SpellEffects.defence(self, vitals.defence)), source, incoming.poise_damage, incoming.knockback, incoming.hit_stop, incoming, attacker_stats)
 
 func take_damage(amount: int, source: Node) -> void:
 	_apply_damage(maxi(0, amount), source, vitals.poise, 180.0, 0.04)
 
-func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: float, freeze: float, incoming: AttackDefinition = null, attacker_stats: AttributeStats = null) -> void:
-	if not Elevation.accepts_hit(self, source, incoming): return
-	if health <= 0 or _protection > 0: return
+func hit_rejection(source: Node, incoming: AttackDefinition = null) -> StringName:
+	if not Elevation.accepts_hit(self, source, incoming): return &"elevation"
+	if health <= 0: return &"dead"
+	if _protection > 0 and (incoming == null or not incoming.accepted_contact_child): return &"invulnerable"
+	return &""
+
+func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: float, freeze: float, incoming: AttackDefinition = null, attacker_stats: AttributeStats = null) -> HitResult:
+	var rejected: StringName = hit_rejection(source, incoming)
+	if not rejected.is_empty(): return HitResult.reject(rejected)
+	if amount <= 0 and (incoming == null or incoming.max_health_drain == null): return HitResult.reject(&"no_damage")
+	var outcome := HitResult.accept(mini(amount, health))
 	if amount > 0 and is_instance_valid(source) and source.has_method("note_combat_damage"):
 		source.call("note_combat_damage", self)
-	if health > amount: SpellEffects.apply_attack(self, incoming, attacker_stats, source)
-	if amount == 0 and incoming != null and incoming.max_health_drain != null: return
+	if health > amount and SpellEffects.apply_attack(self, incoming, attacker_stats, source):
+		outcome.applied_effects.append(incoming.max_health_drain.id)
+	if amount == 0: return outcome if not outcome.applied_effects.is_empty() else HitResult.reject(&"no_effect")
 	if incoming != null and incoming.feedback != null and not incoming.recurring_feedback: freeze = incoming.feedback.hit_stop
 	Feedback.damage_number(self, mini(amount, health))
 	if amount > 0: Feedback.hit_effect(global_position, source, definition.hit_surface, incoming, amount, self)
@@ -286,26 +322,31 @@ func _apply_damage(amount: int, source: Node, poise_damage: float, knockback: fl
 	if incoming == null or not incoming.periodic_damage:
 		flash = 1
 		hit_stop = freeze
-		Feedback.play(String(definition.hit_sound), global_position)
+		Feedback.play(String(definition.hit_sound), global_position, 0.0, self)
 	health_changed.emit(health, max_health)
 	if health == 0:
 		_state(State.DEAD)
 		locked = false
 		call_deferred("_disable_corpse_collision")
 		_deliver_currency()
+		GameSession.record_enemy_death(encounter_id)
+		if not encounter_id.is_empty(): GameSession.grant_reward(StringName("enemy:" + String(encounter_id)), definition.first_defeat_reward)
 		Feedback.burst(global_position, "death", Vector2.UP, null, get_instance_id())
-		Feedback.play("death", global_position)
+		Feedback.play("death", global_position, 0.0, self)
 		died.emit()
 
 	else:
 		if amount > 0: _alert_to_attacker(source)
 		if poise_remaining <= 0:
 			poise_remaining = vitals.poise
-			if state == State.STRIKE and attack.uninterruptible_while_active: return
+			if state == State.STRIKE and attack.uninterruptible_while_active: return outcome
 			_recoil_speed = definition.stagger_recoil_speed * spatial_scale * knockback / 180.0
 			if is_instance_valid(source) and source is Node2D:
 				direction = (source.global_position - global_position).normalized()
 			_state(State.HURT)
+			outcome.staggered = true
+	outcome.killed = health == 0
+	return outcome
 
 func _deliver_currency() -> void:
 	if not definition.drop_currency_on_death or definition.currency_drop == null: return
@@ -324,8 +365,12 @@ func _disable_corpse_collision() -> void:
 	if health <= 0: Elevation.set_masks(self, 0, 1)
 
 func on_elevation_changed(_previous: int, _current: int) -> void:
-	_clear_provocation()
-	if state != State.DEAD: _state(State.IDLE)
+	navigation_route.clear()
+	navigation_cooldown = 0.0
+	mind.sees_target = false
+	mind.scan_time = 0.0
+	# Stairs do not erase pursuit memory or the route back to the home floor.
+	if state not in [State.DEAD, State.HURT]: _state(State.APPROACH if mind.engaged() else State.IDLE)
 
 func reset_encounter() -> void:
 	_clear_provocation()
@@ -342,3 +387,43 @@ func reset_encounter() -> void:
 	Elevation.set_masks(self, 2, 1)
 	locked = false
 	_state(State.IDLE)
+
+func restore_persistent_state() -> void:
+	if not GameSession.enemy_defeated(encounter_id): return
+	health = 0
+	locked = false
+	_state(State.DEAD)
+	clock = 5.0
+	_disable_corpse_collision()
+
+
+func _navigate_toward(destination: Vector2) -> Vector2:
+	if Elevation.level(self) == mind.goal_level and global_position.distance_to(destination) < 64.0: return Vector2.ZERO
+	if not use_world_navigation: return (destination - global_position).normalized() * approach_speed
+	if navigation_cooldown <= 0:
+		navigation_route = SpellNavigation.of(self).path(self, destination, mind.engaged(), mind.goal_level)
+		navigation_cooldown = 0.6
+	while not navigation_route.is_empty() and global_position.distance_to(navigation_route[0]) < 48.0: navigation_route.remove_at(0)
+	return (navigation_route[0] - global_position).normalized() * approach_speed if not navigation_route.is_empty() else Vector2.ZERO
+
+func receive_local_alert(source: Node2D, known: Vector2) -> void:
+	if health <= 0 or mind.engaged(): return
+	mind.provoke(source, false)
+	mind.last_known = known
+
+func _release_delivery(victim: Node2D) -> void:
+	if selected_move == null or selected_move.delivery == null: return
+	var context := SpellCastContext.new()
+	context.caster = self
+	context.attribution = self
+	context.target = victim
+	context.direction = direction
+	context.origin = global_position
+	context.point = mind.last_known
+	context.faction = &"enemy"
+	context.elevation = Elevation.level(self)
+	context.attributes = attributes.duplicate(true) as AttributeStats
+	context.attack = attack
+	context.profile = selected_move.delivery.vfx
+	context.ownership = selected_move.id
+	SpellDeliveryService.launch(selected_move.delivery, context)

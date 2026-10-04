@@ -6,6 +6,9 @@
 [ext_resource type="Resource" path="res://data/environment/cover_quarry.tres" id="ground_cover"]
 [ext_resource type="PackedScene" path="res://scenes/props/approach_quarry.tscn" id="approach"]
 
+[ext_resource type="PackedScene" path="res://scenes/props/authored_reward.tscn" id="discovery_scene"]
+[ext_resource type="Resource" path="res://data/progression/reward_quarry.tres" id="discovery_reward"]
+
 [node name="quarry" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("landmark")
@@ -122,3 +125,9 @@ solid = true
 variation = 346
 
 [node name="ApproachDressing" parent="." instance=ExtResource("approach")]
+
+
+[node name="AuthoredDiscovery" parent="." instance=ExtResource("discovery_scene")]
+position = Vector2(512, 768)
+reward_id = &"quarry_reliquary"
+definition = ExtResource("discovery_reward")

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RewardDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/reward_definition.gd" id="script"]
+[ext_resource type="Script" path="res://scripts/resources/spell_definition.gd" id="spell_type"]
+[ext_resource type="Script" path="res://scripts/resources/weapon_definition.gd" id="weapon_type"]
+[ext_resource type="Resource" path="res://data/spells/rune_mine.tres" id="rune_mine"]
+[ext_resource type="Resource" path="res://data/spells/blackflame_bond.tres" id="blackflame_bond"]
+[ext_resource type="Resource" path="res://data/weapons/heavy_iron_mace.tres" id="heavy_iron_mace"]
+[resource]
+script = ExtResource("script")
+display_name = "Rootbound Reliquary"
+spells = Array[ExtResource("spell_type")]([ExtResource("rune_mine"), ExtResource("blackflame_bond")])
+weapons = Array[ExtResource("weapon_type")]([ExtResource("heavy_iron_mace")])
+materials = Dictionary[String, int]({"ember_shard": 3})
+embers = 120
+memory_bonus = 0
+

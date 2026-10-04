@@ -1,15 +1,35 @@
 [gd_scene format=3]
 
+[ext_resource type="Texture2D" path="res://assets/illustrated/weapon_ashen_dagger.svg" id="illustration"]
+
 [node name="ashen_dagger" type="Node2D"]
 
 [node name="Grip" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(-8,-2,12,-2,12,2,-8,2)
 color = Color(0.32,0.23,0.17,1)
 
 [node name="Silhouette" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(6,-2,17,-6,27,-12,24,-1,17,4,6,3)
 color = Color(0.53,0.62,0.65,1)
 
 [node name="Fitting" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(3,-6,7,-6,9,3,5,8,3,6,6,2)
 color = Color(0.75,0.59,0.32,1)
+
+
+[node name="Illustration" type="Sprite2D" parent="."]
+texture = ExtResource("illustration")
+position = Vector2(9.5, -2)
+
+[node name="Sockets" type="Node2D" parent="."]
+
+[node name="Grip" type="Marker2D" parent="Sockets"]
+
+[node name="Tip" type="Marker2D" parent="Sockets"]
+position = Vector2(27, 0)
+
+[node name="Cast" type="Marker2D" parent="Sockets"]
+position = Vector2(27, 0)

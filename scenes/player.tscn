@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cq6gog7pup1bc"]
 
 [ext_resource type="Script" uid="uid://c7q4l2pcpl0oq" path="res://scripts/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/illustrated_rig.gd" id="illustrated_rig"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
 size = Vector2(42, 22)
@@ -40,6 +41,7 @@ shape = SubResource("RectangleShape2D_attack")
 [node name="Rig" type="Node2D" parent="." unique_id=1994802496]
 
 [node name="Root" type="Node2D" parent="Rig" unique_id=466090825]
+script = ExtResource("illustrated_rig")
 
 [node name="Body" type="Node2D" parent="Rig/Root" unique_id=240418506]
 

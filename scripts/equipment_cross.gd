@@ -89,6 +89,8 @@ func _draw_slot(at: Vector2, item: Resource, key: String, count: int, charge: fl
     draw_string(font, at + Vector2(4, 11), key, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("99917a"))
     if count >= 0:
         draw_string(font, at + Vector2(4, 53), str(count), HORIZONTAL_ALIGNMENT_RIGHT, 43, 13, Color("eee6cf"))
+    elif item is SpellDefinition and item.is_basic():
+        draw_string(font, at + Vector2(4, 53), "∞", HORIZONTAL_ALIGNMENT_RIGHT, 43, 16, Color("eee6cf"))
     if charge > 0:
         var perimeter: float = (SLOT_SIZE.x + SLOT_SIZE.y) * 2.0
         var remaining: float = perimeter * charge

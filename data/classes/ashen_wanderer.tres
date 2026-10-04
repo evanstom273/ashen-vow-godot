@@ -11,7 +11,9 @@
 [ext_resource type="Resource" path="res://data/stats/wanderer_attributes.tres" id="stats"]
 [ext_resource type="Resource" uid="uid://bucme6clgw620" path="res://data/loadout_utilities.tres" id="utility_loadout"]
 [ext_resource type="Resource" uid="uid://ca6i22cga5tp1" path="res://data/vitals/wanderer_vitals.tres" id="vitals"]
-[ext_resource type="Resource" uid="uid://cyejnpa2yk0xy" path="res://data/weapons/wanderer_sword.tres" id="weapon"]
+[ext_resource type="Resource" path="res://data/weapons/pilgrim_wand.tres" id="weapon"]
+[ext_resource type="Resource" path="res://data/weapons/ashen_dagger.tres" id="owned_dagger"]
+[ext_resource type="Script" path="res://scripts/resources/weapon_definition.gd" id="weapon_type"]
 
 [sub_resource type="Resource" id="CurrencyDropDefinition_player"]
 script = ExtResource("drop_type")
@@ -21,11 +23,12 @@ recovery_message = "Lost embers recovered"
 [resource]
 script = ExtResource("script")
 id = &"ashen_wanderer"
-description = "The current player starting class. Balanced attributes and a simple sword."
+description = "A magic-ready wanderer carrying an all-school wand, a backup sword and a small reserve of prepared spells."
 attributes = ExtResource("stats")
 vitals = ExtResource("vitals")
 movement = ExtResource("movement")
 starting_weapon = ExtResource("weapon")
+starting_owned_weapons = Array[ExtResource("weapon_type")]([ExtResource("owned_dagger")])
 left_hand_loadout = ExtResource("left_loadout")
 right_hand_loadout = ExtResource("right_loadout")
 spell_loadout = ExtResource("spell_loadout")

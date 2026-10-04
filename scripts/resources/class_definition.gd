@@ -9,6 +9,7 @@ extends Resource
 @export var vitals: VitalStats
 @export var movement: MovementDefinition
 @export var starting_weapon: WeaponDefinition
+@export var starting_owned_weapons: Array[WeaponDefinition] = []
 @export var left_hand_loadout: WeaponLoadoutDefinition
 @export var right_hand_loadout: WeaponLoadoutDefinition
 @export var spell_loadout: SpellLoadoutDefinition

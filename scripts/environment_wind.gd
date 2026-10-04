@@ -13,6 +13,7 @@ func _process(delta: float) -> void:
 	if definition == null: return
 	elapsed += delta * definition.time_scale
 	var strength: float = definition.strength
+	strength *= WorldClimate.wind_multiplier
 	if Feedback.reduced_effects: strength *= definition.reduced_effects_multiplier
 	RenderingServer.global_shader_parameter_set("environment_time", elapsed)
 	RenderingServer.global_shader_parameter_set("environment_wind", definition.direction.normalized() * strength)

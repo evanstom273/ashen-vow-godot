@@ -1,0 +1,78 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/enemy_definition.gd" id="enemy"]
+[ext_resource type="Script" path="res://scripts/resources/vital_stats.gd" id="vitals"]
+[ext_resource type="Script" path="res://scripts/resources/enemy_perception.gd" id="perception"]
+[ext_resource type="Script" path="res://scripts/resources/enemy_move.gd" id="move"]
+[ext_resource type="Script" path="res://scripts/resources/attack_definition.gd" id="attack"]
+[ext_resource type="Script" path="res://scripts/resources/damage_profile.gd" id="damage"]
+[ext_resource type="Script" path="res://scripts/resources/currency_drop_definition.gd" id="currency"]
+[ext_resource type="Script" path="res://scripts/resources/projectile_delivery.gd" id="projectile"]
+[ext_resource type="Script" path="res://scripts/resources/reward_definition.gd" id="reward"]
+[ext_resource type="Resource" path="res://data/weapons/heavy_iron_mace.tres" id="weapon"]
+[ext_resource type="Resource" path="res://data/vfx_cinder_lance.tres" id="vfx"]
+[ext_resource type="Resource" path="res://data/vfx/melee_sword.tres" id="trail"]
+[ext_resource type="Resource" path="res://data/statuses/poison.tres" id="status"]
+[ext_resource type="Script" path="res://scripts/resources/status_application.gd" id="application"]
+[sub_resource type="Resource" id="StatusApplication"]
+script = ExtResource("application")
+status = ExtResource("status")
+buildup = 32.0
+[sub_resource type="Resource" id="Vitals"]
+script = ExtResource("vitals")
+health = 430
+damage_invulnerability = 0.08
+poise = 45.0
+[sub_resource type="Resource" id="Perception"]
+script = ExtResource("perception")
+sight_metres = 12.0
+search_seconds = 6.0
+[sub_resource type="Resource" id="Damage"]
+script = ExtResource("damage")
+physical = 100.0
+[sub_resource type="Resource" id="Attack"]
+script = ExtResource("attack")
+damage = SubResource("Damage")
+melee_vfx = ExtResource("trail")
+statuses = Array[ExtResource("application")]([SubResource("StatusApplication")])
+windup = 0.55
+active = 0.2
+recovery = 0.75
+reach = 75.0
+arc_degrees = 100.0
+knockback = 100.0
+poise_damage = 25.0
+[sub_resource type="Resource" id="Projectile"]
+script = ExtResource("projectile")
+speed = 1120.0
+radius = 18.0
+duration = 2.0
+vfx = ExtResource("vfx")
+[sub_resource type="Resource" id="Move"]
+script = ExtResource("move")
+id = &"grave_warden_strike"
+attack = SubResource("Attack")
+
+minimum_metres = 0.0
+maximum_metres = 2.34375
+cooldown = 1
+track_windup_fraction = 0.65
+[sub_resource type="Resource" id="Currency"]
+script = ExtResource("currency")
+fixed_amount = 45
+[sub_resource type="Resource" id="Reward"]
+script = ExtResource("reward")
+materials = Dictionary[String, int]({"ember_shard": 1})
+[resource]
+script = ExtResource("enemy")
+id = &"grave_warden"
+display_name = "Grave Warden"
+description = "A grounded weapon bearer guarding the old roads."
+vitals = SubResource("Vitals")
+weapon = ExtResource("weapon")
+perception = SubResource("Perception")
+moves = Array[ExtResource("move")]([SubResource("Move")])
+preferred_distance_metres = 0.0
+approach_speed = 85.0
+currency_drop = SubResource("Currency")
+first_defeat_reward = SubResource("Reward")
+

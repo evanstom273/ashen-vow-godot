@@ -6,6 +6,9 @@
 [ext_resource type="Resource" path="res://data/environment/cover_wetland.tres" id="ground_cover"]
 [ext_resource type="PackedScene" path="res://scenes/props/approach_widows_pool.tscn" id="approach"]
 
+[ext_resource type="PackedScene" path="res://scenes/props/authored_reward.tscn" id="discovery_scene"]
+[ext_resource type="Resource" path="res://data/progression/reward_widows_pool.tres" id="discovery_reward"]
+
 [node name="widows_pool" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("landmark")
@@ -50,3 +53,9 @@ solid = true
 variation = 87
 
 [node name="ApproachDressing" parent="." instance=ExtResource("approach")]
+
+
+[node name="AuthoredDiscovery" parent="." instance=ExtResource("discovery_scene")]
+position = Vector2(720, 512)
+reward_id = &"widows_pool_reliquary"
+definition = ExtResource("discovery_reward")

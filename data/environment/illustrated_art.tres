@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="EnvironmentArtDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/environment_art_definition.gd" id="script"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_grave.svg" id="grave"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_waystone.svg" id="waystone"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_rock.svg" id="rock"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_rubble.svg" id="rubble"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_camp.svg" id="camp"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_fallen_tree.svg" id="fallen_tree"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_wall.svg" id="wall"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_tower.svg" id="tower"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_buttress.svg" id="buttress"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_slab.svg" id="slab"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_bridge.svg" id="bridge"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_stairs.svg" id="stairs"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_arch.svg" id="arch"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_bush.svg" id="bush"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_grass.svg" id="grass"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/prop_reeds.svg" id="reeds"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_0_0.svg" id="tree_0_0"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_0_1.svg" id="tree_0_1"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_0_2.svg" id="tree_0_2"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_1_0.svg" id="tree_1_0"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_1_1.svg" id="tree_1_1"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_1_2.svg" id="tree_1_2"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_2_0.svg" id="tree_2_0"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_2_1.svg" id="tree_2_1"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_2_2.svg" id="tree_2_2"]
+[ext_resource type="Texture2D" path="res://assets/illustrated/tree_trunk.svg" id="trunk"]
+[resource]
+script = ExtResource("script")
+textures = Dictionary[StringName, Texture2D]({
+&"grave": ExtResource("grave"),
+&"waystone": ExtResource("waystone"),
+&"rock": ExtResource("rock"),
+&"rubble": ExtResource("rubble"),
+&"camp": ExtResource("camp"),
+&"fallen_tree": ExtResource("fallen_tree"),
+&"wall": ExtResource("wall"),
+&"tower": ExtResource("tower"),
+&"buttress": ExtResource("buttress"),
+&"slab": ExtResource("slab"),
+&"bridge": ExtResource("bridge"),
+&"stairs": ExtResource("stairs"),
+&"arch": ExtResource("arch"),
+&"bush": ExtResource("bush"),
+&"grass": ExtResource("grass"),
+&"reeds": ExtResource("reeds"),
+&"trunk": ExtResource("trunk"),
+&"tree_0_0": ExtResource("tree_0_0"),
+&"tree_0_1": ExtResource("tree_0_1"),
+&"tree_0_2": ExtResource("tree_0_2"),
+&"tree_1_0": ExtResource("tree_1_0"),
+&"tree_1_1": ExtResource("tree_1_1"),
+&"tree_1_2": ExtResource("tree_1_2"),
+&"tree_2_0": ExtResource("tree_2_0"),
+&"tree_2_1": ExtResource("tree_2_1"),
+&"tree_2_2": ExtResource("tree_2_2")
+})

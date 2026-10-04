@@ -10,6 +10,7 @@ var hand: StringName = &"right"
 var faction: StringName = &"ally"
 var attributes: AttributeStats
 var attack: AttackDefinition
+var upgrade_multiplier: float = 1.0
 var profile: VFXDefinition
 var ownership: StringName
 var weapon_token: int = 0
@@ -23,4 +24,5 @@ func branch() -> SpellCastContext:
 	for key: String in ["caster", "attribution", "target", "direction", "point", "origin", "hand", "faction", "attributes", "attack", "profile", "ownership", "weapon_token", "from_summon", "elevation", "cross_elevations"]:
 		result.set(key, get(key))
 	result.depth = depth + 1
+	result.upgrade_multiplier = upgrade_multiplier
 	return result

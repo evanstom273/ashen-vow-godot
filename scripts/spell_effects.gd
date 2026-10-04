@@ -4,11 +4,12 @@ var entries: Dictionary = {}
 var imbues: Dictionary = {}
 var burns: Dictionary = {}
 
-static func apply_attack(actor: Node2D, attack: AttackDefinition, stats: AttributeStats, source: Node) -> void:
-	if attack == null or attack.max_health_drain == null: return
-	if not attack.max_health_drain.is_valid() or not is_instance_valid(source): return
-	if actor.get("max_health") == null or float(actor.get("max_health")) <= 0: return
+static func apply_attack(actor: Node2D, attack: AttackDefinition, stats: AttributeStats, source: Node) -> bool:
+	if attack == null or attack.max_health_drain == null: return false
+	if not attack.max_health_drain.is_valid() or not is_instance_valid(source): return false
+	if actor.get("max_health") == null or float(actor.get("max_health")) <= 0: return false
 	of(actor)._apply_burn(attack.max_health_drain, stats, source)
+	return true
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -64,7 +65,7 @@ func _tick_burns(delta: float) -> void:
 				# An already attached burn travels with its receiver, not its caster.
 				payload.has_hit_elevation = true
 				payload.hit_elevation = Elevation.level(get_parent())
-				get_parent().receive_hit(payload, null, source)
+				HitRequest.deliver(get_parent() as Node2D, payload, null, source)
 		if entry.elapsed >= entry.duration or not SpellDeliveryService.alive(get_parent()): _remove_burn(key)
 
 static func of(actor: Node) -> SpellEffects:
@@ -94,7 +95,10 @@ static func defence(actor: Node, base: DefenceProfile) -> DefenceProfile:
 			result.set(channel, clampf(float(result.get(channel)) + float(bonus.get(channel)), -100, 100))
 	return result
 
-func apply(definition: SpellEffectDefinition, context: SpellCastContext) -> void:
+func apply(definition: SpellEffectDefinition, context: SpellCastContext) -> bool:
+	if definition == null or context == null or not definition.validation_error().is_empty(): return false
+	if not SpellDeliveryService.alive(get_parent()): return false
+	if not definition.cleanse_tags.is_empty(): ActorStatuses.of(get_parent()).cleanse(definition.cleanse_tags)
 	for key: Variant in entries.keys():
 		var previous: SpellEffectDefinition = entries[key].definition
 		if previous.negative:
@@ -106,6 +110,7 @@ func apply(definition: SpellEffectDefinition, context: SpellCastContext) -> void
 	if definition.duration > 0:
 		var accumulated: float = float(entries[definition.id].tick) if entries.has(definition.id) else 0.0
 		entries[definition.id] = {"definition": definition, "remaining": definition.duration, "tick": accumulated, "context": context}
+	return true
 
 func _restore(hp: int, stamina_amount: float) -> void:
 	var actor: Node = get_parent()
@@ -117,6 +122,8 @@ func _restore(hp: int, stamina_amount: float) -> void:
 		if actor.has_signal("stamina_changed"): actor.emit_signal("stamina_changed", actor.get("stamina"))
 
 func clear() -> void:
+	var statuses := get_parent().get_node_or_null("ActorStatuses") as ActorStatuses
+	if statuses != null: statuses.clear()
 	for key: Variant in burns.keys(): _remove_burn(key)
 	entries.clear()
 	imbues.clear()
@@ -136,6 +143,10 @@ func _physics_process(delta: float) -> void:
 			entries.erase(key)
 			continue
 		var definition: SpellEffectDefinition = entry.definition
+		# Reject a malformed/hot-edited interval instead of entering an endless loop.
+		if not definition.validation_error().is_empty():
+			entries.erase(key)
+			continue
 		var step: float = minf(delta, entry.remaining)
 		entry.remaining -= step
 		entry.tick += step
@@ -144,7 +155,12 @@ func _physics_process(delta: float) -> void:
 			_restore(definition.periodic_heal, 0)
 			var context: SpellCastContext = entry.context
 			if definition.periodic_attack != null and is_instance_valid(context.attribution):
-				get_parent().receive_hit(Elevation.stamp_attack(definition.periodic_attack, Elevation.level(get_parent())), context.attributes, context.attribution)
+				var payload: AttackDefinition = Elevation.stamp_attack(definition.periodic_attack, Elevation.level(get_parent()))
+				payload.periodic_damage = true
+				payload.recurring_feedback = true
+				payload.hit_stop = 0.0
+				payload.camera_shake = 0.0
+				HitRequest.deliver(get_parent() as Node2D, payload, context.attributes, context.attribution)
 			if not entries.has(key): break
 		if entry.remaining <= 0: entries.erase(key)
 	for token: Variant in imbues.keys():

@@ -7,6 +7,10 @@
 [ext_resource type="Resource" path="res://data/environment/cover_pinewood.tres" id="ground_cover"]
 [ext_resource type="PackedScene" path="res://scenes/props/approach_split_oak.tscn" id="approach"]
 
+[ext_resource type="PackedScene" path="res://scenes/props/authored_reward.tscn" id="discovery_scene"]
+[ext_resource type="Resource" path="res://data/progression/reward_split_oak.tres" id="discovery_reward"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/thorn_stalker.tscn" id="role_enemy"]
+
 [node name="split_oak" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("landmark")
@@ -50,3 +54,13 @@ reveal_radius = 190.0
 reveal_edge_softness = 64.0
 
 [node name="ApproachDressing" parent="." instance=ExtResource("approach")]
+
+
+[node name="AuthoredDiscovery" parent="." instance=ExtResource("discovery_scene")]
+position = Vector2(512, 128)
+reward_id = &"split_oak_reliquary"
+definition = ExtResource("discovery_reward")
+
+[node name="Encounter_thorn_stalker" parent="." instance=ExtResource("role_enemy")]
+position = Vector2(384, -384)
+encounter_id = &"split_oak_thorn_stalker"

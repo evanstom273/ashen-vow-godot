@@ -15,6 +15,7 @@ const GROUND_ART_Z: int = -10
 ## Auto keeps walkable steps, bridges, water and non-solid slabs below actors.
 ## Solid furniture and architecture retain depth sorting. Collision is independent.
 @export var draw_layer: DrawLayer = DrawLayer.AUTO
+@export var illustrated_art: EnvironmentArtDefinition = preload("res://data/environment/illustrated_art.tres")
 @export var wind_profile: FoliageWindDefinition = preload("res://data/environment/wind_undergrowth.tres")
 var ground_art: Node2D
 var upper: Node2D
@@ -141,6 +142,11 @@ func _draw_upper() -> void:
 	if not _art_built or outline.is_empty(): return
 	upper.draw_set_transform(Vector2.ZERO)
 	var half: Vector2 = footprint*0.5
+	var illustration: Texture2D = illustrated_art.texture(StringName(kind)) if illustrated_art != null else null
+	if illustration != null:
+		var rise: float = 0.0 if _uses_ground_layer() else height_metres
+		upper.draw_texture_rect(illustration, Rect2(Vector2(-half.x, -half.y-rise), Vector2(footprint.x, footprint.y+rise)), false)
+		return
 	var random := RandomNumberGenerator.new()
 	random.seed = variation+271
 	match kind:

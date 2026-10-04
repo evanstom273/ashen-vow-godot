@@ -112,4 +112,4 @@ func _draw() -> void:
 				draw_line(point - Vector2(0, 3), point + Vector2(0, 3), colored, 1.5, true)
 				draw_line(point - Vector2(2, 0), point + Vector2(2, 0), colored, 1.5, true)
 			_:
-				draw_line(point, point - axis * (3 + particle_seed.y * 5) * fade, colored, 2 if profile.style == VFXDefinition.Style.FLESH else 1.2, true)
+				draw_line(point, point - axis * (3 + particle_seed.y * 5) * fade, colored, 2.0 if profile.style == VFXDefinition.Style.FLESH else 1.2, true)

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RewardDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/reward_definition.gd" id="script"]
+[ext_resource type="Script" path="res://scripts/resources/spell_definition.gd" id="spell_type"]
+[ext_resource type="Script" path="res://scripts/resources/weapon_definition.gd" id="weapon_type"]
+[ext_resource type="Resource" path="res://data/spells/vow_spear.tres" id="vow_spear"]
+[ext_resource type="Resource" path="res://data/spells/soul_thread.tres" id="soul_thread"]
+[ext_resource type="Resource" path="res://data/weapons/sentinel_blade.tres" id="sentinel_blade"]
+[resource]
+script = ExtResource("script")
+display_name = "Last Watch Testament"
+spells = Array[ExtResource("spell_type")]([ExtResource("vow_spear"), ExtResource("soul_thread")])
+weapons = Array[ExtResource("weapon_type")]([ExtResource("sentinel_blade")])
+materials = Dictionary[String, int]({"ember_shard": 3})
+embers = 120
+memory_bonus = 1
+

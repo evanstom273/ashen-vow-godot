@@ -1,15 +1,35 @@
 [gd_scene format=3]
 
+[ext_resource type="Texture2D" path="res://assets/illustrated/weapon_court_staff.svg" id="illustration"]
+
 [node name="court_staff" type="Node2D"]
 
 [node name="Grip" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(-16,-1.5,33,-1.5,33,1.5,-16,1.5)
 color = Color(0.32,0.23,0.17,1)
 
 [node name="Silhouette" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(28,-3,29,-10,37,-14,44,-9,43,7,37,12,29,8,28,3,33,5,38,8,41,4,41,-7,36,-10,32,-7,32,-3)
 color = Color(0.53,0.62,0.65,1)
 
 [node name="Fitting" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(32,0,37,-7,41,0,37,6)
 color = Color(0.35,0.8,1,1)
+
+
+[node name="Illustration" type="Sprite2D" parent="."]
+texture = ExtResource("illustration")
+position = Vector2(14, -1)
+
+[node name="Sockets" type="Node2D" parent="."]
+
+[node name="Grip" type="Marker2D" parent="Sockets"]
+
+[node name="Tip" type="Marker2D" parent="Sockets"]
+position = Vector2(44, 0)
+
+[node name="Cast" type="Marker2D" parent="Sockets"]
+position = Vector2(44, 0)

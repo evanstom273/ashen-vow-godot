@@ -1,0 +1,174 @@
+VERIFICATION REGISTER — 2026-10-04
+
+STATUS: IMPLEMENTED IN SOURCE / STATIC REVIEW ONLY
+This register covers the whole-game rebuild, not just its earlier foundation.
+No Godot import, editor/game launch, GDScript parser, automated test, runtime
+test, export, audio audition, screenshot capture or performance benchmark was
+executed by Codex. Correct parsing and runtime behaviour remain UNPROVEN.
+
+BASELINE AND PERFORMED INSPECTIONS
+- Starting commit d151e70b49f7304281378dc3c3373fed013d141e; clean610-file baseline.
+  No commit, push, reset or removal of user assets was performed.
+- Literal source/resource inspection:496 files,1257 res:// file references,
+ 129 global class declarations. No missing literal referenced file, undefined
+  serialized ExtResource/SubResource ID, late external-resource declaration,
+  duplicate root resource UID/global class or conflict marker was found.
+  This is text/reference inspection, NOT GDScript execution or a Godot import.
+  Dynamic paths, inheritance and actual scene instantiation remain unproven.
+- git diff --check: exit0, no whitespace errors.
+- No changes to data/movement/player_movement.tres,data/raven_transformation.tres,
+  data/stillwood_region.tres or scripts/world_scale.gd. Human512/768u/s,
+  Raven1024/1536u/s; acceleration/deceleration unchanged. Human camera0.25,
+  Raven0.10–0.20. Fort anchor(57600,0),450m from camp, is unchanged.
+- Camp shrine/fire/spawn transforms retained. Weapon artwork/socket bounds remain
+  separate from attack reach and collision footprints.
+- All10 weapon and22 spell definitions plus6 enemy definitions and3 statuses
+  inventoried in LIVE_TUNING.json. Includes20 retained spells+2 catalyst basics.
+- Reviewed immutable Resource/per-hit copies, typed-container boundaries,
+  accepted/rejected hits, resource commitment, charge pools, owned equipment IDs,
+  save validation/restore order, recovery ownership, weak references and pause.
+- Reviewed SVG rig/surface connections, equipment sockets, canopy/floor layering,
+  procedural sound/event connections, climate pause/shelter, map floor records,
+  enemy last-known/return paths and coarse-to-local navigation scheduling.
+- Additional source fixes: invalid effect interval guards; authoritative direct
+  interaction locks; dead enemies no longer acquire/alert; settings reuse and
+  controller focus restore; utility pool persistence; combat-lab save isolation;
+  oldest offscreen terrain-detail eviction without touching world collision.
+
+WHAT THESE CHECKS DO NOT ESTABLISH
+A file existing does not establish successful parsing, import, correct texture
+placement, valid collision, race-free saving, attractive artwork or good frame
+times. No current captures of this rebuild exist. Impeccable review disposition:
+recapture, not approved. The already-open user editor may generate .uid/.import
+metadata; those files are not evidence of an agent-run validation.
+
+REPLACEMENT REGRESSION SOURCE — AUTHORED, NOT EXECUTED
+tests/acceptance.gd replaces stale courtyard-health/right-click/lock-range checks.
+It is opt-in with --rebuild-tests (old --foundation-tests is a compatible alias).
+Its source covers catalogue diagnostics, explicit damage defaults, Blackflame
+endpoints and cap, per-hit upgrade isolation/exact-damage exception, JSON typed
+boundaries, independent item identities, utility-use persistence, catalyst basics,
+status assets, binding validation, human speeds,24-minute climate and malformed
+effect intervals. It does not replace actor/input/save-failure/performance review.
+Do not execute it or imports without the user's explicit permission.
+
+RUNTIME ACCEPTANCE MATRIX — ALL PENDING
+Use disposable character slots/copies for destructive failure scenarios.
+Do not corrupt or overwrite the user's only save for testing.
+
+1 ENGINE AND RESOURCES
+  Godot4.7.1 import/parse, warnings-as-errors, class-registration and dependency
+  cycles, typed array/dictionary assignments, inherited scenes, missing sockets.
+  Validate all22 spells,10 weapons,6 enemy definitions and nested child payloads.
+  Invoke Content Audit explicitly; open asset shelf/overlays without starting AI.
+  Verify engine/CI/export versions; CI and Windows export have not been run.
+
+2 COMBAT AND ACTIONS
+  All light/charged weapons, both hands,8 facing directions, movement and buffer.
+  Shared hit outcome: elevation/LOS, dodge/invulnerability, damage/poise/knockback,
+  death, accepted-only blood/numbers/effects, status-only and zero-damage contacts.
+  Base/attribute/defence/upgrade trace agrees with accepted damage. Two copies
+  of a weapon can have different upgrades/imbues without mutating shared assets.
+  Utility spends once on acceptance, restores once on release, recovers; stagger/
+  death before release loses the charge without healing. No action/menu leakage.
+  Free exploration stamina; combat regeneration/costs; enemy-only acquisition and
+  range-independent retention until invalidation/death/cancel/floor incompatibility.
+
+3 MAGIC AND DIRECT EFFECTS
+  All17 deliveries:Projectile,Area,Self,Target,Beam,Imbue,Cone,Wave,Zone,Chain,
+  Orbiting,Trap,Barrage,Summon,Aura,Dash,Tether. All current spells have typed
+  delivery definitions; missing definitions reject before a use is committed.
+  Cast/release/contact/expiry, walls/occlusion, both catalysts/hands, manual volley,
+  matching barrage warnings, piercing unique-targets, homing, replacement limits.
+  Input-owned held channels: one use/upfront cost; release/interruption/focus loss/
+  pause/death cancel correctly; releasing another input does not cancel ownership.
+  Basic infinity/no-memory entries:equipping/removing/cycling catalysts,deduplication,
+  F versus hand casting,finite-charge preservation,depletion,rest and reload.
+  Memory totals, owned/unowned availability, finite spell removal/re-preparation.
+  Timed/periodic scheduling independent of particles/frame rate; no repeated full
+  hit-stop/flash on ticks. Blackflame2→5% maxHP over0.75→1.25s at Arcane10→60,
+  cap above60; normal fire component separate; no upgrade applied to percent total.
+  Imbues survive cycle/owned-slot transfer, not removal/death/rest or another copy.
+
+4 STATUSES AND SUMMONS
+  Poison/bleed/frost buildup, decay, resistance, immunity, threshold, retrigger,
+  refresh, negative-only cleanse and icons/timers; synchronous proc cannot recurse.
+  Receiver acceptance remains authoritative for status-only contacts.
+  Vulnerable allies/emitters:scheduled acquisition, caster attribution/locked-target
+  preference, unavailable paths, stairs, sight, deaths, expiry and owned cleanup.
+  No summon currency/reward recursion or unsupported recursive child summoning.
+
+5 ENEMIES AND NAVIGATION
+  Sentinel elite plus Grave/Greywatch Wardens,Thorn Stalker,Ash Cantor.
+  Idle/patrol/sight, distant accepted-hit aggression, bounded local alerts,
+  pursuit,last-known search,return; dead enemies never acquire/alert.
+  Ranged spacing/sight and committed tracking fraction; no omniscient chase.
+  Coarse route crossings, bridges, stair portals, floor/agent-clearance cache,
+  pending grids/retry,256-probe cap and cache invalidation on explicit rebuild.
+  No teleportation through solids or collision unloading below Raven.
+
+6 CHARACTER STATE, SAVES AND RECOVERY
+  New Game,Continue,all3 slots,full slots,normal quit/close,30s/event autosave.
+  Level/attributes/health/stamina/currency, owned IDs/upgrades, loadouts/uses,
+  materials,rewards,memories,tutorials,map,attunement,climate survive reload.
+  Die/respawn/recover,die twice,zero-Embers death,enemy pickup before/after reload.
+  Only prior player recovery is replaced; dead/action/Raven/pause interaction fails.
+  Invalid/airborne death/save position uses reachable human ground; safe checkpoint
+  and authored-spawn fallback; irrecoverably obstructed restore stays locked.
+  Truncated primary,valid backup,checksum failure,newer schema,missing definition,
+  incompatible memory/owned hand duplication,unwritable directory,rename failure.
+  Preserve good backups and future-format saves; report failures visibly.
+  Combat lab grants disposable content and restores preserved normal character
+  on exit; lab load/new is blocked; no normal character writes from lab.
+
+7 PROGRESSION, REWARDS AND SHRINES
+  Magic-ready Wanderer; retained gear owned; finite spells and catalyst basics.
+  Levels cost Embers; free earned-point respec respects class minima/level total.
+  Per-copy upgrades consume exact currency/materials and respect caps.
+  Ownership filtering/search,requirements,memory,utility/form preparation and uses.
+  All10 discoveries and first-defeat material rewards exactly once across reload.
+  Four checkpoints:camp,chapel approach,crossing,Greywatch approach. Attunement
+  required; known map destination alone grants no travel. No combat/Raven/action
+  travel. Save before travel; prepare geometry,validate ground,rest/reset,cleanup.
+
+8 RAVEN AND ELEVATION
+  Out-of-combat entry; combat does not force reversion. Moving transforms/sprint,
+  dissolve/reform, ash/feathers, both camera endpoints/smoothing, safe landing.
+  Trees/low obstacles flyover,flight blockers,water/gaps,above-canopy readability.
+  Restore authoritative masks after death/travel/reload; no hidden humanoid weapons.
+  Floor/ceiling/roof/reveal, stairs, attacks/projectiles/targets/audio across storeys.
+
+9 ART, VFX AND AUDIO
+  All rigs:8views,actual stride,walk/sprint/action/hurt/death/cast/transition.
+  Weapon-over-hand grips/tips/casts,consistent model size,imbue and physical trails.
+  Foliage,architecture,roof/floor/cliff,shrine/fire,props,water,paths and terrain
+  remain readable at human and widest Raven zoom; manual placement unchanged.
+  Blood Off clears active blood. Reduced Effects budgets and essential silhouettes.
+  Permanent vignette independent of shake/punch/flash; no motion blur/fullscreenfog.
+  Particle/light/stain/audio caps and cleanup on pause/rest/death/removal/reload.
+  Cached synthesis variation/priority, distant sounds/listener, surface footsteps,
+  floor/interior attenuation, exploration/combat music and volume persistence.
+  Visual and audio quality require actual capture/audition, not source approval.
+
+10 WEATHER, MAP AND UI
+ 24-minute clock,clear/overcast/rain blends,wind,night readability,interior shelter,
+  pause,scene replacement,rest/reload,settings; no weather gameplay modifiers.
+  Fullscreen M map,mouse/controller cursor,pin/place/drag/remove,pan/zoom/centre,
+  floor selection/placement,discoveries,beacons,arrival2s fade,transition,vignette.
+  Equipment cross, infinity/status/timers,scrollablelong descriptions,smallwindows,
+  .75–1.5UI scale,keyboard/controller focus,rebinding/conflicts,current-device prompts.
+  Settings Reset/close/quit before debounce, vibration off, no nested-menu leaks.
+  Title settings closes to correct focus; gameplay settings returns to paused menu.
+
+11 EDITOR AUTHORING AND PERFORMANCE
+  Shared deterministic editor/runtime geometry;rebuild replaces generated content
+  only;stable IDs,Undo/Redo shelfplacement,scene overrides and selected overlays.
+  Cold loading,fullscreen changes,region traversal,widest Raven view,long sessions,
+  repeated scene/rest transitions,overlapping spells/status/weather/encounters.
+  Measure frame-time spikes,memory/mesh-cache growth,collision registration,
+  navigation probes,particles/lights,voice count. Target60FPS remains UNMEASURED.
+
+REMAINING GATE
+All runtime items above remain open. Visual quality, combat/economy balance,
+traversal density, audio quality, save-failure resilience and GPU performance are
+runtime-unverified. No release readiness or stable60FPS claim is made.

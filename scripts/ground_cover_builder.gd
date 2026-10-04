@@ -168,7 +168,10 @@ func _stamp(at: Vector2, family: String, height: float, variation: float, tint: 
 				var root: Vector2 = at + Vector2((blade-2)*height*0.16, sin(blade+phase)*height*0.12)
 				var tip: Vector2 = root + Vector2(sin(phase+blade)*height*0.35, -height*(0.65+float(blade%3)*0.17))
 				var width: float = height * 0.065
-				_triangle(root-Vector2(width, 0), tip, root+Vector2(width, 0), tint.darkened(float(blade%2)*0.12), Vector3(0, profile.wind_response, 0), phase)
+				var bend: Vector2 = root.lerp(tip, 0.55) + Vector2(sin(phase)*height*0.12, 0)
+				_triangle(root-Vector2(width, 0), bend-Vector2(width*0.6, 0), root+Vector2(width, 0), tint.darkened(float(blade%2)*0.16), Vector3(0, profile.wind_response*0.5, 0), phase)
+				_triangle(root+Vector2(width, 0), bend-Vector2(width*0.6, 0), bend+Vector2(width*0.5, 0), tint, Vector3(0, profile.wind_response*0.5, profile.wind_response*0.5), phase)
+				_triangle(bend-Vector2(width*0.6, 0), tip, bend+Vector2(width*0.5, 0), tint.lightened(0.12), Vector3(0.5, 1, 0.5)*profile.wind_response, phase)
 				if family == "reeds" and blade%2 == 0:
 					_triangle(tip+Vector2(-0.028, 0.02), tip+Vector2(0, -0.14), tip+Vector2(0.035, 0.02), profile.dry_foliage, Vector3.ONE*profile.wind_response, phase)
 		"shrub":
@@ -188,6 +191,7 @@ func _stamp(at: Vector2, family: String, height: float, variation: float, tint: 
 				for leaflet in range(1, 4):
 					var root: Vector2 = at.lerp(tip, float(leaflet)*0.22)
 					var span: Vector2 = direction.orthogonal()*height*(0.3-float(leaflet)*0.04)
+					_stroke(root, root + direction * height * 0.25, height * 0.012, tint.lightened(0.25))
 					_triangle(root, root+span-direction*height*0.12, root+direction*height*0.24, tint, Vector3(0.1, 0.45, 0.3)*profile.wind_response, phase)
 					_triangle(root, root-span-direction*height*0.12, root+direction*height*0.24, tint.darkened(0.1), Vector3(0.1, 0.45, 0.3)*profile.wind_response, phase)
 		"branch", "root":

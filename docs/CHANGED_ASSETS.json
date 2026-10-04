@@ -1,0 +1,1783 @@
+{
+  "document": "Ashen Vow whole-game rebuild changed-asset inventory",
+  "baseline": "d151e70b49f7304281378dc3c3373fed013d141e",
+  "date": "2026-10-04",
+  "scope": "All implementation phases; source-connected and statically inspected, NOT runtime-certified",
+  "counts": {
+    "modified": 102,
+    "new": 241,
+    "entries": 343,
+    "new_svg": 55,
+    "new_resources": 33,
+    "new_scenes": 6,
+    "new_gdscript": 41,
+    "new_metadata": 89
+  },
+  "notes": [
+    "Snapshot of the uncommitted worktree; no commit/push/reset was performed.",
+    "New .uid/.import sidecars are included individually. The user's already-open Godot editor may generate additional sidecars after this snapshot. No imports were invoked by Codex.",
+    "No deleted or renamed tracked assets are recorded in this rebuild.",
+    "Existing IDs/geographic anchors/movement/camera preserved. 20 prior spells plus 2 unlimited catalyst basics; 10 usable weapon templates.",
+    "All runtime, visual, save-failure, audio and performance results remain unverified. See VERIFICATION.txt."
+  ],
+  "new_resources": [
+    "data/ashen_theme.tres",
+    "data/enemies/ash_cantor.tres",
+    "data/enemies/grave_warden.tres",
+    "data/enemies/greywatch_warden.tres",
+    "data/enemies/thorn_stalker.tres",
+    "data/environment/audio_library.tres",
+    "data/environment/climate.tres",
+    "data/environment/illustrated_art.tres",
+    "data/environment/stillwood_music.tres",
+    "data/progression/reward_chapel.tres",
+    "data/progression/reward_crossing.tres",
+    "data/progression/reward_fort.tres",
+    "data/progression/reward_graveyard.tres",
+    "data/progression/reward_pilgrims_rest.tres",
+    "data/progression/reward_quarry.tres",
+    "data/progression/reward_split_oak.tres",
+    "data/progression/reward_watchtower.tres",
+    "data/progression/reward_waystone.tres",
+    "data/progression/reward_widows_pool.tres",
+    "data/progression/shrine_chapel.tres",
+    "data/progression/shrine_crossing.tres",
+    "data/progression/shrine_fort.tres",
+    "data/progression/wanderer_progression.tres",
+    "data/spells/glimmer.tres",
+    "data/spells/votive_spark.tres",
+    "data/statuses/bleed.tres",
+    "data/statuses/bleed_vfx.tres",
+    "data/statuses/frost.tres",
+    "data/statuses/frost_vfx.tres",
+    "data/statuses/poison.tres",
+    "data/statuses/poison_vfx.tres",
+    "data/vfx_basic_glimmer.tres",
+    "data/vfx_basic_votive_spark.tres"
+  ],
+  "new_scenes": [
+    "scenes/combat_lab.tscn",
+    "scenes/enemies/ash_cantor.tscn",
+    "scenes/enemies/thorn_stalker.tscn",
+    "scenes/props/authored_reward.tscn",
+    "scenes/settings_panel.tscn",
+    "scenes/title_screen.tscn"
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/godot-validation.yml",
+      "change": "modified",
+      "role": "Project, toolchain or export configuration"
+    },
+    {
+      "path": ".impeccable/design.json",
+      "change": "new",
+      "role": "Source-level visual design record; rendered review pending"
+    },
+    {
+      "path": "addons/world_authoring/overlays.gd",
+      "change": "new",
+      "role": "Editor asset shelf, Undo/Redo placement, source diagnostics or overlays"
+    },
+    {
+      "path": "addons/world_authoring/overlays.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "addons/world_authoring/plugin.gd",
+      "change": "modified",
+      "role": "Editor asset shelf, Undo/Redo placement, source diagnostics or overlays"
+    },
+    {
+      "path": "assets/illustrated/ashen_vow_wordmark.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/campfire.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/campfire.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/cantor_rig.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/cantor_rig.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/cliff_strata.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/court_brazier.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/court_pillar.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/masonry_floor.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_arch.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_bridge.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_bridge.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_bush.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_bush.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_buttress.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_buttress.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_camp.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_camp.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_fallen_tree.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_fallen_tree.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_grass.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_grass.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_grave.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_grave.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_reeds.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_reeds.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_rock.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_rock.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_rubble.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_rubble.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_slab.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_slab.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_stairs.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_stairs.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_tower.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_tower.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_wall.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_wall.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/prop_waystone.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/prop_waystone.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/rain_drop.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/rain_drop.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/raven_body.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/raven_body.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/raven_wing.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/raven_wing.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/sentinel_rig.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/sentinel_rig.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/shrine_frame.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/shrine_frame.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/slate_courses.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/stalker_rig.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/stalker_rig.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/status_bleed.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/status_bleed.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/status_frost.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/status_frost.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/status_poison.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/status_poison.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/training_effigy.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/training_effigy.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_0_0.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_0_0.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_0_1.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_0_1.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_0_2.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_0_2.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_1_0.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_1_0.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_1_1.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_1_1.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_1_2.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_1_2.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_2_0.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_2_0.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_2_1.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_2_1.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_2_2.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_2_2.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/tree_trunk.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/tree_trunk.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/wanderer_rig.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/wanderer_rig.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_ashen_dagger.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_ashen_dagger.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_ashen_seal.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_ashen_seal.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_court_shield_bash.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_court_shield_bash.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_court_staff.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_court_staff.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_heavy_iron_mace.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_heavy_iron_mace.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_pilgrim_spear.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_pilgrim_spear.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_pilgrim_wand.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_pilgrim_wand.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_sentinel_blade.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_sentinel_blade.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_sentinel_greatblade.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_sentinel_greatblade.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "assets/illustrated/weapon_wanderer_sword.svg",
+      "change": "new",
+      "role": "Project-contained illustrated SVG artwork"
+    },
+    {
+      "path": "assets/illustrated/weapon_wanderer_sword.svg.import",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "data/ashen_theme.tres",
+      "change": "new",
+      "role": "Shared Inspector-editable native UI theme"
+    },
+    {
+      "path": "data/attacks/presentation/ashen_dagger_charged.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/presentation/court_staff_charged.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/presentation/heavy_iron_mace_charged.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/presentation/pilgrim_spear_charged.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/presentation/pilgrim_wand_charged.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/presentation/sentinel_blade_charged.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/presentation/sentinel_blade_light.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/presentation/sentinel_greatblade_charged.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/presentation/wanderer_sword_charged.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/presentation/wanderer_sword_light.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/attacks/sword_light.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/classes/ashen_wanderer.tres",
+      "change": "modified",
+      "role": "Content definition/catalogue/starting ownership or authoring guide"
+    },
+    {
+      "path": "data/damage/sword_damage.tres",
+      "change": "modified",
+      "role": "Reviewed attack assignment/default repair"
+    },
+    {
+      "path": "data/enemies/ash_cantor.tres",
+      "change": "new",
+      "role": "Enemy role definition/scene"
+    },
+    {
+      "path": "data/enemies/grave_warden.tres",
+      "change": "new",
+      "role": "Enemy role definition/scene"
+    },
+    {
+      "path": "data/enemies/greywatch_warden.tres",
+      "change": "new",
+      "role": "Enemy role definition/scene"
+    },
+    {
+      "path": "data/enemies/thorn_stalker.tres",
+      "change": "new",
+      "role": "Enemy role definition/scene"
+    },
+    {
+      "path": "data/environment/audio_library.tres",
+      "change": "new",
+      "role": "Climate, illustrated art or procedural audio/music profile"
+    },
+    {
+      "path": "data/environment/climate.tres",
+      "change": "new",
+      "role": "Climate, illustrated art or procedural audio/music profile"
+    },
+    {
+      "path": "data/environment/illustrated_art.tres",
+      "change": "new",
+      "role": "Climate, illustrated art or procedural audio/music profile"
+    },
+    {
+      "path": "data/environment/stillwood_music.tres",
+      "change": "new",
+      "role": "Climate, illustrated art or procedural audio/music profile"
+    },
+    {
+      "path": "data/game_catalog.tres",
+      "change": "modified",
+      "role": "Content definition/catalogue/starting ownership or authoring guide"
+    },
+    {
+      "path": "data/loadout_right_hand.tres",
+      "change": "modified",
+      "role": "Content definition/catalogue/starting ownership or authoring guide"
+    },
+    {
+      "path": "data/progression/reward_chapel.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/reward_crossing.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/reward_fort.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/reward_graveyard.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/reward_pilgrims_rest.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/reward_quarry.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/reward_split_oak.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/reward_watchtower.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/reward_waystone.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/reward_widows_pool.tres",
+      "change": "new",
+      "role": "Authored discovery reward"
+    },
+    {
+      "path": "data/progression/shrine_chapel.tres",
+      "change": "new",
+      "role": "Attunable checkpoint definition"
+    },
+    {
+      "path": "data/progression/shrine_crossing.tres",
+      "change": "new",
+      "role": "Attunable checkpoint definition"
+    },
+    {
+      "path": "data/progression/shrine_fort.tres",
+      "change": "new",
+      "role": "Attunable checkpoint definition"
+    },
+    {
+      "path": "data/progression/wanderer_progression.tres",
+      "change": "new",
+      "role": "Levelling/upgrade rules"
+    },
+    {
+      "path": "data/README.md",
+      "change": "modified",
+      "role": "Content definition/catalogue/starting ownership or authoring guide"
+    },
+    {
+      "path": "data/spells/glimmer.tres",
+      "change": "new",
+      "role": "Unlimited catalyst basic spell or visual profile"
+    },
+    {
+      "path": "data/spells/votive_spark.tres",
+      "change": "new",
+      "role": "Unlimited catalyst basic spell or visual profile"
+    },
+    {
+      "path": "data/statuses/bleed_vfx.tres",
+      "change": "new",
+      "role": "Buildup status or proc visual profile"
+    },
+    {
+      "path": "data/statuses/bleed.tres",
+      "change": "new",
+      "role": "Buildup status or proc visual profile"
+    },
+    {
+      "path": "data/statuses/frost_vfx.tres",
+      "change": "new",
+      "role": "Buildup status or proc visual profile"
+    },
+    {
+      "path": "data/statuses/frost.tres",
+      "change": "new",
+      "role": "Buildup status or proc visual profile"
+    },
+    {
+      "path": "data/statuses/poison_vfx.tres",
+      "change": "new",
+      "role": "Buildup status or proc visual profile"
+    },
+    {
+      "path": "data/statuses/poison.tres",
+      "change": "new",
+      "role": "Buildup status or proc visual profile"
+    },
+    {
+      "path": "data/vfx_basic_glimmer.tres",
+      "change": "new",
+      "role": "Unlimited catalyst basic spell or visual profile"
+    },
+    {
+      "path": "data/vfx_basic_votive_spark.tres",
+      "change": "new",
+      "role": "Unlimited catalyst basic spell or visual profile"
+    },
+    {
+      "path": "data/weapons/ashen_seal.tres",
+      "change": "modified",
+      "role": "Content definition/catalogue/starting ownership or authoring guide"
+    },
+    {
+      "path": "data/weapons/court_staff.tres",
+      "change": "modified",
+      "role": "Content definition/catalogue/starting ownership or authoring guide"
+    },
+    {
+      "path": "data/weapons/pilgrim_wand.tres",
+      "change": "modified",
+      "role": "Content definition/catalogue/starting ownership or authoring guide"
+    },
+    {
+      "path": "DESIGN.md",
+      "change": "new",
+      "role": "Source-level visual design record; rendered review pending"
+    },
+    {
+      "path": "docs/AUTHORING_GUIDE.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/CHANGED_ASSETS.json",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/DESIGN_EXTRACTION.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/DESIGN_REVIEW.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/FINDINGS.json",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/FOUNDATION_AUTHORING.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/FOUNDATION_HANDOFF.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/LIVE_TUNING.json",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/MIGRATIONS.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/REBUILD_ROADMAP.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/TUNING_SUMMARY.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/VERIFICATION.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "docs/WHOLE_GAME_HANDOFF.txt",
+      "change": "new",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "export_presets.cfg",
+      "change": "modified",
+      "role": "Project, toolchain or export configuration"
+    },
+    {
+      "path": "PRODUCT.md",
+      "change": "new",
+      "role": "Source-level visual design record; rendered review pending"
+    },
+    {
+      "path": "project.godot",
+      "change": "modified",
+      "role": "Project, toolchain or export configuration"
+    },
+    {
+      "path": "README.md",
+      "change": "modified",
+      "role": "Maintained roadmap, findings, authoring, tuning or verification documentation"
+    },
+    {
+      "path": "scenes/combat_lab.tscn",
+      "change": "new",
+      "role": "Disposable current-scale combat lab; no character save writes"
+    },
+    {
+      "path": "scenes/enemies/ash_cantor.tscn",
+      "change": "new",
+      "role": "Enemy role definition/scene"
+    },
+    {
+      "path": "scenes/enemies/grave_warden.tscn",
+      "change": "modified",
+      "role": "Enemy role definition/scene"
+    },
+    {
+      "path": "scenes/enemies/greywatch_warden.tscn",
+      "change": "modified",
+      "role": "Enemy role definition/scene"
+    },
+    {
+      "path": "scenes/enemies/thorn_stalker.tscn",
+      "change": "new",
+      "role": "Enemy role definition/scene"
+    },
+    {
+      "path": "scenes/forest_camp.tscn",
+      "change": "modified",
+      "role": "Runtime/editor scene integration and illustrated actor/prop wiring"
+    },
+    {
+      "path": "scenes/landmarks/chapel.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/landmarks/crossing.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/landmarks/fort.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/landmarks/graveyard.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/landmarks/pilgrims_rest.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/landmarks/quarry.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/landmarks/split_oak.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/landmarks/watchtower.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/landmarks/waystone.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/landmarks/widows_pool.tscn",
+      "change": "modified",
+      "role": "Authored reward/checkpoint/encounter integration; geography retained"
+    },
+    {
+      "path": "scenes/main.tscn",
+      "change": "modified",
+      "role": "Runtime/editor scene integration and illustrated actor/prop wiring"
+    },
+    {
+      "path": "scenes/player.tscn",
+      "change": "modified",
+      "role": "Runtime/editor scene integration and illustrated actor/prop wiring"
+    },
+    {
+      "path": "scenes/props/authored_reward.tscn",
+      "change": "new",
+      "role": "Drag-and-drop acquired-content reward"
+    },
+    {
+      "path": "scenes/settings_panel.tscn",
+      "change": "new",
+      "role": "Reusable settings/rebinding modal"
+    },
+    {
+      "path": "scenes/shrine.tscn",
+      "change": "modified",
+      "role": "Runtime/editor scene integration and illustrated actor/prop wiring"
+    },
+    {
+      "path": "scenes/title_screen.tscn",
+      "change": "new",
+      "role": "Title, Continue and character-slot entry"
+    },
+    {
+      "path": "scenes/training_dummy.tscn",
+      "change": "modified",
+      "role": "Runtime/editor scene integration and illustrated actor/prop wiring"
+    },
+    {
+      "path": "scenes/weapons/ashen_dagger.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scenes/weapons/ashen_seal.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scenes/weapons/court_shield_bash.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scenes/weapons/court_staff.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scenes/weapons/heavy_iron_mace.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scenes/weapons/pilgrim_spear.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scenes/weapons/pilgrim_wand.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scenes/weapons/sentinel_blade.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scenes/weapons/sentinel_greatblade.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scenes/weapons/wanderer_sword.tscn",
+      "change": "modified",
+      "role": "Illustrated weapon and explicit grip/tip/cast sockets"
+    },
+    {
+      "path": "scripts/actor_registry.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: actor registry"
+    },
+    {
+      "path": "scripts/actor_registry.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/actor_statuses.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: actor statuses"
+    },
+    {
+      "path": "scripts/actor_statuses.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/authored_reward.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: authored reward"
+    },
+    {
+      "path": "scripts/authored_reward.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/building_roof.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: building roof"
+    },
+    {
+      "path": "scripts/campfire.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: campfire"
+    },
+    {
+      "path": "scripts/character_progression.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: character progression"
+    },
+    {
+      "path": "scripts/character_progression.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/character_state.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: character state"
+    },
+    {
+      "path": "scripts/character_state.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/combat_lab.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: combat lab"
+    },
+    {
+      "path": "scripts/combat_presentation.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: combat presentation"
+    },
+    {
+      "path": "scripts/combat/hit_request.gd",
+      "change": "new",
+      "role": "Shared explicit hit request/result contract"
+    },
+    {
+      "path": "scripts/combat/hit_request.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/combat/hit_result.gd",
+      "change": "new",
+      "role": "Shared explicit hit request/result contract"
+    },
+    {
+      "path": "scripts/combat/hit_result.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/content_audit.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: content audit"
+    },
+    {
+      "path": "scripts/content_audit.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/court_hud.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: court hud"
+    },
+    {
+      "path": "scripts/court_prop.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: court prop"
+    },
+    {
+      "path": "scripts/currency_drop.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: currency drop"
+    },
+    {
+      "path": "scripts/elevation.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: elevation"
+    },
+    {
+      "path": "scripts/enemy_mind.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: enemy mind"
+    },
+    {
+      "path": "scripts/enemy_mind.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/environment_wind.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: environment wind"
+    },
+    {
+      "path": "scripts/equipment_cross.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: equipment cross"
+    },
+    {
+      "path": "scripts/equipment_instance.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: equipment instance"
+    },
+    {
+      "path": "scripts/equipment_instance.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/feedback.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: feedback"
+    },
+    {
+      "path": "scripts/forest_tree.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: forest tree"
+    },
+    {
+      "path": "scripts/game_session.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: game session"
+    },
+    {
+      "path": "scripts/game_session.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/game_settings.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: game settings"
+    },
+    {
+      "path": "scripts/game_settings.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/game_theme.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: game theme"
+    },
+    {
+      "path": "scripts/game_theme.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/ground_cover_builder.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: ground cover builder"
+    },
+    {
+      "path": "scripts/illustrated_rig.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: illustrated rig"
+    },
+    {
+      "path": "scripts/illustrated_rig.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/interactable.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: interactable"
+    },
+    {
+      "path": "scripts/navigation_routes.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: navigation routes"
+    },
+    {
+      "path": "scripts/navigation_routes.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/overworld_ground.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: overworld ground"
+    },
+    {
+      "path": "scripts/overworld_prop.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: overworld prop"
+    },
+    {
+      "path": "scripts/player_onboarding.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: player onboarding"
+    },
+    {
+      "path": "scripts/player_onboarding.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/player_spellbook.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: player spellbook"
+    },
+    {
+      "path": "scripts/player_spellbook.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/player_transformation.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: player transformation"
+    },
+    {
+      "path": "scripts/player_visuals.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: player visuals"
+    },
+    {
+      "path": "scripts/player.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: player"
+    },
+    {
+      "path": "scripts/presentation_visual.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: presentation visual"
+    },
+    {
+      "path": "scripts/presentation_visual.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/procedural_music.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: procedural music"
+    },
+    {
+      "path": "scripts/procedural_music.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/raven_visual.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: raven visual"
+    },
+    {
+      "path": "scripts/region_cliff.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: region cliff"
+    },
+    {
+      "path": "scripts/region_landmark.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: region landmark"
+    },
+    {
+      "path": "scripts/resources/attack_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/building_roof_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/class_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/climate_definition.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/climate_definition.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/currency_drop_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/damage_profile.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/defence_profile.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/enemy_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/enemy_move.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/enemy_move.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/enemy_perception.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/enemy_perception.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/environment_art_definition.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/environment_art_definition.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/music_definition.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/music_definition.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/procedural_audio_library.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/procedural_audio_library.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/procedural_sound_definition.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/procedural_sound_definition.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/progression_definition.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/progression_definition.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/region_scatter_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/reward_definition.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/reward_definition.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/spell_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/spell_effect_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/status_application.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/status_application.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/status_definition.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/status_definition.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/resources/summon_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/utility_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/vital_stats.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/weapon_definition.gd",
+      "change": "modified",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/weather_definition.gd",
+      "change": "new",
+      "role": "Inspector Resource authoring contract"
+    },
+    {
+      "path": "scripts/resources/weather_definition.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/save_store.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: save store"
+    },
+    {
+      "path": "scripts/save_store.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/scene_contract.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: scene contract"
+    },
+    {
+      "path": "scripts/scene_contract.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/sentinel.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: sentinel"
+    },
+    {
+      "path": "scripts/shrine_loadout_menu.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: shrine loadout menu"
+    },
+    {
+      "path": "scripts/shrine_services.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: shrine services"
+    },
+    {
+      "path": "scripts/shrine_services.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/shrine.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: shrine"
+    },
+    {
+      "path": "scripts/spell_cast_context.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: spell cast context"
+    },
+    {
+      "path": "scripts/spell_delivery_runtime.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: spell delivery runtime"
+    },
+    {
+      "path": "scripts/spell_delivery_service.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: spell delivery service"
+    },
+    {
+      "path": "scripts/spell_effects.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: spell effects"
+    },
+    {
+      "path": "scripts/spell_navigation.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: spell navigation"
+    },
+    {
+      "path": "scripts/spell_projectile.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: spell projectile"
+    },
+    {
+      "path": "scripts/spell_summon.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: spell summon"
+    },
+    {
+      "path": "scripts/spell_visual.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: spell visual"
+    },
+    {
+      "path": "scripts/stillwood_overworld.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: stillwood overworld"
+    },
+    {
+      "path": "scripts/targetable.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: targetable"
+    },
+    {
+      "path": "scripts/title_screen.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: title screen"
+    },
+    {
+      "path": "scripts/title_screen.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/training_dummy.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: training dummy"
+    },
+    {
+      "path": "scripts/ui_flow.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: ui flow"
+    },
+    {
+      "path": "scripts/ui_flow.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/ui/actor_status_display.gd",
+      "change": "new",
+      "role": "Reusable settings and actor status presentation"
+    },
+    {
+      "path": "scripts/ui/actor_status_display.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/ui/settings_panel.gd",
+      "change": "new",
+      "role": "Reusable settings and actor status presentation"
+    },
+    {
+      "path": "scripts/ui/settings_panel.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/world_climate.gd",
+      "change": "new",
+      "role": "Runtime or presentation integration: world climate"
+    },
+    {
+      "path": "scripts/world_climate.gd.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "scripts/world_navigation_ui.gd",
+      "change": "modified",
+      "role": "Runtime or presentation integration: world navigation ui"
+    },
+    {
+      "path": "shaders/actor_surface.gdshader",
+      "change": "new",
+      "role": "Composable illustrated actor flash/dissolve surface"
+    },
+    {
+      "path": "shaders/actor_surface.gdshader.uid",
+      "change": "new",
+      "role": "Godot UID/import sidecar; preserved editor metadata, not validation evidence"
+    },
+    {
+      "path": "tests/acceptance.gd",
+      "change": "modified",
+      "role": "Opt-in regression source; NOT executed"
+    }
+  ]
+}

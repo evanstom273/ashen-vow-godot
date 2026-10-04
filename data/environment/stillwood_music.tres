@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MusicDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/resources/music_definition.gd" id="music"]
+[ext_resource type="Script" path="res://scripts/resources/procedural_sound_definition.gd" id="sound"]
+[sub_resource type="Resource" id="Instrument"]
+script = ExtResource("sound")
+id = &"stillwood_bell"
+duration = 2.3
+frequency = 146.83
+frequency_sweep = -0.8
+noise_mix = 0.035
+attack_seconds = 0.035
+decay_power = 2.6
+brightness = 0.3
+overtone = 0.5
+gain = 0.6
+bus = "Music"
+[resource]
+script = ExtResource("music")
+instrument = SubResource("Instrument")

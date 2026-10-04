@@ -24,11 +24,16 @@ var dissolve_items: Array[Dictionary] = []
 func _begin_dissolve() -> void:
 	_end_dissolve()
 	var items: Array[Node] = actor.rig.find_children("*", "Polygon2D", true, false)
+	items.append_array(actor.rig.find_children("*", "Sprite2D", true, false))
 	items.append(visual)
 	for node: Node in items:
 		var item := node as CanvasItem
-		var effect := ShaderMaterial.new()
-		effect.shader = preload("res://shaders/transformation_dissolve.gdshader")
+		var effect: ShaderMaterial
+		if item.material is ShaderMaterial and item.material.shader == preload("res://shaders/actor_surface.gdshader"):
+			effect = item.material.duplicate() as ShaderMaterial
+		else:
+			effect = ShaderMaterial.new()
+			effect.shader = preload("res://shaders/transformation_dissolve.gdshader")
 		dissolve_items.append({"item": item, "original": item.material, "effect": effect, "form": item == visual})
 		item.material = effect
 	_update_dissolve(0.0)
@@ -60,6 +65,9 @@ func toggle(selected: TransformationDefinition) -> void:
 			return
 		phase = Phase.REVERTING
 	elif phase == Phase.HUMAN:
+		if actor.in_combat():
+			actor.show_message("Cannot transform during combat")
+			return
 		if selected == null or selected.visual_scene == null or selected.movement == null:
 			actor.show_message("Transformation is not configured")
 			return
